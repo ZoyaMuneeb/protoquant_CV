@@ -1034,7 +1034,7 @@ def visualize_protoquant(
     cfg = PipNetConfig()
     cfg.pipnet_checkpoint_path = str(args.pipnet_checkpoint_path)
     cfg.model.name = args.model_name
-    cfg.model.global_pool = ""
+    cfg.model.global_pool = "avg" if args.model_name.startswith("deit") else ""
     cfg.training.train_codebook = False
     cfg.dataset = BaseDatasetConfig(num_classes=args.num_classes)
 

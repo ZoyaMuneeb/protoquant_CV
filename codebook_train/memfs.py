@@ -117,6 +117,12 @@ def prepare_cub200(target_dir: pathlib.Path, source_dir: pathlib.Path):
     logger.info(f"Dataset not found in target, checking source dir: {source_dir}")
     if source_path.is_dir():
         copy_dataset(source_path, target_path)
+    elif (source_dir / "images").is_dir() and (source_dir / "images.txt").is_file():
+        logger.info(
+            "Detected flat CUB-200-2011 layout in source_dir. "
+            "Copying it into target/CUB_200_2011."
+        )
+        copy_dataset(source_dir, target_path)
     else:
         logger.info("CUB-200-2011 not found in source. Downloading...")
         url = "https://data.caltech.edu/records/65de6-vp158/files/CUB_200_2011.tgz"

@@ -143,9 +143,9 @@ def prepare_and_train(
 
     if cfg.training.limit_and_prune_prototypes:
         logger.info(
-            "Limiting classifier to top-5 prototypes per class and pruning inactive prototypes."
+            "Limiting classifier to top-10 prototypes per class and pruning inactive prototypes."
         )
-        model.limit_prototypes(k=5)
+        model.limit_prototypes(k=10)
         model.prune_inactive_prototypes(min_weight=0.0)
 
     model = TrainingWrapper(model)

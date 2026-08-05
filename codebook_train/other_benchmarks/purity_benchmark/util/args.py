@@ -242,6 +242,25 @@ def get_args() -> argparse.Namespace:
         "--cub_data_path", type=str, default="", help="Path to the CUB dataset root"
     )
     parser.add_argument(
+        "--cub_purity_all_threshold",
+        type=float,
+        default=None,
+        help=(
+            "Similarity threshold for CUB all-patches purity evaluation (prototype presence score > threshold). "
+            "If omitted, defaults to 0.5 unless --cub_purity_all_thresholds is provided."
+        ),
+    )
+    parser.add_argument(
+        "--cub_purity_all_thresholds",
+        type=float,
+        nargs="+",
+        default=None,
+        help=(
+            "Optional list of similarity thresholds for CUB all-patches purity sweep. "
+            "Example: --cub_purity_all_thresholds 0.1 0.2 0.3 0.4 0.5"
+        ),
+    )
+    parser.add_argument(
         "--freeze_epochs",
         type=int,
         default=10,
@@ -326,6 +345,21 @@ def get_args() -> argparse.Namespace:
 
     if args.protoquant_prune_min_weight < 0:
         raise ValueError("--protoquant_prune_min_weight must be >= 0")
+
+    if args.cub_purity_all_threshold is not None:
+        if args.cub_purity_all_threshold < 0.0 or args.cub_purity_all_threshold > 1.0:
+            raise ValueError("--cub_purity_all_threshold must be in [0, 1]")
+
+    if args.cub_purity_all_thresholds is not None:
+        if len(args.cub_purity_all_thresholds) == 0:
+            raise ValueError(
+                "--cub_purity_all_thresholds must contain at least one value"
+            )
+        for th in args.cub_purity_all_thresholds:
+            if th < 0.0 or th > 1.0:
+                raise ValueError(
+                    "All values in --cub_purity_all_thresholds must be in [0, 1]"
+                )
 
     return args
 

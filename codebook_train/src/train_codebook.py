@@ -118,13 +118,29 @@ def prepare_codebook_training(
     )
     logger.info(f"Model with codebook: {model_with_codebook}")
 
-    # Change to DistributedDataParallel
-    model_with_codebook = nn.parallel.DistributedDataParallel(
-        model_with_codebook,
-        device_ids=[device.index],
-        output_device=device.index,
-        broadcast_buffers=True,
+    trainable_param_count = sum(
+        parameter.numel()
+        for parameter in model_with_codebook.parameters()
+        if parameter.requires_grad
     )
+
+    if trainable_param_count == 0:
+        raise RuntimeError(
+            "No trainable parameters found in model_with_codebook. "
+            "Update configuration so at least one parameter requires gradients "
+            "(e.g. set training.unfreeze_before>0 or use a learnable/EMA codebook)."
+        )
+
+    # Wrap with DDP only for true multi-process runs
+    if cfg.distributed.world_size > 1:
+        model_with_codebook = nn.parallel.DistributedDataParallel(
+            model_with_codebook,
+            device_ids=[device.index],
+            output_device=device.index,
+            broadcast_buffers=True,
+        )
+    else:
+        logger.info("Single-process run detected; skipping DistributedDataParallel.")
 
     optimizer = create_optimizers(
         model=model_with_codebook,

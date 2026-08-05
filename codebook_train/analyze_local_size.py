@@ -1,6 +1,7 @@
 # analyze_local_size.py
 
 import argparse
+import csv
 import logging
 import sys
 from pathlib import Path
@@ -33,6 +34,54 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger(__name__)
+
+
+def _build_val_loader(
+    cfg: PipNetConfig,
+    args: argparse.Namespace,
+) -> torch.utils.data.DataLoader | None:
+    """Build validation dataloader used by evaluation routines.
+
+    Returns None if required dataset arguments are missing.
+    """
+    if not args.dataset_name or not args.dataset_path:
+        logger.error("For evaluation, --dataset-name and --dataset-path are required.")
+        return None
+
+    logger.info(
+        f"Loading validation data for '{args.dataset_name}' from '{args.dataset_path}'"
+    )
+    is_cub = args.dataset_name.lower() == "cub200"
+    transform_mode = (
+        "deit"
+        if args.use_deit_transforms
+        else "raw"
+        if args.use_raw_transforms
+        else "default"
+    )
+    _, val_transform = get_transforms_by_mode(
+        transform_mode,
+        model_name=cfg.model.name,
+        resize_size=224 if is_cub else 256,
+        crop_size=None if is_cub else 224,
+        random_erase=None,
+        horizontal_flip=None,
+        is_precropped=is_cub,
+        autoaugment=False,
+    )
+    _, val_ds = get_dataset(
+        name=args.dataset_name,
+        train_transform=val_transform,  # pass a valid transform (train set unused here)
+        val_transform=val_transform,
+        path=args.dataset_path,
+    )
+    return torch.utils.data.DataLoader(
+        val_ds,
+        batch_size=args.batch_size,
+        shuffle=False,
+        num_workers=args.num_workers,
+        pin_memory=True,
+    )
 
 
 def print_local_size_report(
@@ -180,6 +229,104 @@ def evaluate_with_top_k_prototypes(
     return results, unique_protos_counts, avg_local_sizes
 
 
+@torch.no_grad()
+def evaluate_causal_remove_top_active(
+    model: ProtoQuantNet,
+    val_loader: torch.utils.data.DataLoader,
+    remove_k_list: list[int],
+    device: torch.device,
+) -> dict[int, dict[str, float]]:
+    """Evaluate per-sample causal ablation by removing top active prototypes.
+
+    For each sample, this removes (sets to zero) the top-k entries from
+    `pooled_proto_scores` before classification and measures accuracy drop.
+
+    Args:
+        model: ProtoQuant model.
+        val_loader: Validation dataloader.
+        remove_k_list: List of per-sample top-k removals.
+        device: Execution device.
+
+    Returns:
+        Dictionary keyed by k with top1/top5 accuracies and drops vs baseline.
+    """
+    model.eval()
+
+    ks = sorted(set(remove_k_list))
+    if any(k < 0 for k in ks):
+        raise ValueError("All values in remove_k_list must be >= 0")
+
+    total = 0
+    baseline_top1 = 0
+    baseline_top5 = 0
+
+    top1_counts = {k: 0 for k in ks}
+    top5_counts = {k: 0 for k in ks}
+
+    num_prototypes = int(model.num_prototypes)
+
+    for images, labels in val_loader:
+        images = images.to(device, non_blocking=True)
+        labels = labels.to(device, non_blocking=True)
+
+        out = model(images, return_similarity_map=False)
+        pooled = out.pooled_proto_scores
+        logits = out.logits
+
+        batch_size = labels.shape[0]
+        total += int(batch_size)
+        k5 = min(5, logits.shape[1])
+
+        # Baseline metrics
+        baseline_top1 += int((logits.argmax(dim=1) == labels).sum().item())
+        baseline_top5 += int(
+            (logits.topk(k5, dim=1).indices == labels.unsqueeze(1))
+            .any(dim=1)
+            .sum()
+            .item()
+        )
+
+        # Causal ablations for each k
+        for k in ks:
+            if k == 0:
+                ablated_logits = logits
+            else:
+                effective_k = min(k, num_prototypes)
+                top_idx = torch.topk(pooled, k=effective_k, dim=1).indices
+                pooled_ablated = pooled.clone()
+                pooled_ablated.scatter_(1, top_idx, 0.0)
+                ablated_logits = model.classifier(pooled_ablated)
+
+            top1_counts[k] += int((ablated_logits.argmax(dim=1) == labels).sum().item())
+            top5_counts[k] += int(
+                (ablated_logits.topk(k5, dim=1).indices == labels.unsqueeze(1))
+                .any(dim=1)
+                .sum()
+                .item()
+            )
+
+    if total == 0:
+        raise RuntimeError("Validation loader is empty, cannot compute causal metrics")
+
+    baseline_top1_acc = 100.0 * baseline_top1 / total
+    baseline_top5_acc = 100.0 * baseline_top5 / total
+
+    results: dict[int, dict[str, float]] = {}
+    for k in ks:
+        top1_acc = 100.0 * top1_counts[k] / total
+        top5_acc = 100.0 * top5_counts[k] / total
+        results[k] = {
+            "top1": top1_acc,
+            "top5": top5_acc,
+            "drop_top1": baseline_top1_acc - top1_acc,
+            "drop_top5": baseline_top5_acc - top5_acc,
+            "baseline_top1": baseline_top1_acc,
+            "baseline_top5": baseline_top5_acc,
+        }
+
+    return results
+
+
 def plot_results(
     results: dict[str | int, float],
     unique_protos: dict[str | int, int],
@@ -318,6 +465,12 @@ def analyze_prototypes(cfg: PipNetConfig, args: argparse.Namespace) -> None:
         local_sizes=local_sizes,
     )
 
+    val_loader: torch.utils.data.DataLoader | None = None
+    if args.eval_top_k or args.causal_remove_top_k:
+        val_loader = _build_val_loader(cfg, args)
+        if val_loader is None:
+            return
+
     if args.eval_top_k:
         print("\n" + "=" * 70)
         print(" " * 18 + "Top-K Prototype Evaluation")
@@ -332,53 +485,10 @@ def analyze_prototypes(cfg: PipNetConfig, args: argparse.Namespace) -> None:
             )
             return
 
-        # 2. Setup dataset and dataloader for validation
-        if not args.dataset_name or not args.dataset_path:
-            logger.error(
-                "For top-k evaluation, --dataset-name and --dataset-path are required."
-            )
-            return
-
-        logger.info(
-            f"Loading validation data for '{args.dataset_name}' from '{args.dataset_path}'"
-        )
-        # Match training transform logic using the unified selector
-        is_cub = args.dataset_name.lower() == "cub200"
-        transform_mode = (
-            "deit"
-            if args.use_deit_transforms
-            else "raw"
-            if args.use_raw_transforms
-            else "default"
-        )
-        _, val_transform = get_transforms_by_mode(
-            transform_mode,
-            model_name=cfg.model.name,
-            resize_size=224 if is_cub else 256,
-            crop_size=None if is_cub else 224,
-            random_erase=None,
-            horizontal_flip=None,
-            is_precropped=is_cub,
-            autoaugment=False,
-        )
-        _, val_ds = get_dataset(
-            name=args.dataset_name,
-            train_transform=val_transform,  # pass a valid transform (train set unused here)
-            val_transform=val_transform,
-            path=args.dataset_path,
-        )
-        val_loader = torch.utils.data.DataLoader(
-            val_ds,
-            batch_size=args.batch_size,
-            shuffle=False,
-            num_workers=args.num_workers,
-            pin_memory=True,
-        )
-
         # 3. Run the core evaluation function
         results, unique_protos, avg_local_sizes = evaluate_with_top_k_prototypes(
             model=model,
-            val_loader=val_loader,
+            val_loader=val_loader,  # type: ignore[arg-type]
             top_k_list=top_k_list,
             device=device,
             threshold=args.threshold,
@@ -399,6 +509,69 @@ def analyze_prototypes(cfg: PipNetConfig, args: argparse.Namespace) -> None:
         print("=" * 70 + "\n")
 
         plot_results(results, unique_protos, model.num_prototypes, output_dir)
+
+    if args.causal_remove_top_k:
+        print("\n" + "=" * 70)
+        print(" " * 11 + "Causal Study: Remove Most Active Prototypes")
+        print("=" * 70)
+
+        try:
+            remove_k_list = sorted(
+                set(int(k.strip()) for k in args.causal_remove_top_k.split(","))
+            )
+        except ValueError:
+            logger.error(
+                "Invalid format for --causal-remove-top-k. Please use comma-separated integers (e.g., '1,3,5')."
+            )
+            return
+
+        causal_results = evaluate_causal_remove_top_active(
+            model=model,
+            val_loader=val_loader,  # type: ignore[arg-type]
+            remove_k_list=remove_k_list,
+            device=device,
+        )
+
+        print("\n" + "-" * 90)
+        print(
+            f"{'Removed top-k/sample':<25} | {'Top1 (%)':<12} | {'Drop Top1 (pp)':<16} | {'Top5 (%)':<12} | {'Drop Top5 (pp)':<16}"
+        )
+        print("-" * 90)
+        for k in remove_k_list:
+            row = causal_results[k]
+            print(
+                f"{k:<25} | {row['top1']:<12.2f} | {row['drop_top1']:<16.2f} | {row['top5']:<12.2f} | {row['drop_top5']:<16.2f}"
+            )
+        print("=" * 90 + "\n")
+
+        csv_path = output_dir / args.causal_output_csv
+        with csv_path.open("w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(
+                [
+                    "removed_top_k",
+                    "top1",
+                    "drop_top1_pp",
+                    "top5",
+                    "drop_top5_pp",
+                    "baseline_top1",
+                    "baseline_top5",
+                ]
+            )
+            for k in remove_k_list:
+                row = causal_results[k]
+                writer.writerow(
+                    [
+                        k,
+                        f"{row['top1']:.6f}",
+                        f"{row['drop_top1']:.6f}",
+                        f"{row['top5']:.6f}",
+                        f"{row['drop_top5']:.6f}",
+                        f"{row['baseline_top1']:.6f}",
+                        f"{row['baseline_top5']:.6f}",
+                    ]
+                )
+        logger.info(f"Saved causal ablation results to: {csv_path}")
 
 
 def main():
@@ -455,6 +628,19 @@ def main():
         default=None,
         help="If provided, evaluates the model using only the top K prototypes per class. "
         "Provide a comma-separated list of integers, e.g., '5,10,15,20,50'.",
+    )
+    eval_group.add_argument(
+        "--causal-remove-top-k",
+        type=str,
+        default=None,
+        help="If provided, performs per-sample causal ablation by removing each sample's top-k most active prototypes. "
+        "Provide comma-separated integers, e.g., '1,3,5'.",
+    )
+    eval_group.add_argument(
+        "--causal-output-csv",
+        type=str,
+        default="causal_top_active_removal.csv",
+        help="Filename for causal study CSV output (saved under --output-dir).",
     )
     eval_group.add_argument(
         "--dataset-name",

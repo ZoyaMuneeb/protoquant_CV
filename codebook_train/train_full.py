@@ -45,6 +45,7 @@ from src.training import train_epoch, validate_epoch
 
 # Import data loading functions from the new 'datasets' package
 from src.models.deit import deit_small_patch16_224
+from src.models.convnext_stride import convnext_tiny_26
 import timm
 import logging
 
@@ -53,6 +54,56 @@ from src.distributed_utils import create_samplers
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def _load_checkpoint_flexible(model: nn.Module, checkpoint_path: Path) -> None:
+    """Load checkpoint into model with shape-safe fallback.
+
+    This enables fine-tuning from checkpoints trained with different class counts
+    by dropping incompatible head/classifier tensors.
+    """
+
+    logger.info(f"Loading checkpoint from {checkpoint_path}...")
+    checkpoint = torch.load(checkpoint_path, map_location="cpu")
+    state_dict = checkpoint.get("state_dict", checkpoint)
+
+    # Strip common wrappers (DDP / nested model)
+    cleaned_state_dict = {}
+    for key, value in state_dict.items():
+        new_key = key
+        if new_key.startswith("module."):
+            new_key = new_key[len("module.") :]
+        if new_key.startswith("model."):
+            new_key = new_key[len("model.") :]
+        cleaned_state_dict[new_key] = value
+
+    model_state = model.state_dict()
+    dropped = []
+    for key in list(cleaned_state_dict.keys()):
+        if (
+            key in model_state
+            and cleaned_state_dict[key].shape != model_state[key].shape
+        ):
+            dropped.append(
+                (
+                    key,
+                    tuple(cleaned_state_dict[key].shape),
+                    tuple(model_state[key].shape),
+                )
+            )
+            del cleaned_state_dict[key]
+
+    if dropped:
+        logger.warning(
+            "Dropping mismatched checkpoint tensors (likely classifier/head):"
+        )
+        for key, src_shape, dst_shape in dropped:
+            logger.warning(f"  - {key}: ckpt{src_shape} -> model{dst_shape}")
+
+    missing, unexpected = model.load_state_dict(cleaned_state_dict, strict=False)
+    logger.info(
+        f"Checkpoint loaded with strict=False | missing={len(missing)} unexpected={len(unexpected)}"
+    )
 
 
 class ViTWithGAP(nn.Module):
@@ -205,6 +256,9 @@ def main(args):
     if args.model_name == "convnext_tiny":
         model = models.convnext_tiny(weights=models.ConvNeXt_Tiny_Weights.IMAGENET1K_V1)
         model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, num_classes)
+    elif args.model_name == "convnext_tiny_26":
+        model = convnext_tiny_26(weights=models.ConvNeXt_Tiny_Weights.IMAGENET1K_V1)
+        model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, num_classes)
     elif args.model_name == "convnext_large":
         model = models.convnext_large(
             weights=models.ConvNeXt_Large_Weights.IMAGENET1K_V1
@@ -269,6 +323,10 @@ def main(args):
         )
     else:
         raise ValueError(f"Unsupported model: {args.model_name}")
+
+    # Generic fine-tuning checkpoint load for non-ViT branches
+    if args.load_checkpoint and args.model_name not in {"vit_b_16", "vit_b_16_timm"}:
+        _load_checkpoint_flexible(model, args.load_checkpoint)
 
     # Optionally freeze backbone (train only classification head)
     if args.freeze_backbone:

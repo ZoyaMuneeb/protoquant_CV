@@ -54,6 +54,9 @@ def create_optimizers(
         param for param in model.parameters() if param.requires_grad
     ]
     codebook.requires_grad_(True)
+    codebook_grad_parameters = [
+        param for param in codebook.parameters() if param.requires_grad
+    ]
 
     optimizers = []
     if base_grad_parameters:
@@ -63,10 +66,21 @@ def create_optimizers(
         )
         optimizers.append(base_optimizer)
 
-    codebook_optimizer = hydra.utils.instantiate(
-        cfg.codebook_optimizer, codebook.parameters()
-    )
-    optimizers.append(codebook_optimizer)
+    if codebook_grad_parameters:
+        codebook_optimizer = hydra.utils.instantiate(
+            cfg.codebook_optimizer, codebook_grad_parameters
+        )
+        optimizers.append(codebook_optimizer)
+    else:
+        logger.info(
+            "Codebook has no trainable parameters; skipping codebook optimizer."
+        )
+
+    if not optimizers:
+        raise RuntimeError(
+            "No optimizers were created because no parameters require gradients. "
+            "Check training.unfreeze_before and codebook learnability settings."
+        )
 
     return optimizers
 

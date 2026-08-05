@@ -25,6 +25,29 @@ from typing import Any, Optional, Dict
 logger = logging.getLogger(__name__)
 
 
+def _normalize_thresholds(args) -> list[float]:
+    """Return sorted unique thresholds for CUB all-patches purity evaluation."""
+
+    thresholds_raw = getattr(args, "cub_purity_all_thresholds", None)
+    single_threshold = getattr(args, "cub_purity_all_threshold", None)
+
+    if thresholds_raw is not None and len(thresholds_raw) > 0:
+        thresholds = [float(t) for t in thresholds_raw]
+    elif single_threshold is not None:
+        thresholds = [float(single_threshold)]
+    else:
+        thresholds = [0.5]
+
+    unique_sorted = sorted(set(round(t, 6) for t in thresholds))
+    return unique_sorted
+
+
+def _threshold_token(threshold: float) -> str:
+    """Make a stable token for metric/log naming (e.g., 0.1 -> 0p1)."""
+
+    return f"{threshold:g}".replace(".", "p")
+
+
 def _maybe_init_wandb(args) -> Any:
     """Initialize a W&B run if enabled; otherwise return None.
 
@@ -865,7 +888,7 @@ def _run_postrun_evals(
         parts_loc_path = os.path.join(project_path, "parts/part_locs.txt")
         parts_name_path = os.path.join(project_path, "parts/parts.txt")
         imgs_id_path = os.path.join(project_path, "images.txt")
-        cubthreshold = 0.5
+        cub_thresholds = _normalize_thresholds(args)
 
         net.eval()
         logger.info("\n\nEvaluating cub prototypes for training set")
@@ -887,28 +910,41 @@ def _run_postrun_evals(
                 {f"purity/train_topk/{k}": v for k, v in purity_train_topk.items()},
             )
 
-        csvfile_all = get_proto_patches_cub(
-            net,
-            projectloader,
-            "train_all_" + str(epoch),
-            device,
-            args,
-            threshold=cubthreshold,
+        logger.info(
+            "Evaluating CUB all-patches purity for thresholds: %s",
+            cub_thresholds,
         )
-        purity_train_all = eval_prototypes_cub_parts_csv(
-            csvfile_all,
-            parts_loc_path,
-            parts_name_path,
-            imgs_id_path,
-            "train_all_thres" + str(cubthreshold) + "_" + str(epoch),
-            args,
-            log,
-        )
-        if purity_train_all:
-            _wandb_log(
-                wandb_run,
-                {f"purity/train_all/{k}": v for k, v in purity_train_all.items()},
+        for cubthreshold in cub_thresholds:
+            threshold_token = _threshold_token(cubthreshold)
+            all_epoch_tag = f"train_all_thres{threshold_token}_{epoch}"
+            csvfile_all = get_proto_patches_cub(
+                net,
+                projectloader,
+                all_epoch_tag,
+                device,
+                args,
+                threshold=cubthreshold,
             )
+            purity_train_all = eval_prototypes_cub_parts_csv(
+                csvfile_all,
+                parts_loc_path,
+                parts_name_path,
+                imgs_id_path,
+                all_epoch_tag,
+                args,
+                log,
+            )
+            if purity_train_all:
+                _wandb_log(
+                    wandb_run,
+                    {
+                        f"purity/train_all/th_{threshold_token}/{k}": v
+                        for k, v in purity_train_all.items()
+                    }
+                    | {
+                        f"purity/train_all/th_{threshold_token}/threshold": cubthreshold
+                    },
+                )
 
         logger.info("\n\nEvaluating cub prototypes for test set")
         csvfile_topk = get_topk_cub(
@@ -928,29 +964,35 @@ def _run_postrun_evals(
                 wandb_run,
                 {f"purity/test_topk/{k}": v for k, v in purity_test_topk.items()},
             )
-        cubthreshold = 0.5
-        csvfile_all = get_proto_patches_cub(
-            net,
-            test_projectloader,
-            "test_" + str(epoch),
-            device,
-            args,
-            threshold=cubthreshold,
-        )
-        purity_test_all = eval_prototypes_cub_parts_csv(
-            csvfile_all,
-            parts_loc_path,
-            parts_name_path,
-            imgs_id_path,
-            "test_all_thres" + str(cubthreshold) + "_" + str(epoch),
-            args,
-            log,
-        )
-        if purity_test_all:
-            _wandb_log(
-                wandb_run,
-                {f"purity/test_all/{k}": v for k, v in purity_test_all.items()},
+        for cubthreshold in cub_thresholds:
+            threshold_token = _threshold_token(cubthreshold)
+            all_epoch_tag = f"test_all_thres{threshold_token}_{epoch}"
+            csvfile_all = get_proto_patches_cub(
+                net,
+                test_projectloader,
+                all_epoch_tag,
+                device,
+                args,
+                threshold=cubthreshold,
             )
+            purity_test_all = eval_prototypes_cub_parts_csv(
+                csvfile_all,
+                parts_loc_path,
+                parts_name_path,
+                imgs_id_path,
+                all_epoch_tag,
+                args,
+                log,
+            )
+            if purity_test_all:
+                _wandb_log(
+                    wandb_run,
+                    {
+                        f"purity/test_all/th_{threshold_token}/{k}": v
+                        for k, v in purity_test_all.items()
+                    }
+                    | {f"purity/test_all/th_{threshold_token}/threshold": cubthreshold},
+                )
 
     # visualize predictions
     visualize(net, projectloader, len(classes), device, "visualised_prototypes", args)

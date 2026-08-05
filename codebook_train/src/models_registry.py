@@ -20,6 +20,13 @@ def convnext_tiny(**kwargs):
 
 
 @register_model
+def convnext_tiny_26(**kwargs):
+    from src.models.convnext_stride import convnext_tiny_26 as build_convnext_tiny_26
+
+    return build_convnext_tiny_26(**kwargs)
+
+
+@register_model
 def convnext_large(**kwargs):
     return models.convnext_large(**kwargs)
 
