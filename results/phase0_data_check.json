@@ -1,0 +1,62 @@
+{
+  "checks": {
+    "official counts": {
+      "ok": true,
+      "detail": "total=11788 train=5994 test=5794"
+    },
+    "200 classes": {
+      "ok": true,
+      "detail": ""
+    },
+    "all crops present": {
+      "ok": true,
+      "detail": "missing=0"
+    },
+    "crop size == bbox size, RGB": {
+      "ok": true,
+      "detail": "mismatches=0 examples=[]"
+    },
+    "split covers all images": {
+      "ok": true,
+      "detail": ""
+    },
+    "test == official test": {
+      "ok": true,
+      "detail": ""
+    },
+    "val stratified (3 per class, 600 total)": {
+      "ok": true,
+      "detail": "val=600 per-class min=3 max=3"
+    },
+    "split regenerates bit-identically": {
+      "ok": true,
+      "detail": ""
+    },
+    "loader protocol=paper": {
+      "ok": true,
+      "detail": "train=5994 val_loader=5794 (test)"
+    },
+    "loader protocol=strict": {
+      "ok": true,
+      "detail": "train=5394 val_loader=600 (val)"
+    },
+    "strict: train/val/test disjoint and complete": {
+      "ok": true,
+      "detail": ""
+    },
+    "strict val sample loads": {
+      "ok": true,
+      "detail": ""
+    }
+  },
+  "crops_smaller_than_32px": 0,
+  "bbox_size_stats": {
+    "w_median": 248,
+    "h_median": 222,
+    "w_min": 100,
+    "h_min": 100
+  },
+  "split_file": "splits/cub200_val10_seed0.txt",
+  "split_sha256": "7e837cd64683c06a25e415fd478bbdce69dd5cfad2160b606f357f07ee1d0eaf",
+  "passed": true
+}
