@@ -18,7 +18,11 @@ mkdir -p "${TIMING_ROOT}"
 gpu_check | tee "${TIMING_ROOT}/gpu.txt"
 
 is_oom() { grep -qiE "out of memory|OutOfMemoryError" "$1/train.log" 2>/dev/null; }
-n_epochs() { grep -cE "Epoch: [0-9]+|--- Epoch [0-9]+/" "$1/train.log" 2>/dev/null || echo 0; }
+n_epochs() {  # grep -c prints 0 AND exits 1 when nothing matches; print exactly one number
+    local c
+    c=$(grep -cE "Epoch: [0-9]+|--- Epoch [0-9]+/" "$1/train.log" 2>/dev/null) || true
+    echo "${c:-0}"
+}
 
 try_batches() {  # try_batches <script> <name> <batches...>; prints the run dir that worked
     local script=$1 name=$2; shift 2
