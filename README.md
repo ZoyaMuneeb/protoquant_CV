@@ -79,7 +79,8 @@ bash scripts/phase0_timing.sh
 ```
 
 Short (3-epoch) runs of the backbone fine-tune, Stage 1 at 4,096 and 8,192 codes, and Stage 2, trying
-batch sizes from largest to smallest until one fits. Writes `results/phase0_timing.csv` (seconds per epoch,
+batch sizes from largest to smallest until one fits (Stage 1/2 start at the paper's 1024, then 512, 256, 128;
+the backbone starts at 256). Writes `results/phase0_timing.csv` (seconds per epoch,
 peak GPU memory) and `results/phase0_budget.md` (GPU-hour budget for the full run list).
 To reuse an existing backbone: `BACKBONE_CKPT=/path/backbone.pth bash scripts/phase0_timing.sh`.
 
