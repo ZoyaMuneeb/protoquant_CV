@@ -140,3 +140,4 @@ batch 512 is the fallback and must be recorded in the change log.
 | 2026-11-15 | Protocol frozen | |
 | 2026-11-16 | Section 9 filled: Stage 1/2 at batch 1,024 / lr 0.05 (the paper's setting, replacing "one size that fits"); backbone at batch 128 | Phase 0 timing on the team GPU; set before any pruning run |
 | 2026-11-16 | Data-loader workers 8 → 4 (train) / 2 (val) | Batch 1,024 with 8 workers exhausted host RAM (process SIGKILLed); changes loading speed only |
+| 2026-11-16 | Stage 2 and B0 validation loaders keep the last incomplete batch (`drop_last=False`, as Stage 1 already did) | With 600 validation images and batch 1,024 the repository default dropped every validation image, so no Stage 2 checkpoint would be selected. Bug fix found before any Phase 1 run; no results affected |

@@ -17,7 +17,7 @@ This repository is built on the official ProtoQuant code
 | Phase | What | State |
 |---|---|---|
 | 0 | Data, split, protocol, environment, GPU timing | **Done** (RTX 5070 Ti; Stage 1/2 at batch 1024; ≈ 33 GPU-hours; backbone val top-1 85.5 %) |
-| 1 | Official pipeline + strict-protocol baseline | Not started |
+| 1 | Official pipeline + strict-protocol baseline | **Scripts ready** ([`scripts/run_phase1.sh`](scripts/run_phase1.sh)); needs the team GPU |
 | 2–5 | Pruning methods, evaluation, ablations, figures | Not started |
 
 The frozen protocol (split, recipe, operating points, metrics, decision criteria) is in
@@ -36,6 +36,10 @@ The frozen protocol (split, recipe, operating points, metrics, decision criteria
   Every run logs a line like `[CUB200] protocol=strict | train loader split='train' (5394 imgs) | validation loader split='val' (600 imgs)`.
 * **No SLURM, no wandb.** The cluster scripts in `slurm/` are replaced by plain shell scripts in
   [`scripts/`](scripts/) (single GPU, `WANDB_MODE=disabled`). The `slurm/` folder is kept for reference.
+* **Stage 2 validates on every image.** The repository's data loaders drop the last incomplete batch,
+  also for validation. With 600 validation images and batch 1024 that would leave no validation batch
+  at all (accuracy 0, no checkpoint saved), so our Stage 1, B0 and Stage 2 scripts set
+  `val_dataloader.drop_last=False`.
 
 ## Requirements
 
@@ -93,28 +97,55 @@ bash scripts/run_backbone_finetune.sh
 ConvNeXt-Tiny from ImageNet weights, 30 epochs, AdamW lr 5e-5, best epoch chosen on the held-out split.
 The checkpoint lands in `../checkpoints/backbone/`. It is then frozen for every later stage.
 
-### 5. Stage 1 codebook and Stage 2 head
+### 5. Phase 1: official pipeline and baseline
+
+One command per protocol. Run the paper-protocol sanity check first (one seed, ~1.5 GPU-hours): it shows
+whether the pipeline lands near the paper's 87.7 %. Then the strict baseline (seeds 40, 41, 42, ~4.5 GPU-hours).
 
 ```bash
-BACKBONE_CKPT=../checkpoints/backbone/<file>.pth CODEBOOK_ENTRIES=4096 SEED=40 BATCH_SIZE=<from timing> bash scripts/run_stage1_codebook.sh
+BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" PROTOCOL=paper bash scripts/run_phase1.sh
 ```
 
 ```bash
-BACKBONE_CKPT=../checkpoints/backbone/<file>.pth CODEBOOK_CKPT=<runs/.../codebook_*.pth> SEED=40 BATCH_SIZE=<from timing> bash scripts/run_stage2_head.sh
+BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" bash scripts/run_phase1.sh
 ```
 
-Each run gets its own folder in `../runs/` with `train.log` (timestamped), `gpu_mem.csv`,
-`protocol.txt` (protocol and split checksum) and the saved weights.
+Per seed, in `../runs/phase1/<protocol>_s<seed>/`:
 
-Useful variables for all scripts: `SEED`, `EPOCHS`, `BATCH_SIZE`, `LR`, `WARMUP_EPOCHS`, `MODEL`,
-and `PQ_CUB_PROTOCOL=paper` for the paper-protocol sanity check.
+| Step | Script | Output |
+|---|---|---|
+| Stage 1: codebook, 4,096 codes, 30 epochs | `run_stage1_codebook.sh` | `stage1/codebook_*.pth` (best val epoch) |
+| B0: prune 4,096 → 3,000 in 8 steps by usage on the validation loader | `run_b0_prune.sh` | `b0/pruned_3000_*.pth`, `b0/b0_check.txt` (Test 4) |
+| Stage 2: ProtoQuant head, 30 epochs | `run_stage2_head.sh` | `stage2/pipnet_*.pth` (best val epoch) |
+| Evaluation: val, then test **once** | `eval_protoquant.py` | `eval/eval_{val,test}.{json,npz}` (per-image predictions) |
+| Tests 1–4 (strict only) | `phase1_tests.py` | `tests/tests.json` |
+
+Also run once: the backbone alone on test (black-box baseline, `backbone_<protocol>/`) and, for strict,
+the fp16 feature cache for train/val/test (`feature_cache/`, ~0.9 GB). The script is resumable: a
+finished step leaves a `DONE` file and is skipped next time; an unfinished step is restarted. Under the
+strict protocol a model's test set can be read only once (a `*.test_read_strict.json` file next to the
+checkpoint records it).
+
+At the end it writes [`results/phase1_baseline.md`](results/phase1_baseline.md): test accuracy per seed
+and mean ± sd, Stage 1 dead-code ratio, B0 accuracy before/after pruning, codebook size, nonzero edges
+and the test results. What to check:
+
+* `b0_check.txt` and Test 4 say **PASS** (B0 counted usage on the 600 validation images, not test).
+* Tests 1 and 3 **PASS**. Test 2 is a measurement: how many validation predictions change when unused
+  codes are physically removed (the paper says none should).
+* Stage 2 `train.log` shows a validation accuracy every epoch, and `stage2/pipnet_*.pth` exists.
+* Paper protocol near 87.7 %; strict may be lower (less training data, honest selection). Report the gap.
+
+The stage scripts can also be run on their own; useful variables: `SEED`, `EPOCHS`, `BATCH_SIZE`, `LR`,
+`WARMUP_EPOCHS`, `MODEL`, `NUM_WORKERS`, and `PQ_CUB_PROTOCOL=paper`.
 
 ## Repository layout
 
 ```
 codebook_train/        official ProtoQuant code (CUB loader patched for the strict protocol)
 docs/                  phase0_protocol.md — frozen protocol and decision rules
-scripts/               SLURM-free run scripts, split generator, data checks, timing/budget
+scripts/               SLURM-free run scripts, split generator, data checks, timing/budget,
+                       Phase 1 driver, B0, evaluation, feature cache, implementation tests
 splits/                fixed CUB validation split (+ summary json)
 results/               check outputs, timing and budget
 slurm/                 original cluster scripts (reference only)

@@ -7,7 +7,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 : "${CODEBOOK_CKPT:?Set CODEBOOK_CKPT (Stage 1 / B0 output)}"
 MODEL="${MODEL:-convnext_tiny}"
 LR="${LR:-0.05}"
-BATCH_SIZE="${BATCH_SIZE:-512}"
+BATCH_SIZE="${BATCH_SIZE:-1024}"  # paper setting; fits the team GPU (Phase 0)
 EPOCHS="${EPOCHS:-30}"
 WARMUP_EPOCHS="${WARMUP_EPOCHS:-5}"
 SEED="${SEED:-42}"
@@ -17,6 +17,7 @@ NUM_WORKERS="${NUM_WORKERS:-4}"
 VAL_WORKERS="${VAL_WORKERS:-2}"
 TRAIN_CODEBOOK="${TRAIN_CODEBOOK:-True}"
 RUN_DIR="${RUN_DIR:-$(new_run_dir "stage2_${PQ_CUB_PROTOCOL}_s${SEED}_bs${BATCH_SIZE}")}"
+rm -f "${RUN_DIR}/ddp_init"  # a stale rendezvous file from a crashed run blocks the next one
 gpu_check | tee "${RUN_DIR}/gpu.txt"
 log_protocol | tee "${RUN_DIR}/protocol.txt"
 MON=$(start_gpu_monitor "${RUN_DIR}/gpu_mem.csv")
@@ -27,6 +28,7 @@ python -u train_protoquant.py \
     epochs="${EPOCHS}" training.enable_schedulers=True training.warmup_epochs="${WARMUP_EPOCHS}" \
     train_dataloader.batch_size="${BATCH_SIZE}" val_dataloader.batch_size="${BATCH_SIZE}" \
     train_dataloader.num_workers="${NUM_WORKERS}" val_dataloader.num_workers="${VAL_WORKERS}" \
+    val_dataloader.drop_last=False \
     dataset=cub200 dataset._path="${CUB_PATH}" dataset.autoaugment=False dataset.use_raw_transforms=False \
     wandb.is_enabled=False seed="${SEED}" \
     distributed.world_size="${WORLD_SIZE}" distributed.init_method="file://${RUN_DIR}/ddp_init" \
