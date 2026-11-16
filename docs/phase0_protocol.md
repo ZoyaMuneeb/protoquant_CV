@@ -48,13 +48,13 @@ the evidence for Test 4 (B0 counts usage on validation, not test).
 |---|---|---|
 | Augmentation | RandomResizedCrop 224, horizontal flip, TrivialAugmentWide, MixUp (α 0.8), CutMix (α 1.0), label smoothing 0.1, ImageNet normalization | Paper App. A.1; repository `transforms.py` |
 | Backbone | torchvision ConvNeXt-Tiny, ImageNet-1k weights, 224 px → 7 × 7 × 768 feature map (49 positions; verified) | |
-| Backbone fine-tune | `train_full.py`, AdamW, lr 5e-5, wd 1e-5, 30 epochs, 5 warm-up, batch 256, seed 42, best epoch on held-out val | `slurm/run_full.sh` |
+| Backbone fine-tune | `train_full.py`, AdamW, lr 5e-5, wd 1e-5, 30 epochs, 5 warm-up, batch 128 (256 does not fit the team GPU), seed 42, best epoch on held-out val | `slurm/run_full.sh` (batch 256) |
 | Backbone after fine-tune | Frozen for all later stages; also the black-box baseline (paper: 88.4 %) | |
 | Stage 1 codebook | cosine codebook, 768-d, **4,096 codes**, orthogonal init, AdamW lr 0.05, 30 epochs, 5 warm-up | Paper A.1; `slurm/run_cosine.sh` |
 | B0 | `prune_codebook.py`: 4,096 → 3,000 codes in 8 steps, usage counted on held-out val | |
 | Stage 2 head | `train_protoquant.py`, learned codes (`use_random_codes=False`), no L1 penalty, AdamW, 30 epochs, 5 warm-up | Paper A.1 |
 | Temperature | softmax(s / T), **T = 0.1** in every main run | Repository |
-| Batch size (Stage 1/2) | One size that fits the team GPU, chosen from Phase 0 timing; one learning rate tested for it, then fixed for every run. Recorded as a deviation from the paper's 1,024. | Methodology |
+| Batch size (Stage 1/2) | **1,024** with lr 0.05, as in the paper; fits the team GPU (Phase 0 timing). Data-loader workers lowered to 4 train / 2 val to stay within host RAM (speed only, no effect on results) | Paper A.1; Phase 0 timing |
 | Logging | wandb disabled; single process (`world_size = 1`) | |
 
 ## 4. Operating points and seeds
@@ -123,13 +123,20 @@ backbone val accuracy, below.
 
 | Item | Value |
 |---|---|
-| GPU | _tbd_ |
-| Stage 1 / Stage 2 batch size, lr | _tbd_ |
-| GPU-hour budget | _tbd_ (see `results/phase0_budget.md`) |
-| Backbone checkpoint, held-out val top-1 | _tbd_ |
+| GPU | NVIDIA GeForce RTX 5070 Ti, 15.9 GiB; torch 2.11.0+cu128 |
+| Stage 1 / Stage 2 batch size, lr | **1,024, lr 0.05** (paper setting), 4 train / 2 val data-loader workers |
+| Measured speed and peak memory (batch 1,024) | Stage 1 @4,096: 63.3 s/epoch, 15.48 GiB; Stage 1 @8,192: 69.4 s/epoch, 15.52 GiB; Stage 2 @4,096: 75.1 s/epoch, 15.53 GiB |
+| GPU-hour budget | **≈ 33 GPU-hours** for the planned runs, ×1.2 overhead (see `results/phase0_budget.md`) |
+| Backbone | Batch 128 (256 ran out of GPU memory), otherwise as in section 3. Best epoch 24, held-out val top-1 **85.5 %** (top-5 95.83 %). Checkpoint `checkpoints/backbone/cub200_convnext_tiny_full_20261116_135156.pth` (outside the repo) |
+
+Peak memory is read from `nvidia-smi` and includes memory PyTorch keeps reserved, so the true need is
+probably lower (an earlier run measured 12.9 GiB for Stage 1). If a later run runs out of GPU memory,
+batch 512 is the fallback and must be recorded in the change log.
 
 ## Change log
 
 | Date | Change | Reason |
 |---|---|---|
 | 2026-11-15 | Protocol frozen | |
+| 2026-11-16 | Section 9 filled: Stage 1/2 at batch 1,024 / lr 0.05 (the paper's setting, replacing "one size that fits"); backbone at batch 128 | Phase 0 timing on the team GPU; set before any pruning run |
+| 2026-11-16 | Data-loader workers 8 → 4 (train) / 2 (val) | Batch 1,024 with 8 workers exhausted host RAM (process SIGKILLed); changes loading speed only |

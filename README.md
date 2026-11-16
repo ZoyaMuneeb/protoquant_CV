@@ -16,7 +16,7 @@ This repository is built on the official ProtoQuant code
 
 | Phase | What | State |
 |---|---|---|
-| 0 | Data, split, protocol, environment, GPU timing | Data, split and protocol done; **timing and backbone fine-tune need the team GPU** |
+| 0 | Data, split, protocol, environment, GPU timing | **Done** (RTX 5070 Ti; Stage 1/2 at batch 1024; ≈ 33 GPU-hours; backbone val top-1 85.5 %) |
 | 1 | Official pipeline + strict-protocol baseline | Not started |
 | 2–5 | Pruning methods, evaluation, ablations, figures | Not started |
 
