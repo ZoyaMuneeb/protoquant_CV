@@ -37,7 +37,7 @@ def parse_run(d: Path) -> dict:
     if not log.is_file():
         return row
     text = log.read_text(errors="ignore")
-    if re.search(r"out of memory|OutOfMemoryError", text, re.I):
+    if re.search(r"out of memory|OutOfMemoryError|signal SIGKILL", text, re.I):
         row["status"] = "OOM"
     stamps = [float(l.split(" ", 1)[0]) for l in text.splitlines() if EPOCH_RE.search(l) and l[:1].isdigit()]
     lines = [l for l in text.splitlines() if l[:1].isdigit()]

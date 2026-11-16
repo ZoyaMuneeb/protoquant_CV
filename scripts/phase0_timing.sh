@@ -17,7 +17,8 @@ TIMING_ROOT="${RUNS_ROOT}/phase0_timing_$(date +%Y%m%d_%H%M%S)"
 mkdir -p "${TIMING_ROOT}"
 gpu_check | tee "${TIMING_ROOT}/gpu.txt"
 
-is_oom() { grep -qiE "out of memory|OutOfMemoryError" "$1/train.log" 2>/dev/null; }
+# GPU out-of-memory, or the OS killing the process for host RAM (SIGKILL): try the next batch size.
+is_oom() { grep -qiE "out of memory|OutOfMemoryError|signal SIGKILL" "$1/train.log" 2>/dev/null; }
 n_epochs() {  # grep -c prints 0 AND exits 1 when nothing matches; print exactly one number
     local c
     c=$(grep -cE "Epoch: [0-9]+|--- Epoch [0-9]+/" "$1/train.log" 2>/dev/null) || true
@@ -31,7 +32,7 @@ try_batches() {  # try_batches <script> <name> <batches...>; prints the run dir 
         echo ">>> ${name} batch=${bs}" >&2
         RUN_DIR="$d" BATCH_SIZE="$bs" EPOCHS="${TIME_EPOCHS}" WARMUP_EPOCHS=1 \
             bash "${REPO_ROOT}/scripts/${script}" >/dev/null 2>&1 || true
-        if is_oom "$d"; then echo "    OOM at batch ${bs}" >&2; continue; fi
+        if is_oom "$d"; then echo "    out of memory (GPU or host RAM) at batch ${bs}" >&2; continue; fi
         if [ "$(n_epochs "$d")" -lt "${TIME_EPOCHS}" ]; then
             echo "    ${name} failed (not OOM); last log lines:" >&2; tail -n 15 "$d/train.log" >&2 || true
             return 1

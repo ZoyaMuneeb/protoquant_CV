@@ -10,6 +10,10 @@ BATCH_SIZE="${BATCH_SIZE:-512}"
 EPOCHS="${EPOCHS:-30}"
 WARMUP_EPOCHS="${WARMUP_EPOCHS:-5}"
 SEED="${SEED:-42}"
+# Data-loader worker processes. Each keeps 2 batches in RAM: at batch 1024 one batch is ~0.6 GB,
+# so 8 workers (the repo default) queue ~10 GB of images and can exhaust host RAM. Speed only, not results.
+NUM_WORKERS="${NUM_WORKERS:-4}"
+VAL_WORKERS="${VAL_WORKERS:-2}"
 RUN_DIR="${RUN_DIR:-$(new_run_dir "stage1_${PQ_CUB_PROTOCOL}_K${CODEBOOK_ENTRIES}_s${SEED}_bs${BATCH_SIZE}")}"
 gpu_check | tee "${RUN_DIR}/gpu.txt"
 log_protocol | tee "${RUN_DIR}/protocol.txt"
@@ -21,6 +25,7 @@ python -u train_codebook.py \
     epochs="${EPOCHS}" training.enable_schedulers=True training.warmup_epochs="${WARMUP_EPOCHS}" \
     training.compile_model=False \
     train_dataloader.batch_size="${BATCH_SIZE}" val_dataloader.batch_size="${BATCH_SIZE}" \
+    train_dataloader.num_workers="${NUM_WORKERS}" val_dataloader.num_workers="${VAL_WORKERS}" \
     val_dataloader.drop_last=False \
     codebook=cosine codebook.embedding_dim=768 codebook.num_entries="${CODEBOOK_ENTRIES}" \
     codebook_optimizer=adamw codebook_optimizer.lr="${LR}" base_optimizer=adamw base_optimizer.lr="${LR}" \

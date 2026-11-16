@@ -11,6 +11,10 @@ BATCH_SIZE="${BATCH_SIZE:-512}"
 EPOCHS="${EPOCHS:-30}"
 WARMUP_EPOCHS="${WARMUP_EPOCHS:-5}"
 SEED="${SEED:-42}"
+# Data-loader worker processes. Each keeps 2 batches in RAM: at batch 1024 one batch is ~0.6 GB,
+# so 8 workers (the repo default) queue ~10 GB of images and can exhaust host RAM. Speed only, not results.
+NUM_WORKERS="${NUM_WORKERS:-4}"
+VAL_WORKERS="${VAL_WORKERS:-2}"
 TRAIN_CODEBOOK="${TRAIN_CODEBOOK:-True}"
 RUN_DIR="${RUN_DIR:-$(new_run_dir "stage2_${PQ_CUB_PROTOCOL}_s${SEED}_bs${BATCH_SIZE}")}"
 gpu_check | tee "${RUN_DIR}/gpu.txt"
@@ -22,6 +26,7 @@ python -u train_protoquant.py \
     model.name="${MODEL}" model.checkpoint_path="${BACKBONE_CKPT}" model.global_pool="" pipnet_checkpoint_path="" \
     epochs="${EPOCHS}" training.enable_schedulers=True training.warmup_epochs="${WARMUP_EPOCHS}" \
     train_dataloader.batch_size="${BATCH_SIZE}" val_dataloader.batch_size="${BATCH_SIZE}" \
+    train_dataloader.num_workers="${NUM_WORKERS}" val_dataloader.num_workers="${VAL_WORKERS}" \
     dataset=cub200 dataset._path="${CUB_PATH}" dataset.autoaugment=False dataset.use_raw_transforms=False \
     wandb.is_enabled=False seed="${SEED}" \
     distributed.world_size="${WORLD_SIZE}" distributed.init_method="file://${RUN_DIR}/ddp_init" \
