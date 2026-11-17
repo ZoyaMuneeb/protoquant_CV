@@ -17,8 +17,9 @@ This repository is built on the official ProtoQuant code
 | Phase | What | State |
 |---|---|---|
 | 0 | Data, split, protocol, environment, GPU timing | **Done** (RTX 5070 Ti; Stage 1/2 at batch 1024; ≈ 33 GPU-hours; backbone val top-1 85.5 %) |
-| 1 | Official pipeline + strict-protocol baseline | **Scripts ready** ([`scripts/run_phase1.sh`](scripts/run_phase1.sh)); needs the team GPU |
-| 2–5 | Pruning methods, evaluation, ablations, figures | Not started |
+| 1 | Official pipeline + strict-protocol baseline | **Done**: strict 84.43 ± 0.33 % (3 seeds), paper protocol 84.74 %, backbone 84.05 %; Tests 1–4 pass |
+| 2 | Pruning methods (B1, B2, random, P1, P1-contrast, P3) + deletion-effect control | **Scripts ready** ([`scripts/run_phase2.sh`](scripts/run_phase2.sh)) |
+| 3–5 | Evaluation, ablations, figures | Not started (Phase 2 summary already applies the Phase 3 decision rules) |
 
 The frozen protocol (split, recipe, operating points, metrics, decision criteria) is in
 [docs/phase0_protocol.md](docs/phase0_protocol.md). Read it before running anything.
@@ -138,6 +139,32 @@ and the test results. What to check:
 
 The stage scripts can also be run on their own; useful variables: `SEED`, `EPOCHS`, `BATCH_SIZE`, `LR`,
 `WARMUP_EPOCHS`, `MODEL`, `NUM_WORKERS`, and `PQ_CUB_PROTOCOL=paper`.
+
+### 6. Phase 2: pruning methods
+
+Runs on the Phase 1 strict checkpoints (seeds 40–42) and the feature cache; strict protocol only.
+
+```bash
+BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" STAGES=masking bash scripts/run_phase2.sh
+```
+
+```bash
+BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" bash scripts/run_phase2.sh
+```
+
+The first command is the one-shot comparison only (a few minutes, no training). The second adds the
+retrained models (21 runs, about 0.6 GPU-hours each, ~12 GPU-hours).
+
+| Stage | What | Output in `../runs/phase2/strict_s<seed>/` |
+|---|---|---|
+| masking | Masks for B1, random, P1, P1-contrast, P3 at K = 5, 10, 20 from the dense head (all scores on ReLU(W); P1 statistics from the training split); val + test accuracy with no retraining | `masking/results.json`, `masks.pt`, `test_preds.npz` |
+| masking | Deletion-effect control: 100 edges removed one at a time, Spearman ρ of real damage vs magnitude, P1, P1-contrast | `masking/deletion.json` |
+| retrain | B2 (B1 mask) at K = 5, 10, 20 and P1, P3, random, P1-contrast at K = 10: unused codes removed, then the Stage 2 recipe for 30 epochs with the mask held fixed, best val epoch, test read once | `retrain/<method>_K<k>/` |
+
+Change the retrained set with `RETRAIN_SPECS` (default `B1_K10 P1_K10 P3_K10 random_K10 P1contrast_K10 B1_K5 B1_K20`).
+[`results/phase2_results.md`](results/phase2_results.md) has, per K: test accuracy (mean ± sd), the
+difference to B1 (one-shot) or B2 (retrained) with its 95 % paired-bootstrap interval and per-seed signs,
+the verdict under the fixed rules, edges and active codes, and the deletion-effect correlations.
 
 ## Repository layout
 
