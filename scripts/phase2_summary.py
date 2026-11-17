@@ -83,7 +83,7 @@ def main() -> None:
     args = ap.parse_args()
     root = Path(args.phase2_root)
 
-    rows, correct, retrain_rows, deletion, ref_ids = {}, {}, {}, {}, None
+    rows, correct, retrain_rows, iter_rows, deletion, ref_ids = {}, {}, {}, {}, {}, None
     seeds = sorted(int(d.name.split("_s")[1]) for d in root.glob("strict_s*") if d.is_dir())
     for s in seeds:
         d = root / f"strict_s{s}"
@@ -112,11 +112,26 @@ def main() -> None:
             retrain_rows[(s, key)] = {**rj, "test_top1": et["top1"], "val_top1": ev.get("top1"),
                                       "nonzero_edges": et.get("nonzero_edges"), "codes": et.get("codebook_entries")}
             z = np.load(rd / "eval_test.npz")
-            if ref_ids is not None and not np.array_equal(z["img_ids"], ref_ids):
+            ref_ids = z["img_ids"] if ref_ids is None else ref_ids
+            if not np.array_equal(z["img_ids"], ref_ids):
                 raise SystemExit(f"test image order differs in {rd}")
             correct[(s, key)] = z["preds"] == z["labels"]
+        for rd in sorted((d / "iterative").glob("*_K*")):
+            fin = rd / "final"
+            it, rj, et = load(rd / "iterative.json"), load(fin / "retrain.json"), load(fin / "eval_test.json")
+            if not et:
+                continue
+            key = "IT_" + rd.name
+            iter_rows[(s, key)] = {"rounds": it.get("rounds"), "total_epochs": it.get("round_training_epochs", 0) + rj.get("epochs", 0),
+                                   "best_val_top1": rj.get("best_val_top1"), "test_top1": et["top1"],
+                                   "codes": et.get("codebook_entries"), "nonzero_edges": et.get("nonzero_edges")}
+            z = np.load(fin / "eval_test.npz")
+            ref_ids = z["img_ids"] if ref_ids is None else ref_ids
+            if not np.array_equal(z["img_ids"], ref_ids):
+                raise SystemExit(f"test image order differs in {fin}")
+            correct[(s, key)] = z["preds"] == z["labels"]
 
-    ks = sorted({r["K"] for (s, k), r in rows.items() if r.get("K")})
+    ks =sorted({r["K"] for (s, k), r in rows.items() if r.get("K")})
     md = ["# Phase 2 results", "",
           f"Seeds: {', '.join(map(str, seeds))}. Test top-1 is mean ± sd over seeds. Δ = method − reference "
           "(points), with the 95 % paired-bootstrap interval over test images (10,000 resamples, correctness "
@@ -168,6 +183,39 @@ def main() -> None:
                     f"{ms([r['val_before_retraining'] for r in rs])} → {ms([r['best_val_top1'] for r in rs])} | "
                     f"{ms([r['test_top1'] for r in rs])} | {cells(c)} |")
                 summary["retrained"][key] = {"rows": rs, "vs_B2": c}
+        md.append("")
+
+    ikeys = sorted({k for (s, k) in iter_rows})
+    if ikeys:
+        summary["iterative"] = {}
+        md += ["## Iterative pruning (Phase 4)", "",
+               "20 % of each class's edges removed per round, 5 epochs of retraining and rescoring between rounds, "
+               "full codebook during the rounds; then unused codes removed and 30 epochs (the B2 recipe). "
+               "Same rules as above.", "",
+               "| Model | Rounds | Total epochs | Codes | Best val | Test top-1 |", "|---|---|---|---|---|---|"]
+        for key in ikeys:
+            rs = [iter_rows[(s, key)] for s in seeds if (s, key) in iter_rows]
+            md.append(f"| {key[3:]} iterative | {ms([r['rounds'] for r in rs])} | {ms([r['total_epochs'] for r in rs])} | "
+                      f"{ms([r['codes'] for r in rs])} | {ms([r['best_val_top1'] for r in rs])} | "
+                      f"{ms([r['test_top1'] for r in rs])} |")
+            summary["iterative"][key] = {"rows": rs}
+        md += ["", "| Comparison | Question | Δ | 95 % CI | Seeds (Δ) | Verdict |", "|---|---|---|---|---|---|"]
+        pairs = []
+        for key in ikeys:
+            score, k = key[3:].rsplit("_K", 1)
+            ref = f"R_{score}_K{k}"
+            pairs.append((key, ref, f"iterative {score} vs one-shot {'B2' if score == 'B1' else score} (retrained), K = {k}",
+                          "does gradual pruning help?"))
+        for key in ikeys:
+            score, k = key[3:].rsplit("_K", 1)
+            if score != "B1" and f"IT_B1_K{k}" in ikeys:
+                pairs.append((key, f"IT_B1_K{k}", f"iterative {score} vs iterative B1, K = {k}",
+                              "does the score matter under repeated pruning?"))
+        for key, ref, label, q in pairs:
+            c = compare(correct, [key], ref, seeds).get(key)
+            if c:
+                md.append(f"| {label} | {q} | {cells(c)} |")
+                summary["iterative"].setdefault(key, {})[f"vs_{ref}"] = c
         md.append("")
 
     if deletion:

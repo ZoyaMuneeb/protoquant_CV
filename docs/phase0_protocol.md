@@ -141,3 +141,30 @@ batch 512 is the fallback and must be recorded in the change log.
 | 2026-11-16 | Section 9 filled: Stage 1/2 at batch 1,024 / lr 0.05 (the paper's setting, replacing "one size that fits"); backbone at batch 128 | Phase 0 timing on the team GPU; set before any pruning run |
 | 2026-11-16 | Data-loader workers 8 → 4 (train) / 2 (val) | Batch 1,024 with 8 workers exhausted host RAM (process SIGKILLed); changes loading speed only |
 | 2026-11-16 | Stage 2 and B0 validation loaders keep the last incomplete batch (`drop_last=False`, as Stage 1 already did) | With 600 validation images and batch 1,024 the repository default dropped every validation image, so no Stage 2 checkpoint would be selected. Bug fix found before any Phase 1 run; no results affected |
+| 2026-11-17 | Retraining extended to P1 at K = 5 and K = 20 | Added after the Phase 2 K = 10 retraining results were seen; reported as post hoc |
+| 2026-11-17 | Iterative pruning (Phase 4) specified before any run, see section 10 | The methodology names the comparison but not its schedule; fixed here, with a matched B1 control |
+
+## 10. Iterative pruning (Phase 4), fixed before running
+
+Comparison at K = 10, seeds 40–42, from the Phase 1 strict dense Stage 2 checkpoints.
+
+* **Methods:** iterative P1 (the best validation method at K = 10 after retraining) and **iterative B1** as a
+  matched control. Iterative runs train for about 5× longer than one-shot ones, so without the control a gain
+  could not be attributed to P1's score rather than to the schedule or the extra training. The control is
+  added here, before any run, as part of the planned comparison.
+* **Schedule:** start from all nonzero edges of ReLU(W). Each round: rescore, keep the top
+  max(K, ⌊0.8 · n_c⌋) of each class's current n_c edges (20 % removed per round, as in iterative magnitude
+  pruning), then retrain 5 epochs with the mask held fixed (cosine schedule with 1 warm-up epoch per round,
+  otherwise the Stage 2 recipe). The round that reaches K edges per class is the last; after it, no round
+  training.
+* **Rescoring:** B1 uses the current ReLU(W). P1 uses the current ReLU(W) × E[s | y = k], with the class means
+  recomputed every round from the training-split feature cache through the current codes (retraining updates
+  the codebook, so stale activation statistics would turn P1 into a weight-only score).
+* **Codebook:** kept whole during the rounds (only edges are masked, so every code stays in the softmax and
+  can be rescored). After the final mask, unused codes are physically removed and the model is retrained with
+  exactly the B2 recipe (`phase2_retrain.py`: 30 epochs, 5 warm-up, best validation epoch).
+* **Reported:** test top-1 (read once per final model), codes, edges, validation accuracy after every round,
+  number of rounds and total training epochs (next to 30 for one-shot + retraining).
+* **Comparisons (paired bootstrap, section 6 rules):** iterative vs one-shot with the same score (iterative B1
+  vs B2, iterative P1 vs retrained P1): does gradual pruning help? Iterative P1 vs iterative B1: does the
+  activation-aware score matter under repeated pruning?

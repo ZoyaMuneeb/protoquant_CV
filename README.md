@@ -166,7 +166,23 @@ Change the retrained set with `RETRAIN_SPECS` (default `B1_K10 P1_K10 P3_K10 ran
 difference to B1 (one-shot) or B2 (retrained) with its 95 % paired-bootstrap interval and per-seed signs,
 the verdict under the fixed rules, edges and active codes, and the deletion-effect correlations.
 
-### 7. Capacity metrics
+### 7. Iterative pruning (Phase 4)
+
+Fixed in [docs/phase0_protocol.md](docs/phase0_protocol.md), section 10, before any run.
+
+```bash
+BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" bash scripts/run_iterative.sh
+```
+
+Iterative B1 and iterative P1 at K = 10, seeds 40–42 (6 runs). Each run removes 20 % of each class's edges per
+round, retrains 5 epochs with the full codebook and rescores (P1 recomputes its class means through the current
+codes), for about 24 rounds. The final mask then goes through exactly the B2 recipe (unused codes removed, 30
+epochs, best validation epoch, test read once). Output in `../runs/phase2/strict_s<seed>/iterative/<score>_K10/`
+(`iterative.json` logs every round); `results/phase2_results.md` gets an "Iterative pruning" section comparing
+iterative vs one-shot (same score) and iterative P1 vs iterative B1. To time one run first:
+`SEEDS=40 SCORES=P1 bash scripts/run_iterative.sh`.
+
+### 8. Capacity metrics
 
 After Phase 2 (needs the GPU to itself, about 30 min):
 
