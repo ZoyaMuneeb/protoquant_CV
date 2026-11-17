@@ -166,6 +166,20 @@ Change the retrained set with `RETRAIN_SPECS` (default `B1_K10 P1_K10 P3_K10 ran
 difference to B1 (one-shot) or B2 (retrained) with its 95 % paired-bootstrap interval and per-seed signs,
 the verdict under the fixed rules, edges and active codes, and the deletion-effect correlations.
 
+### 7. Capacity metrics
+
+After Phase 2 (needs the GPU to itself, about 30 min):
+
+```bash
+BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" bash scripts/run_capacity.sh
+```
+
+For the dense head, every one-shot mask and every retrained model (seeds 40–42), [`scripts/capacity.py`](scripts/capacity.py)
+reports codebook entries and memory (MB, fp32), nonzero edges, latency in ms per batch (head only and full
+model; median of 50 batches of 128 at 224 × 224, fp32), peak GPU memory, explanation size (codes needed for
+90 % of the predicted class's evidence, test set, no labels used) and retraining GPU-minutes. One-shot masks
+keep the full codebook, so their latency equals the dense model's. Output: `results/capacity.{md,json}`.
+
 ## Repository layout
 
 ```
