@@ -143,6 +143,7 @@ batch 512 is the fallback and must be recorded in the change log.
 | 2026-11-16 | Stage 2 and B0 validation loaders keep the last incomplete batch (`drop_last=False`, as Stage 1 already did) | With 600 validation images and batch 1,024 the repository default dropped every validation image, so no Stage 2 checkpoint would be selected. Bug fix found before any Phase 1 run; no results affected |
 | 2026-11-17 | Retraining extended to P1 at K = 5 and K = 20 | Added after the Phase 2 K = 10 retraining results were seen; reported as post hoc |
 | 2026-11-17 | Iterative pruning (Phase 4) specified before any run, see section 10 | The methodology names the comparison but not its schedule; fixed here, with a matched B1 control |
+| 2026-11-18 | Epoch-matched one-shot control added to section 10 (B2 retrained for 145 epochs); iterative models also compared with the dense head | Added after the iterative results were seen: iterative pruning trained 145 epochs vs 30, so its gain over one-shot could be extra training. Reported as post hoc |
 
 ## 10. Iterative pruning (Phase 4), fixed before running
 
@@ -168,3 +169,7 @@ Comparison at K = 10, seeds 40–42, from the Phase 1 strict dense Stage 2 check
 * **Comparisons (paired bootstrap, section 6 rules):** iterative vs one-shot with the same score (iterative B1
   vs B2, iterative P1 vs retrained P1): does gradual pruning help? Iterative P1 vs iterative B1: does the
   activation-aware score matter under repeated pruning?
+* **Epoch-matched control (added 2026-11-18, after the iterative results):** B2 (the one-shot B1 mask at
+  K = 10) retrained with the same recipe for 145 epochs, the iterative runs' total (cosine schedule stretched
+  over 145 epochs, 5 warm-up). Iterative B1 vs this model asks whether gradual pruning helps at equal
+  training; this model vs B2 at 30 epochs asks whether longer training alone helps. Test read once per model.

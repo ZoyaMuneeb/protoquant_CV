@@ -83,7 +83,7 @@ def main() -> None:
     args = ap.parse_args()
     root = Path(args.phase2_root)
 
-    rows, correct, retrain_rows, iter_rows, deletion, ref_ids = {}, {}, {}, {}, {}, None
+    rows, correct, retrain_rows, iter_rows, budget_rows, deletion, ref_ids = {}, {}, {}, {}, {}, {}, None
     seeds = sorted(int(d.name.split("_s")[1]) for d in root.glob("strict_s*") if d.is_dir())
     for s in seeds:
         d = root / f"strict_s{s}"
@@ -129,6 +129,18 @@ def main() -> None:
             ref_ids = z["img_ids"] if ref_ids is None else ref_ids
             if not np.array_equal(z["img_ids"], ref_ids):
                 raise SystemExit(f"test image order differs in {fin}")
+            correct[(s, key)] = z["preds"] == z["labels"]
+        for rd in sorted((d / "budget").glob("*_K*_E*")):   # epoch-matched one-shot control (protocol 10)
+            rj, et = load(rd / "retrain.json"), load(rd / "eval_test.json")
+            if not et:
+                continue
+            key = "BUD_" + rd.name
+            budget_rows[(s, key)] = {"total_epochs": rj.get("epochs"), "best_val_top1": rj.get("best_val_top1"),
+                                     "test_top1": et["top1"], "codes": et.get("codebook_entries")}
+            z = np.load(rd / "eval_test.npz")
+            ref_ids = z["img_ids"] if ref_ids is None else ref_ids
+            if not np.array_equal(z["img_ids"], ref_ids):
+                raise SystemExit(f"test image order differs in {rd}")
             correct[(s, key)] = z["preds"] == z["labels"]
 
     ks =sorted({r["K"] for (s, k), r in rows.items() if r.get("K")})
@@ -199,6 +211,14 @@ def main() -> None:
                       f"{ms([r['codes'] for r in rs])} | {ms([r['best_val_top1'] for r in rs])} | "
                       f"{ms([r['test_top1'] for r in rs])} |")
             summary["iterative"][key] = {"rows": rs}
+        bkeys = sorted({k for (s, k) in budget_rows})
+        for key in bkeys:
+            rs = [budget_rows[(s, key)] for s in seeds if (s, key) in budget_rows]
+            name = key[4:].split("_E")[0].replace("B1_", "B2_")
+            md.append(f"| {name} one-shot, {ms([r['total_epochs'] for r in rs])} epochs (control) | - | "
+                      f"{ms([r['total_epochs'] for r in rs])} | {ms([r['codes'] for r in rs])} | "
+                      f"{ms([r['best_val_top1'] for r in rs])} | {ms([r['test_top1'] for r in rs])} |")
+            summary["iterative"][key] = {"rows": rs}
         md += ["", "| Comparison | Question | Δ | 95 % CI | Seeds (Δ) | Verdict |", "|---|---|---|---|---|---|"]
         pairs = []
         for key in ikeys:
@@ -211,6 +231,17 @@ def main() -> None:
             if score != "B1" and f"IT_B1_K{k}" in ikeys:
                 pairs.append((key, f"IT_B1_K{k}", f"iterative {score} vs iterative B1, K = {k}",
                               "does the score matter under repeated pruning?"))
+        for bkey in bkeys:
+            base, e = bkey[4:].rsplit("_E", 1)
+            score, k = base.rsplit("_K", 1)
+            if f"IT_{base}" in ikeys:
+                pairs.append((f"IT_{base}", bkey, f"iterative {score} vs one-shot B2 at {e} epochs, K = {k}",
+                              "gradual pruning, at equal training?"))
+            pairs.append((bkey, f"R_{base}", f"one-shot B2 at {e} vs 30 epochs, K = {k}",
+                          "does longer training alone help?"))
+        for key in ikeys:
+            score, k = key[3:].rsplit("_K", 1)
+            pairs.append((key, "dense", f"iterative {score} (K = {k}) vs dense head", "is dense accuracy kept?"))
         for key, ref, label, q in pairs:
             c = compare(correct, [key], ref, seeds).get(key)
             if c:

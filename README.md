@@ -182,6 +182,17 @@ epochs, best validation epoch, test read once). Output in `../runs/phase2/strict
 iterative vs one-shot (same score) and iterative P1 vs iterative B1. To time one run first:
 `SEEDS=40 SCORES=P1 bash scripts/run_iterative.sh`.
 
+Epoch-matched control (added after the iterative results, protocol section 10): the one-shot B1 mask at K = 10
+retrained for 145 epochs, the iterative runs' total, to separate gradual pruning from extra training
+(3 runs, ~30 min each):
+
+```bash
+BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" bash scripts/run_budget_control.sh
+```
+
+The summary then adds: iterative B1 vs this control, the control vs B2 at 30 epochs, and every iterative
+model vs the dense head.
+
 ### 8. Capacity metrics
 
 After Phase 2 (needs the GPU to itself, about 30 min):
