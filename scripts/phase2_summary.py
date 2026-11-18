@@ -234,11 +234,16 @@ def main() -> None:
         for bkey in bkeys:
             base, e = bkey[4:].rsplit("_E", 1)
             score, k = base.rsplit("_K", 1)
-            if f"IT_{base}" in ikeys:
-                pairs.append((f"IT_{base}", bkey, f"iterative {score} vs one-shot B2 at {e} epochs, K = {k}",
-                              "gradual pruning, at equal training?"))
+            for ikey in ikeys:   # every iterative model at this K vs the epoch-matched one-shot B2
+                iscore, ik = ikey[3:].rsplit("_K", 1)
+                if ik == k:
+                    pairs.append((ikey, bkey, f"iterative {iscore} vs one-shot B2 at {e} epochs, K = {k}",
+                                  "gradual pruning, at equal training?" if iscore == score
+                                  else "does iterative P1 beat the simplest strong baseline?"))
             pairs.append((bkey, f"R_{base}", f"one-shot B2 at {e} vs 30 epochs, K = {k}",
                           "does longer training alone help?"))
+            pairs.append((bkey, "dense", f"one-shot B2 at {e} epochs (K = {k}) vs dense head",
+                          "is dense accuracy kept?"))
         for key in ikeys:
             score, k = key[3:].rsplit("_K", 1)
             pairs.append((key, "dense", f"iterative {score} (K = {k}) vs dense head", "is dense accuracy kept?"))
