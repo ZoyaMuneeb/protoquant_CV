@@ -13,5 +13,5 @@ gpu_check
 python "${REPO_ROOT}/scripts/capacity.py" --backbone_ckpt "${BACKBONE_CKPT}" \
     --phase1_root "${RUNS_ROOT}/phase1" --phase2_root "${RUNS_ROOT}/phase2" --seeds ${SEEDS} \
     --batch_size "${BATCH_SIZE:-128}" --warmup "${WARMUP:-10}" --iters "${ITERS:-50}" \
-    --out_json "${REPO_ROOT}/results/capacity.json" --out_md "${REPO_ROOT}/results/capacity.md" \
+    --out_json "${RESULTS_DIR}/capacity.json" --out_md "${RESULTS_DIR}/capacity.md" \
     2>&1 | tee "${RUNS_ROOT}/capacity.log"

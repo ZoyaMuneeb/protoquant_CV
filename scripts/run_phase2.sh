@@ -70,5 +70,5 @@ for SEED in ${SEEDS}; do
     done
 done
 
-$PY/phase2_summary.py --phase2_root "${P2_ROOT}" --out_md "${REPO_ROOT}/results/phase2_results.md" \
-    --out_json "${REPO_ROOT}/results/phase2_results.json"
+$PY/phase2_summary.py --phase2_root "${P2_ROOT}" --out_md "${RESULTS_DIR}/phase2_results.md" \
+    --out_json "${RESULTS_DIR}/phase2_results.json"

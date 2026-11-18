@@ -145,6 +145,7 @@ batch 512 is the fallback and must be recorded in the change log.
 | 2026-11-17 | Iterative pruning (Phase 4) specified before any run, see section 10 | The methodology names the comparison but not its schedule; fixed here, with a matched B1 control |
 | 2026-11-18 | Epoch-matched one-shot control added to section 10 (B2 retrained for 145 epochs); iterative models also compared with the dense head | Added after the iterative results were seen: iterative pruning trained 145 epochs vs 30, so its gain over one-shot could be extra training. Reported as post hoc |
 | 2026-11-18 | Phase 4 ablations implemented as specified in the methodology: P3 without the one-edge-per-class minimum (one-shot, K = 5/10/20) and P1-contrast vs P1 (paired, from the saved predictions) | Planned ablations; no change to methods or rules |
+| 2026-11-19 | Improved-backbone rerun added, see section 11 | Added after all main results were seen: our backbone (84.05 % test) is 4.4 points below the paper's (88.4 %), so the claim "longer retraining closes the gap to dense" is retested on a stronger backbone. Reported as a separate, post hoc experiment; main results unchanged |
 
 ## 10. Iterative pruning (Phase 4), fixed before running
 
@@ -174,3 +175,21 @@ Comparison at K = 10, seeds 40–42, from the Phase 1 strict dense Stage 2 check
   K = 10) retrained with the same recipe for 145 epochs, the iterative runs' total (cosine schedule stretched
   over 145 epochs, 5 warm-up). Iterative B1 vs this model asks whether gradual pruning helps at equal
   training; this model vs B2 at 30 epochs asks whether longer training alone helps. Test read once per model.
+
+## 11. Improved-backbone rerun (post hoc, added 2026-11-19)
+
+Why: the authors' backbone recipe (`slurm/run_full.sh` and `slurm/launch_sweep_full.sh`) differs from ours.
+It continues from an already fine-tuned CUB checkpoint at lr 5e-5, after a learning-rate sweep over seven
+values, trained on all 5,994 images and selected on test. Ours ran once from ImageNet weights at that
+continued-fine-tune lr (5e-5, untuned), on the strict 5,394-image split.
+
+* **Backbone sweep (`scripts/run_backbone_sweep.sh`):** ConvNeXt-Tiny from ImageNet weights, 30 epochs, batch
+  128, lr ∈ {1e-4, 2e-4, 4e-4} (5e-5 = the existing backbone). Then the authors' second stage: continue from
+  the best checkpoint for 30 more epochs at lr 5e-5. All selection on the 600-image validation split; the test
+  set is not read during the sweep. Same strict split, recipe otherwise as in section 3.
+* **Rerun (`scripts/run_new_backbone.sh`), on the selected backbone:** the strict Phase 1 baseline (3 seeds,
+  backbone test read once), one-shot masking (all methods, K = 5/10/20), B2 at K = 10 retrained for 30 and for
+  145 epochs. Same rules as section 6. Runs in `../runs_bb2/`, summaries in `results/backbone2/`.
+* **Question:** with a backbone closer to the paper's, does B2 at 145 epochs still keep dense accuracy, and is
+  30-epoch retraining still short of it?
+* Under the strict protocol the paper's 88.4 % is not expected (less training data, honest selection).

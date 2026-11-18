@@ -253,7 +253,27 @@ Phase 4 ablations that need no training (a few minutes): P3 without the one-edge
 BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" bash scripts/run_ablations.sh
 ```
 
-### 8. Capacity metrics
+### 8. Improved-backbone rerun (post hoc)
+
+Our backbone (84.05 % test) is 4.4 points below the paper's (88.4 %). The authors continue an existing
+CUB fine-tune after a learning-rate sweep; we ran once from ImageNet at their continued-fine-tune lr. Protocol
+section 11 fixes the rerun. Two commands, one after the other:
+
+```bash
+bash scripts/run_backbone_sweep.sh
+```
+
+```bash
+bash scripts/run_new_backbone.sh
+```
+
+The sweep trains ConvNeXt-Tiny at lr 1e-4 / 2e-4 / 4e-4 (30 epochs, batch 128), then continues the best
+for 30 epochs at 5e-5, and selects on validation only (about 2–3 GPU-hours, `results/backbone_sweep.md`).
+The rerun uses the selected backbone for the strict baseline (3 seeds), one-shot masking, and B2 at K = 10
+for 30 and 145 epochs (about 8 GPU-hours). It writes to `../runs_bb2/` and `results/backbone2/`, so the main
+runs and results are untouched. Every summary script now writes to `RESULTS_DIR` (default `results/`).
+
+### 9. Capacity metrics
 
 After Phase 2 (needs the GPU to itself, about 30 min):
 

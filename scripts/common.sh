@@ -13,6 +13,8 @@ CUB_RAW="${CUB_RAW:-${DATA_ROOT}/raw/CUB_200_2011}"
 CUB_PATH="${CUB_PATH:-${DATA_ROOT}/cub200_cropped}"        # parent of CUB_200_2011/ (what the loaders expect)
 RUNS_ROOT="${RUNS_ROOT:-${PROJECT_ROOT}/runs}"
 CKPT_ROOT="${CKPT_ROOT:-${PROJECT_ROOT}/checkpoints}"
+RESULTS_DIR="${RESULTS_DIR:-${REPO_ROOT}/results}"          # summaries; set per experiment to keep runs apart
+mkdir -p "${RESULTS_DIR}"
 
 # Strict protocol by default: 90 % train / 10 % held-out val; test read once.
 export PQ_CUB_PROTOCOL="${PQ_CUB_PROTOCOL:-strict}"
