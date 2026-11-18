@@ -201,10 +201,11 @@ After Phase 2 (needs the GPU to itself, about 30 min):
 BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" bash scripts/run_capacity.sh
 ```
 
-For the dense head, every one-shot mask and every retrained model (seeds 40–42), [`scripts/capacity.py`](scripts/capacity.py)
+For the dense head, every one-shot mask, every retrained model, the iterative models and the 145-epoch control
+(seeds 40–42; whatever has finished), [`scripts/capacity.py`](scripts/capacity.py)
 reports codebook entries and memory (MB, fp32), nonzero edges, latency in ms per batch (head only and full
 model; median of 50 batches of 128 at 224 × 224, fp32), peak GPU memory, explanation size (codes needed for
-90 % of the predicted class's evidence, test set, no labels used) and retraining GPU-minutes. One-shot masks
+90 % of the predicted class's evidence, test set, no labels used) and training GPU-minutes (including the iterative pruning rounds). One-shot masks
 keep the full codebook, so their latency equals the dense model's. Output: `results/capacity.{md,json}`.
 
 ## Repository layout

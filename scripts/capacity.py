@@ -10,7 +10,8 @@ Per seed, for the dense head, every one-shot mask and every retrained model:
   peak GPU memory (GB) of the full-model forward at that batch size;
   explanation size: per test image, the smallest number of codes whose contributions ReLU(W)_ŷm · s_m
     reach 90 % of the predicted class's total; mean and median over the test set;
-  retraining cost (GPU-minutes, sum of the training epochs in retrain.json).
+  training cost (GPU-minutes: training epochs in retrain.json, plus the pruning rounds for iterative models).
+Models: dense, one-shot masks, retrained (B2 and the rest), iterative (Phase 4) and the epoch-matched control.
 
 One-shot masks are logical (zeroed edges, full codebook), so they compute exactly what the dense model
 computes: their latency and memory are the dense model's, and are not measured again. Explanation size
@@ -127,19 +128,34 @@ def run_seed(seed: int, args, dev, bb_sha: str) -> list[dict]:
                          **explanation_size(s, w * mask, dev), "retrain_gpu_min": 0.0})
     del dense, s
 
-    for d in sorted((p2 / "retrain").glob("*/")):
-        ck = d / "pipnet_retrained.pth"
-        if not (d / "DONE").exists() or not ck.is_file():
-            continue
+    # Trained models: (folder with pipnet_retrained.pth + retrain.json, DONE marker folder, name, K, kind,
+    # extra JSON whose per-round "seconds" count towards the training cost).
+    trained = []
+    for d in sorted((p2 / "retrain").glob("*_K*/")):
         method, k = d.name.rsplit("_K", 1)
+        trained.append((d, d, "B2" if method == "B1" else method, int(k), "retrained", None))
+    for d in sorted((p2 / "iterative").glob("*_K*/")):          # Phase 4 iterative pruning
+        method, k = d.name.rsplit("_K", 1)
+        trained.append((d / "final", d, f"{method} iterative", int(k), "iterative", d / "iterative.json"))
+    for d in sorted((p2 / "budget").glob("*_K*_E*/")):          # epoch-matched one-shot control
+        base, e = d.name.rsplit("_E", 1)
+        method, k = base.rsplit("_K", 1)
+        trained.append((d, d, f"{'B2' if method == 'B1' else method} {e} epochs", int(k), "control", None))
+
+    for d, done, name, k, kind, extra in trained:
+        ck = d / "pipnet_retrained.pth"
+        if not (done / "DONE").exists() or not ck.is_file():
+            continue
         model = L.load_protoquant(args.backbone_ckpt, str(ck), dev)
         s = pooled_scores(model, test["features"], dev)
         info = json.loads((d / "retrain.json").read_text()) if (d / "retrain.json").is_file() else {}
-        cost = sum(h.get("seconds", 0) for h in info.get("history", [])) / 60
-        rows.append({"seed": seed, "model": "B2" if method == "B1" else method, "K": int(k), "kind": "retrained",
+        secs = sum(h.get("seconds", 0) for h in info.get("history", []))
+        if extra is not None and extra.is_file():
+            secs += sum(h.get("seconds", 0) for h in json.loads(extra.read_text()).get("history", []))
+        rows.append({"seed": seed, "model": name, "K": k, "kind": kind,
                      **codebook_stats(model), **measure_speed(model, dev, args),
-                     **explanation_size(s, L.effective_weight(model).cpu(), dev), "retrain_gpu_min": cost})
-        print(f"[CAP] s{seed} retrained {d.name}: codes {rows[-1]['codebook_entries']} "
+                     **explanation_size(s, L.effective_weight(model).cpu(), dev), "retrain_gpu_min": secs / 60})
+        print(f"[CAP] s{seed} {kind} {name} K={k}: codes {rows[-1]['codebook_entries']} "
               f"head {rows[-1]['head_ms']:.2f} ms full {rows[-1]['full_ms']:.2f} ms", flush=True)
         del model, s
         if dev.type == "cuda":
@@ -173,7 +189,7 @@ def write_md(rows: list[dict], meta: dict, path: Path) -> None:
             return
         out.extend([f"## {title}", "",
                     "| Model | Kind | Codebook entries | Codebook MB | Edges | Head ms | Head speed-up | Full ms "
-                    "| Full speed-up | Peak GPU GB | Expl. size mean | Expl. size median | Retrain GPU-min |",
+                    "| Full speed-up | Peak GPU GB | Expl. size mean | Expl. size median | Training GPU-min |",
                     "|---|---|---|---|---|---|---|---|---|---|---|---|---|"])
         groups: dict = {}
         for r in sel:
@@ -195,7 +211,8 @@ def write_md(rows: list[dict], meta: dict, path: Path) -> None:
     table(dense, "Dense head (no pruning)")
     for k in sorted({r["K"] for r in rows if r["K"] is not None}):
         sel = [r for r in rows if r["K"] == k]
-        sel.sort(key=lambda r: (r["kind"] != "one-shot", r["model"]))
+        order = {"one-shot": 0, "retrained": 1, "control": 2, "iterative": 3}
+        sel.sort(key=lambda r: (order.get(r["kind"], 9), r["model"]))
         table(sel, f"K = {k} edges per class")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(out))
