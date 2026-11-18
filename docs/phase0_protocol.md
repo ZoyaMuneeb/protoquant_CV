@@ -144,6 +144,7 @@ batch 512 is the fallback and must be recorded in the change log.
 | 2026-11-17 | Retraining extended to P1 at K = 5 and K = 20 | Added after the Phase 2 K = 10 retraining results were seen; reported as post hoc |
 | 2026-11-17 | Iterative pruning (Phase 4) specified before any run, see section 10 | The methodology names the comparison but not its schedule; fixed here, with a matched B1 control |
 | 2026-11-18 | Epoch-matched one-shot control added to section 10 (B2 retrained for 145 epochs); iterative models also compared with the dense head | Added after the iterative results were seen: iterative pruning trained 145 epochs vs 30, so its gain over one-shot could be extra training. Reported as post hoc |
+| 2026-11-18 | Phase 4 ablations implemented as specified in the methodology: P3 without the one-edge-per-class minimum (one-shot, K = 5/10/20) and P1-contrast vs P1 (paired, from the saved predictions) | Planned ablations; no change to methods or rules |
 
 ## 10. Iterative pruning (Phase 4), fixed before running
 

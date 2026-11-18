@@ -193,6 +193,13 @@ BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" bash scripts/run_
 The summary then adds: iterative B1 vs this control, the control vs B2 at 30 epochs, and every iterative
 model vs the dense head.
 
+Phase 4 ablations that need no training (a few minutes): P3 without the one-edge-per-class minimum
+(one-shot masks at K = 5/10/20) and P1-contrast vs P1. The summary gets an "Ablations" section.
+
+```bash
+BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" bash scripts/run_ablations.sh
+```
+
 ### 8. Capacity metrics
 
 After Phase 2 (needs the GPU to itself, about 30 min):

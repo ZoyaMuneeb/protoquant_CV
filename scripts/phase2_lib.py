@@ -54,11 +54,13 @@ def random_per_class(w_eff: torch.Tensor, k: int, seed: int) -> torch.Tensor:
     return topk_per_class(score, w_eff, k)
 
 
-def global_budget(score: torch.Tensor, w_eff: torch.Tensor, k: int) -> tuple[torch.Tensor, dict]:
+def global_budget(score: torch.Tensor, w_eff: torch.Tensor, k: int,
+                  min_one: bool = True) -> tuple[torch.Tensor, dict]:
     """Keep the N = k * C highest-scoring edges overall; every class keeps at least one edge.
 
     A class left with no edge gets its own best edge, and the lowest-scoring kept edge of a class with
-    more than one edge is dropped for it, so the total stays exactly N."""
+    more than one edge is dropped for it, so the total stays exactly N. min_one=False (Phase 4 ablation)
+    skips that step: classes may keep no edge at all and then can never be predicted."""
     C = w_eff.shape[0]
     n_total = k * C
     s = _eligible(score, w_eff)
@@ -67,7 +69,8 @@ def global_budget(score: torch.Tensor, w_eff: torch.Tensor, k: int) -> tuple[tor
     keep[flat.topk(n_total).indices] = True
     mask = keep.view_as(w_eff)
     forced = 0
-    for c in torch.nonzero(mask.sum(1) == 0).flatten().tolist():
+    empty = torch.nonzero(mask.sum(1) == 0).flatten().tolist()
+    for c in (empty if min_one else []):
         mask[c, s[c].argmax()] = True
         donors = mask & (mask.sum(1, keepdim=True) > 1)
         cand = s.masked_fill(~donors, float("inf"))
@@ -76,6 +79,7 @@ def global_budget(score: torch.Tensor, w_eff: torch.Tensor, k: int) -> tuple[tor
         forced += 1
     per_class = mask.sum(1)
     info = {"classes_forced_to_minimum": forced, "classes_at_minimum": int((per_class == 1).sum()),
+            "classes_with_no_edge": int((per_class == 0).sum()),
             "edges_per_class_min": int(per_class.min()), "edges_per_class_median": float(per_class.float().median()),
             "edges_per_class_max": int(per_class.max())}
     return mask, info

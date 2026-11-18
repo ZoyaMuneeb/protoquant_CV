@@ -18,7 +18,7 @@ from pathlib import Path
 import numpy as np
 
 N_BOOT = 10_000
-ONE_SHOT = ("B1", "random", "P1", "P1contrast", "P3")
+ONE_SHOT = ("B1", "random", "P1", "P1contrast", "P3", "P3nomin")
 
 
 def load(p: Path) -> dict:
@@ -87,20 +87,22 @@ def main() -> None:
     seeds = sorted(int(d.name.split("_s")[1]) for d in root.glob("strict_s*") if d.is_dir())
     for s in seeds:
         d = root / f"strict_s{s}"
-        res = load(d / "masking" / "results.json")
-        for r in res.get("models", []):
-            key = "dense" if r["method"] == "dense" else f"{r['method']}_K{r['K']}"
-            rows[(s, key)] = r
-        npz = d / "masking" / "test_preds.npz"
-        if npz.is_file():
-            z = np.load(npz)
-            ids = z["img_ids"]
-            ref_ids = ids if ref_ids is None else ref_ids
-            if not np.array_equal(ids, ref_ids):
-                raise SystemExit(f"test image order differs in {npz}")
-            for key in z.files:
-                if key not in ("img_ids", "labels"):
-                    correct[(s, key)] = z[key] == z["labels"]
+        # Phase 2 one-shot masks, then the Phase 4 one-shot ablation (P3 without the minimum)
+        for res_name, npz_name in (("results.json", "test_preds.npz"), ("ablation.json", "ablation_test_preds.npz")):
+            res = load(d / "masking" / res_name)
+            for r in res.get("models", []):
+                key = "dense" if r["method"] == "dense" else f"{r['method']}_K{r['K']}"
+                rows[(s, key)] = r
+            npz = d / "masking" / npz_name
+            if npz.is_file():
+                z = np.load(npz)
+                ids = z["img_ids"]
+                ref_ids = ids if ref_ids is None else ref_ids
+                if not np.array_equal(ids, ref_ids):
+                    raise SystemExit(f"test image order differs in {npz}")
+                for key in z.files:
+                    if key not in ("img_ids", "labels"):
+                        correct[(s, key)] = z[key] == z["labels"]
         dl = load(d / "masking" / "deletion.json")
         if dl:
             deletion[s] = dl["spearman"]
@@ -168,7 +170,8 @@ def main() -> None:
             if not rs:
                 continue
             c = cmp_.get(key)
-            extra = f" (min-1 classes: {ms([r.get('classes_at_minimum') for r in rs])})" if key.startswith("P3") else ""
+            extra = (f" (classes with no edge: {ms([r.get('classes_with_no_edge') for r in rs])})" if key.startswith("P3nomin")
+                     else f" (min-1 classes: {ms([r.get('classes_at_minimum') for r in rs])})" if key.startswith("P3") else "")
             md.append(
                 f"| {key.rsplit('_K', 1)[0]}{extra} | {ms([r['val_top1'] for r in rs])} | {ms([r['test_top1'] for r in rs])} | "
                 f"{cells(c)} | "
@@ -253,6 +256,27 @@ def main() -> None:
                 md.append(f"| {label} | {q} | {cells(c)} |")
                 summary["iterative"].setdefault(key, {})[f"vs_{ref}"] = c
         md.append("")
+
+    abl = []   # Phase 4 ablations that need no training (methodology, Phase 4)
+    for k in ks:
+        abl.append((f"P1contrast_K{k}", f"P1_K{k}", f"P1-contrast vs P1, one-shot, K = {k}",
+                    "does contrasting against other classes help?"))
+    for k in sorted({int(k.rsplit("_K", 1)[1]) for (s_, k) in retrain_rows}):
+        abl.append((f"R_P1contrast_K{k}", f"R_P1_K{k}", f"P1-contrast vs P1, retrained, K = {k}",
+                    "does contrasting against other classes help?"))
+    for k in ks:
+        abl.append((f"P3nomin_K{k}", f"P3_K{k}", f"P3 without vs with the one-edge minimum, K = {k}",
+                    "does the minimum help P3?"))
+    abl_rows = []
+    for key, ref, label, q in abl:
+        c = compare(correct, [key], ref, seeds).get(key)
+        if c:
+            abl_rows.append(f"| {label} | {q} | {cells(c)} |")
+            summary.setdefault("ablations", {})[f"{key}_vs_{ref}"] = c
+    if abl_rows:
+        md += ["## Ablations (Phase 4)", "", "Same rules as above; the reference is the second method named.", "",
+               "| Comparison | Question | Δ | 95 % CI | Seeds (Δ) | Verdict |", "|---|---|---|---|---|---|",
+               *abl_rows, ""]
 
     if deletion:
         md += ["## Deletion-effect control", "",
