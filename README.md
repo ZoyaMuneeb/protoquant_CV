@@ -17,9 +17,62 @@ This repository is built on the official ProtoQuant code
 | Phase | What | State |
 |---|---|---|
 | 0 | Data, split, protocol, environment, GPU timing | **Done** (RTX 5070 Ti; Stage 1/2 at batch 1024; ≈ 33 GPU-hours; backbone val top-1 85.5 %) |
-| 1 | Official pipeline + strict-protocol baseline | **Done**: strict 84.43 ± 0.33 % (3 seeds), paper protocol 84.74 %, backbone 84.05 %; Tests 1–4 pass |
-| 2 | Pruning methods (B1, B2, random, P1, P1-contrast, P3) + deletion-effect control | **Scripts ready** ([`scripts/run_phase2.sh`](scripts/run_phase2.sh)) |
-| 3–5 | Evaluation, ablations, figures | Not started (Phase 2 summary already applies the Phase 3 decision rules) |
+| 1 | Official pipeline + strict-protocol baseline | **Done**: strict 84.43 ± 0.33 % (3 seeds), paper protocol 84.74 %, backbone 84.05 %; Tests 1–4 pass ([results](results/phase1_baseline.md)) |
+| 2 | Pruning methods (B1, B2, random, P1, P1-contrast, P3) + deletion-effect control, one-shot and retrained | **Done** ([results](results/phase2_results.md)) |
+| 3 | Evaluation: paired bootstrap, decision rules, capacity measures | **Done** ([results](results/phase2_results.md), [capacity](results/capacity.md)) |
+| 4 | Ablations: iterative vs one-shot (+ matched B1 and 145-epoch controls), with vs without retraining, P1 vs P1-contrast vs random, P3 with vs without the minimum | **Done** ([results](results/phase2_results.md)) |
+| 5 | Figures | Not started |
+| – | Adaptive codebook size (A1 shrinkage, A3 effective size) | Not started |
+
+## Results so far
+
+CUB-200-2011, ConvNeXt-Tiny, strict protocol, seeds 40–42, test top-1 (mean of 3 seeds). Dense
+ProtoQuant head: **84.43 %**, 3,000 codes, ≈ 447k edges. "Better" and "no meaningful loss" follow the
+paired-bootstrap rules in [docs/phase0_protocol.md](docs/phase0_protocol.md), section 6.
+
+**Reproduction.** Our baseline is 3.3 points below the paper's 87.7 %, mostly because our fine-tuned
+backbone is weaker (84.05 % vs 88.4 %). Our magnitude pruning (B1) keeps almost exactly the paper's code
+counts (788 vs 786 at K = 5, 1,305 vs 1,286 at K = 10).
+
+**One-shot pruning (no retraining).** Activation-aware P1 beats magnitude pruning at every K:
+
+| K | B1 (paper) | P1 | P1-contrast | P3 (global budget) | random |
+|---|---|---|---|---|---|
+| 5 | 66.64 | **72.48** (+5.85) | 72.67 | 60.76 | 3.77 |
+| 10 | 71.78 | **75.35** (+3.57) | 75.42 | 68.25 | 4.74 |
+| 20 | 75.60 | **77.63** (+2.03) | 77.90 | 74.04 | 8.73 |
+
+**With retraining (K = 10).** Retraining length matters more than the pruning score or schedule:
+
+| Model | Codes | Training epochs | Test top-1 | vs dense |
+|---|---|---|---|---|
+| B2 (B1 mask, retrained; the paper's "Pruned & Tuned") | 1,305 | 30 | 81.94 | |
+| P1, retrained | 1,456 | 30 | 82.25 (≈ B2) | |
+| **B2, retrained longer** | **1,305** | **145** | **84.08** | **no meaningful loss** (−0.36) |
+| Iterative B1 (20 % per round) | 1,564 | 145 | 83.89 | loss not excluded |
+| Iterative P1 (20 % per round) | 1,650 | 145 | 84.47 | **no meaningful loss** (+0.03) |
+
+* At 30 epochs, retraining erases P1's one-shot advantage at every K.
+* Training 145 instead of 30 epochs adds +2.1 points; gradual (iterative) pruning adds nothing beyond that
+  (iterative B1 vs B2 at 145 epochs: −0.18, not significant).
+* Under the same iterative schedule P1 beats magnitude (+0.58, all seeds), but iterative P1 does not
+  significantly beat B2 at 145 epochs (+0.39, one seed negative).
+* So at K = 10, plain magnitude pruning plus long retraining keeps dense accuracy with 0.45 % of the
+  edges and 57 % fewer codes.
+
+**Ablations.** P1-contrast ≈ P1 (gaps ≤ 0.27 points), so P1 is not just rewarding codes every class
+shares. P3 loses to B1 because its global ranking starves classes; dropping the one-edge minimum changes
+little (−0.4 at K = 5, nothing at K ≥ 10). Only P1-contrast predicts single-edge deletion damage
+(Spearman ρ ≈ 0.24 vs ≈ −0.08 for magnitude and P1).
+
+**Capacity (K = 10, [details](results/capacity.md)).** Explanations shrink about 40× (≈ 300 codes for
+90 % of a dense prediction's evidence → 7–8). The codebook shrinks 45–57 % (8.8 → 3.8–4.8 MB). The head
+is 2–2.4× faster (4× at K = 5), but the full model only ≈ 2 % (93.8 → 92 ms per batch of 128), and peak
+GPU memory is unchanged (1.65 GB): the backbone dominates. Iterative P1 costs ≈ 44 GPU-minutes per model
+vs ≈ 27 for B2 at 145 epochs.
+
+Runs added after earlier results were seen (P1 retrained at K = 5/20, the 145-epoch control, the
+iterative-vs-dense comparisons) are recorded as post hoc in the protocol's change log.
 
 The frozen protocol (split, recipe, operating points, metrics, decision criteria) is in
 [docs/phase0_protocol.md](docs/phase0_protocol.md). Read it before running anything.
@@ -166,7 +219,7 @@ Change the retrained set with `RETRAIN_SPECS` (default `B1_K10 P1_K10 P3_K10 ran
 difference to B1 (one-shot) or B2 (retrained) with its 95 % paired-bootstrap interval and per-seed signs,
 the verdict under the fixed rules, edges and active codes, and the deletion-effect correlations.
 
-### 7. Iterative pruning (Phase 4)
+### 7. Phase 4: iterative pruning, controls and ablations
 
 Fixed in [docs/phase0_protocol.md](docs/phase0_protocol.md), section 10, before any run.
 
@@ -221,9 +274,10 @@ keep the full codebook, so their latency equals the dense model's. Output: `resu
 codebook_train/        official ProtoQuant code (CUB loader patched for the strict protocol)
 docs/                  phase0_protocol.md — frozen protocol and decision rules
 scripts/               SLURM-free run scripts, split generator, data checks, timing/budget,
-                       Phase 1 driver, B0, evaluation, feature cache, implementation tests
+                       Phase 1 driver, B0, evaluation, feature cache, implementation tests,
+                       Phase 2 masking/retraining, iterative pruning, controls, ablations, capacity
 splits/                fixed CUB validation split (+ summary json)
-results/               check outputs, timing and budget
+results/               data checks, timing and budget, Phase 1 baseline, Phase 2–4 results, capacity
 slurm/                 original cluster scripts (reference only)
 ```
 
