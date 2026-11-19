@@ -146,6 +146,7 @@ batch 512 is the fallback and must be recorded in the change log.
 | 2026-11-18 | Epoch-matched one-shot control added to section 10 (B2 retrained for 145 epochs); iterative models also compared with the dense head | Added after the iterative results were seen: iterative pruning trained 145 epochs vs 30, so its gain over one-shot could be extra training. Reported as post hoc |
 | 2026-11-18 | Phase 4 ablations implemented as specified in the methodology: P3 without the one-edge-per-class minimum (one-shot, K = 5/10/20) and P1-contrast vs P1 (paired, from the saved predictions) | Planned ablations; no change to methods or rules |
 | 2026-11-19 | Improved-backbone rerun added, see section 11 | Added after all main results were seen: our backbone (84.05 % test) is 4.4 points below the paper's (88.4 %), so the claim "longer retraining closes the gap to dense" is retested on a stronger backbone. Reported as a separate, post hoc experiment; main results unchanged |
+| 2026-11-19 | Code-level pruning added, see section 12 | New method, added after all main results were seen (exploratory, reported as post hoc): edge methods end at about 1,300 codes, and codes are the capacity that matters |
 
 ## 10. Iterative pruning (Phase 4), fixed before running
 
@@ -193,3 +194,17 @@ continued-fine-tune lr (5e-5, untuned), on the strict 5,394-image split.
 * **Question:** with a backbone closer to the paper's, does B2 at 145 epochs still keep dense accuracy, and is
   30-epoch retraining still short of it?
 * Under the strict protocol the paper's 88.4 % is not expected (less training data, honest selection).
+
+## 12. Code-level pruning (post hoc, exploratory, added 2026-11-19)
+
+Run on the improved backbone (section 11), K = 10 edges per class, seeds 40–42.
+
+* **Method:** score every code by its summed importance over classes and keep the M best: **CP1** uses the P1
+  score, Σ_k ReLU(W)_km · E[s_m | y = k] (training split); **CB1** (control) uses magnitude, Σ_k ReLU(W)_km.
+  Then each class keeps its top K edges among the kept codes, ranked by the matching edge score.
+* **Budgets:** M ∈ {1,200, 1,000, 800, 600, 400}, evaluated one-shot. Retrained (B2 recipe, 145 epochs, the
+  same budget as the edge-level B2 control): CP1 at M = 1,000 and 800, CB1 at M = 800.
+* **Comparisons (section 6 rules):** one-shot vs edge-level B1 at K = 10 and CP1 vs CB1 at each M; retrained
+  vs the B2 145-epoch control and vs the dense head. The compactness claim needs no meaningful loss against
+  dense with at least 25 % fewer codes than B2 (≈ 1,300 → ≤ 975).
+* All choices fixed here before any code-level run; test read once per model.

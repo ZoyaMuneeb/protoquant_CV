@@ -25,7 +25,7 @@ newest() { ls -t $1 2>/dev/null | head -1; }
 for SEED in ${SEEDS}; do
     PQ=$(newest "${P1_ROOT}/strict_s${SEED}/stage2/pipnet_*.pth")
     : "${PQ:?no Phase 1 strict Stage 2 checkpoint for seed ${SEED}}"
-    MASKS="${P2_ROOT}/strict_s${SEED}/masking/masks.pt"
+    MASKS="${P2_ROOT}/strict_s${SEED}/masking/${MASKS_NAME:-masks.pt}"   # codeprune_masks.pt for code-level pruning
     [ -f "${MASKS}" ] || { echo "No ${MASKS}: run scripts/run_phase2.sh first"; exit 1; }
     D="${P2_ROOT}/strict_s${SEED}/budget/${KEY}_E${EPOCHS}"
     if [ -f "${D}/DONE" ]; then echo "[BUDGET] skip (done): ${D}"; continue; fi

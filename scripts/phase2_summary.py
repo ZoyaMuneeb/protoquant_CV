@@ -88,7 +88,8 @@ def main() -> None:
     for s in seeds:
         d = root / f"strict_s{s}"
         # Phase 2 one-shot masks, then the Phase 4 one-shot ablation (P3 without the minimum)
-        for res_name, npz_name in (("results.json", "test_preds.npz"), ("ablation.json", "ablation_test_preds.npz")):
+        for res_name, npz_name in (("results.json", "test_preds.npz"), ("ablation.json", "ablation_test_preds.npz"),
+                                   ("codeprune.json", "codeprune_test_preds.npz")):
             res = load(d / "masking" / res_name)
             for r in res.get("models", []):
                 key = "dense" if r["method"] == "dense" else f"{r['method']}_K{r['K']}"
@@ -218,8 +219,9 @@ def main() -> None:
             summary["iterative"][key] = {"rows": rs}
         for key in bkeys:
             rs = [budget_rows[(s, key)] for s in seeds if (s, key) in budget_rows]
-            name = key[4:].split("_E")[0].replace("B1_", "B2_")
-            md.append(f"| {name} one-shot, {ms([r['total_epochs'] for r in rs])} epochs (control) | - | "
+            name = key[4:].split("_E")[0]
+            name = (name.replace("B1_", "B2_") + " one-shot") if name.startswith("B1_") else (name + " code-level")
+            md.append(f"| {name}, {ms([r['total_epochs'] for r in rs])} epochs{' (control)' if 'B2_' in name else ''} | - | "
                       f"{ms([r['total_epochs'] for r in rs])} | {ms([r['codes'] for r in rs])} | "
                       f"{ms([r['best_val_top1'] for r in rs])} | {ms([r['test_top1'] for r in rs])} |")
             summary["iterative"][key] = {"rows": rs}
@@ -244,9 +246,14 @@ def main() -> None:
                     pairs.append((ikey, bkey, f"iterative {iscore} vs one-shot B2 at {e} epochs, K = {k}",
                                   "gradual pruning, at equal training?" if iscore == score
                                   else "does iterative P1 beat the simplest strong baseline?"))
-            pairs.append((bkey, f"R_{base}", f"one-shot B2 at {e} vs 30 epochs, K = {k}",
-                          "does longer training alone help?"))
-            pairs.append((bkey, "dense", f"one-shot B2 at {e} epochs (K = {k}) vs dense head",
+            label = "one-shot B2" if score == "B1" else f"code-level {score}"
+            if score == "B1":
+                pairs.append((bkey, f"R_{base}", f"one-shot B2 at {e} vs 30 epochs, K = {k}",
+                              "does longer training alone help?"))
+            else:   # code-level pruning vs the edge-level B2 control at the same training budget
+                pairs.append((bkey, f"BUD_B1_K{k}_E{e}", f"{label} vs one-shot B2, both {e} epochs, K = {k}",
+                              "fewer codes at no loss?"))
+            pairs.append((bkey, "dense", f"{label} at {e} epochs (K = {k}) vs dense head",
                           "is dense accuracy kept?"))
         for key in ikeys:
             score, k = key[3:].rsplit("_K", 1)
@@ -257,6 +264,36 @@ def main() -> None:
                 md.append(f"| {label} | {q} | {cells(c)} |")
                 summary["iterative"].setdefault(key, {})[f"vs_{ref}"] = c
         md.append("")
+
+    ckeys = sorted({k for (s_, k) in rows if k.startswith(("CB1-", "CP1-"))},
+                   key=lambda x: (x.split("-")[0], -int(x.split("-M")[1].split("_K")[0])))
+    if ckeys:
+        md += ["## Code-level pruning (one-shot, section 12)", "",
+               "The M best codes by summed score (CB1: magnitude, CP1: activation-aware), then the top K edges of "
+               "each class among them. Δ vs edge-level B1 at the same K (which keeps the codes its edges touch).", "",
+               "| Model | Codes kept (active) | Edges | Classes < K | Val top-1 | Test top-1 | Δ vs B1 | 95 % CI | Seeds (Δ) | Verdict |",
+               "|---|---|---|---|---|---|---|---|---|---|"]
+        summary["code_level"] = {}
+        for key in ckeys:
+            rs = [rows[(s_, key)] for s_ in seeds if (s_, key) in rows]
+            k = key.rsplit("_K", 1)[1]
+            c = compare(correct, [key], f"B1_K{k}", seeds).get(key)
+            md.append(f"| {key} | {ms([r['active_codes'] for r in rs])} | {ms([r['nonzero_edges'] for r in rs])} | "
+                      f"{ms([r['classes_below_k'] for r in rs])} | {ms([r['val_top1'] for r in rs])} | "
+                      f"{ms([r['test_top1'] for r in rs])} | {cells(c)} |")
+            summary["code_level"][key] = {"rows": rs, "vs_B1": c}
+        md.append("")
+        cmp_rows = []
+        for key in ckeys:
+            if key.startswith("CP1-"):
+                ref = "CB1-" + key[4:]
+                c = compare(correct, [key], ref, seeds).get(key)
+                if c:
+                    cmp_rows.append(f"| {key} vs {ref} | does the activation-aware code score help? | {cells(c)} |")
+                    summary["code_level"][key]["vs_CB1"] = c
+        if cmp_rows:
+            md += ["| Comparison | Question | Δ | 95 % CI | Seeds (Δ) | Verdict |", "|---|---|---|---|---|---|",
+                   *cmp_rows, ""]
 
     abl = []   # Phase 4 ablations that need no training (methodology, Phase 4)
     for k in ks:

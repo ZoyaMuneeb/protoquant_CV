@@ -273,7 +273,21 @@ The rerun uses the selected backbone for the strict baseline (3 seeds), one-shot
 for 30 and 145 epochs (about 8 GPU-hours). It writes to `../runs_bb2/` and `results/backbone2/`, so the main
 runs and results are untouched. Every summary script now writes to `RESULTS_DIR` (default `results/`).
 
-### 9. Capacity metrics
+### 9. Code-level pruning (post hoc)
+
+Edge pruning keeps whatever codes its edges touch (about 1,300 at K = 10). Code-level pruning picks the codes
+first: the M codes with the highest summed P1 score over classes (CP1; CB1 = summed magnitude, as a control),
+then the top 10 edges of each class among them. Protocol section 12. On the improved backbone:
+
+```bash
+bash scripts/run_codeprune.sh
+```
+
+One-shot masks at M = 1,200 / 1,000 / 800 / 600 / 400 (minutes), then CP1 at 1,000 and 800 codes and CB1 at
+800 retrained for 145 epochs (about 6 GPU-hours; change with `RETRAIN_KEYS`). `results/backbone2/phase2_results.md`
+gets a "Code-level pruning" section and comparisons against the 145-epoch B2 control and the dense head.
+
+### 10. Capacity metrics
 
 After Phase 2 (needs the GPU to itself, about 30 min):
 
