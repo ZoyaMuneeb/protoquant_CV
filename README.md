@@ -18,6 +18,7 @@ paper [arXiv 2602.06592](https://arxiv.org/abs/2602.06592)). CUB-200-2011, ConvN
 | 4 | Iterative pruning, controls, ablations | Done |
 | – | Improved-backbone rerun | Done |
 | – | Code-level pruning + code-matched CB1 control | Done |
+| – | Loss-aware physical pruning pilot (this branch) | Code ready, not run |
 | 5 | Figures, prototype visualisations, demo | Not started |
 
 ## Key findings
@@ -186,8 +187,36 @@ results/          data checks, baseline, Phase 2–4 results, capacity (backbone
 slurm/            original cluster scripts (reference only)
 ```
 
-## Physical pruning pilot
+## Loss-aware physical pruning pilot (branch `pilot/physical-lossaware`)
 
-Run both seed-40 pilots with P1-only, greedy loss-aware, and batched physical pruning using
-`bash scripts/run_physical_pilot.sh`. Start with `--smoke`. Input paths, checks, settings, and commands
-are documented in [the pilot guide](docs/physical_pruning_pilot.md).
+**Idea.** Instead of ranking codes by a score and cutting the lowest, delete codes from the model one at a
+time (or in small batches), each time picking the code whose removal raises the training loss least.
+Every step measures the real loss change on the current, already-pruned model. No retraining, and test is
+never read.
+
+**Three methods compared** (seed 40, validation accuracy):
+
+| Method | How it chooses the next code to delete |
+|---|---|
+| P1-only | Lowest summed P1 score (fixed ranking) |
+| Greedy loss-aware | Among the 64 lowest-P1 codes, the one whose deletion hurts the loss least |
+| Batched loss-aware | Same, but deletes up to 8 at once if their combined damage stays close to the sum of their individual damages; otherwise halves the batch |
+
+**Two pilots:**
+- Pilot 1 starts from the dense model: 3,000 → 2,840 codes.
+- Pilot 2 starts from a compact 1,700-code model (top codes by P1): 1,700 → 1,540 codes.
+
+Loss is measured on 400 training images (2 per class). Removed codes are physically deleted, and the
+remaining codes keep all their classifier weights (no top-K edge mask).
+
+**Run it** (on the GPU machine; full details, inputs and settings in
+[the pilot guide](docs/physical_pruning_pilot.md)):
+
+```bash
+bash scripts/run_physical_pilot.sh --self-test   # synthetic tests, no data needed
+bash scripts/run_physical_pilot.sh --smoke       # quick real-data check
+bash scripts/run_physical_pilot.sh               # full pilot
+```
+
+Real-data runs need `BACKBONE_CKPT`, `PQ_CKPT`, `CACHE_DIR` and `CUB_PATH` set. Results go to
+`results.md` in the printed output folder.
