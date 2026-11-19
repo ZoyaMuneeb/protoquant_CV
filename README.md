@@ -17,7 +17,7 @@ paper [arXiv 2602.06592](https://arxiv.org/abs/2602.06592)). CUB-200-2011, ConvN
 | 2–3 | Pruning methods, paired-bootstrap evaluation, capacity | Done |
 | 4 | Iterative pruning, controls, ablations | Done |
 | – | Improved-backbone rerun | Done |
-| – | Code-level pruning | Done; code-matched CB1 control **running** |
+| – | Code-level pruning + code-matched CB1 control | Done |
 | 5 | Figures, prototype visualisations, demo | Not started |
 
 ## Key findings
@@ -29,11 +29,15 @@ paper [arXiv 2602.06592](https://arxiv.org/abs/2602.06592)). CUB-200-2011, ConvN
 3. **Retraining length matters more than the pruning score.** B2 retrained for 145 instead of 30 epochs gains
    +1.1 to +2.1 points and shows no meaningful loss against the dense head, with 0.45 % of its edges.
 4. **Gradual (iterative) pruning adds nothing** once training length is matched.
-5. **Code-level pruning (new) removes 32 % more codes than B2.** CP1 keeps 890 codes vs B2's 1,304, at no
-   meaningful loss against B2. Against dense, a 1-point loss is just not excluded (lower bound −1.07).
-6. **The global budget (P3) and the "contrast" variant don't help.** P3 starves classes at small K.
+5. **Pruning whole codes (new) gives a 32 % smaller codebook than B2.** Keeping 890 codes instead of B2's
+   1,304, then retraining for 145 epochs, shows no meaningful loss against B2. Against dense, a 1-point loss
+   is just not excluded (lower bound −1.07).
+6. **The score again matters only before retraining.** At equal codes (890), the activation-aware code score
+   (CP1) beats magnitude (CB1) by +8.2 points one-shot. After 145 epochs of retraining the two are the same
+   (+0.14, CI [−0.28, +0.56]). The same pattern holds for edges (findings 1–2) and for codes.
+7. **The global budget (P3) and the "contrast" variant don't help.** P3 starves classes at small K.
    P1-contrast ≈ P1 in accuracy, but it is the only score that predicts single-edge deletion damage.
-7. **Pruning shrinks explanations 40× and the codebook by half, but not the model.** The backbone dominates
+8. **Pruning shrinks explanations 40× and the codebook by half, but not the model.** The backbone dominates
    latency and memory, so the full model is only about 2 % faster.
 
 Verdicts use the rules fixed before any run ([protocol](docs/phase0_protocol.md), section 6):
@@ -84,18 +88,23 @@ Our B1 masks keep almost exactly the paper's code counts (1,305 vs 1,286 at K = 
 | B2 | 1,304 | 30 | 84.36 | |
 | B2, retrained longer | 1,304 | 145 | **85.47** | no meaningful loss (−0.18) |
 | Code-level CP1, M = 1,000 | **890** | 145 | 85.15 | loss not excluded (−0.50, CI [−1.07, +0.07]) |
+| Code-level CB1, matched to 890 codes (control) | 890 | 145 | 85.01 | loss not excluded (−0.64, CI [−1.20, −0.09]) |
 | Code-level CP1, M = 800 | 728 | 145 | 84.53 | loss not excluded |
 | Code-level CB1, M = 800 (magnitude control) | 484 | 145 | 83.82 | loss not excluded |
 
 **Iterative pruning.** Iterative P1 beats iterative B1 (+0.58, all seeds). But neither differs significantly
 from B2 trained for the same 145 epochs.
 
-**Code-level pruning, one-shot.** Choosing codes by the activation-aware score (CP1) beats choosing them by
-magnitude (CB1) by 27–47 points at every budget.
+**Code-level pruning, one-shot.** At the same budget M, CP1 beats CB1 by 27–47 points, but CB1 also ends
+with far fewer active codes (e.g. 484 vs 728 at M = 800). At equal active codes (890), CP1 still wins by
++8.19 [+7.21, +9.16], better in every seed.
 
-**Code-level pruning, retrained.** CP1-M1000 vs B2 at 145 epochs: −0.32 [−0.71, +0.07], no meaningful loss.
-CB1-M800 ended with fewer active codes than CP1-M800, so the retrained CP1 vs CB1 gap is not yet at equal
-codes. That is what the running control tests.
+**Code-level pruning, retrained (145 epochs, 890 codes).**
+- CP1 vs B2: −0.32 [−0.71, +0.07], no meaningful loss.
+- CB1 vs B2: −0.46 [−0.82, −0.10], no meaningful loss.
+- CP1 vs CB1: +0.14 [−0.28, +0.56], no difference.
+
+So the smaller codebook comes from pruning at the code level plus long retraining, not from the CP1 score.
 
 ### Ablations and controls
 
