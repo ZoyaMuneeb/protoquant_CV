@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ProtoQuant: Loss-Aware Physical Pruning Pilot — How to Run It</title>
+<style>
+@page { size: Letter; margin: 0.4in 0.52in; }
+* { box-sizing: border-box; }
+html, body { margin: 0; color: #242424; background: #fff; }
+body { font: 11pt/1.32 Arial, Helvetica, sans-serif; }
+.sheet { position: relative; height: 10.15in; padding: 0.28in 0 0.15in; break-after: page; }
+.sheet:last-child { break-after: auto; }
+.running { position: absolute; top: 0; left: 0; color: #757575; font-size: 6.5pt; }
+.footer { position: absolute; bottom: 0; right: 0; color: #757575; font-size: 6.5pt; }
+h1, h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: normal; }
+h1 { font-size: 23pt; line-height: 1.1; margin: 0 0 9px; letter-spacing: -0.3px; }
+h2 { font-size: 16pt; line-height: 1.16; margin: 16px 0 8px; }
+p { margin: 0 0 8px; }
+.meta { font-size: 9pt; color: #606060; margin-bottom: 12px; }
+.meta span { padding: 2px 5px; border-radius: 3px; background: #f2f2f2; }
+pre { font: 9.4pt/1.33 Consolas, 'Liberation Mono', monospace; margin: 7px 0 9px; padding: 8px 10px;
+      background: #f7f7f5; border-radius: 5px; white-space: pre; break-inside: avoid; }
+code { font: 0.94em Consolas, 'Liberation Mono', monospace; background: #f2f1ed; padding: 1px 3px; border-radius: 2px; }
+pre code { font: inherit; background: none; padding: 0; }
+.small { font-size: 10pt; }
+table { width: 100%; border-collapse: collapse; font-size: 10.3pt; margin: 9px 0; break-inside: avoid; }
+th, td { text-align: left; vertical-align: top; border: 0.6px solid #dfdcd5; padding: 5px 7px; }
+th { background: #f3f3f3; color: #555; font-weight: normal; }
+th:first-child, td:first-child { width: 29%; }
+ul { margin: 5px 0 8px; padding-left: 18px; }
+li { margin-bottom: 6px; }
+.page2 { font-size: 10.6pt; line-height: 1.3; }
+.page2 h2:first-of-type { margin-top: 0; }
+.page2 pre { font-size: 9.2pt; }
+.page2 table { font-size: 10pt; }
+</style>
+</head>
+<body>
+<section class="sheet">
+<div class="running">ProtoQuant: Loss-Aware Physical Pruning Pilot</div>
+<h1>ProtoQuant: Loss-Aware Physical<br>Pruning Pilot — How to Run It</h1>
+<p class="meta"><span>Nov 20, 2026</span> &nbsp;·&nbsp; <span>Seed 40</span></p>
+<p>Compare <strong>P1-only, greedy loss-aware, and batched loss-aware</strong> physical pruning from the same checkpoint. Pilot 1 removes 160 prototypes (3,000 → 2,840). Pilot 2 starts from one shared P1-pruned model, recalculates P1, and removes 160 more (1,700 → 1,540). Selection uses training data; assessment uses validation data. There is no retraining.</p>
+<h2>1. Setup</h2>
+<p>From the repository root, retrieve the published branch:</p>
+<pre>git fetch origin
+git switch pilot/physical-lossaware
+git pull --ff-only origin pilot/physical-lossaware
+git branch --show-current</pre>
+<p>The last line should print <code>pilot/physical-lossaware</code>. Set the matching Phase 1 backbone, dense seed-40 checkpoint, and cache paths. Replace these examples with your own paths:</p>
+<pre>export BACKBONE_CKPT="/path/to/backbone.pth"
+export PQ_CKPT="/path/to/strict_s40/stage2/pipnet_checkpoint.pth"
+export CACHE_DIR="/path/to/phase1/feature_cache"
+export CUB_PATH="/path/to/cub200_cropped"
+ls -lh "$BACKBONE_CKPT" "$PQ_CKPT" \
+  "$CACHE_DIR/train.pt" "$CACHE_DIR/val.pt"
+test -d "$CUB_PATH/CUB_200_2011/images"</pre>
+<p class="small">The file listing must succeed; the directory check exits silently on success. Use the existing environment at <code>../.venv</code>, or set <code>export VENV="/path/to/.venv"</code>. <code>CUB_PATH</code> contains <code>CUB_200_2011</code>. The launcher checks the strict split and matching inputs.</p>
+<h2>2. Run</h2>
+<p><strong>a) Smoke test.</strong> Run this first. It checks correctness and both pilots using 200 training images, 32 validation images, and only two removals per method.</p>
+<pre>export PILOT_OUTPUT_DIR="$PWD/../runs/pilot_smoke_$(date +%Y%m%d_%H%M%S)"
+bash scripts/run_physical_pilot.sh --smoke</pre>
+<p><strong>b) Complete pilot.</strong> After the smoke test passes, run all six method/pilot combinations at the full 160-removal budget.</p>
+<pre>export PILOT_OUTPUT_DIR="$PWD/../runs/physical_pilot_$(date +%Y%m%d_%H%M%S)"
+bash scripts/run_physical_pilot.sh</pre>
+<p class="small">Full-pilot runtime has not yet been measured. The full run requires CUDA. Default shortlist is 64 candidates; the batched method proposes up to eight deletions at a time.</p>
+<div class="footer">Page 1 of 2</div>
+</section>
+<section class="sheet page2">
+<div class="running">ProtoQuant: Loss-Aware Physical Pruning Pilot</div>
+<h2>3. Check</h2>
+<p>All outputs go to <code>$PILOT_OUTPUT_DIR</code>, printed at startup. In another terminal, set that variable to the printed folder and check progress:</p>
+<pre>export PILOT_OUTPUT_DIR="/path/printed/by/the/launcher"
+tail -f "$PILOT_OUTPUT_DIR/run.log"</pre>
+<p>When the run finishes, open <code>results.md</code> in that folder.</p>
+<table>
+<thead><tr><th>Check</th><th>What you should see after the complete pilot</th></tr></thead>
+<tbody>
+<tr><td>Completion</td><td>A final <code>[DONE]</code> message, a <code>DONE</code> file, and <code>state.json</code> showing <code>completed</code>.</td></tr>
+<tr><td>Summary</td><td>Six rows in <code>results.md</code>, <code>results.csv</code>, and <code>results.json</code>: three methods for each pilot.</td></tr>
+<tr><td>Physical counts</td><td>Pilot 1 ends at <strong>2,840</strong>; Pilot 2 ends at <strong>1,540</strong>, for every method. Smoke runs instead end at 2,998 and 1,698.</td></tr>
+<tr><td>Checks and measures</td><td>Inference and reload checks pass. Results record validation accuracy/loss, calibration loss, pruning seconds, GPU memory, and edge counts.</td></tr>
+<tr><td>Method outputs</td><td>Each <code>pilot*/p1</code>, <code>greedy</code>, and <code>batched</code> folder has <code>pruned.pth</code>, <code>results.json</code>, and <code>decisions.jsonl</code>. Batch fallbacks include reasons.</td></tr>
+</tbody></table>
+<p><strong>Send back</strong> the root <code>results.md</code>, <code>results.csv</code>, <code>results.json</code>, <code>config.json</code>, <code>calibration.json</code>, and <code>run.log</code>, plus both <code>batched/decisions.jsonl</code> files. Keep the checkpoints on the GPU machine and share their paths.</p>
+<h2>4. If something breaks</h2>
+<ul>
+<li><strong>Missing checkpoint or dataset.</strong> Correct <code>BACKBONE_CKPT</code>, <code>PQ_CKPT</code>, or <code>CUB_PATH</code> and repeat the checks in section 1. Use the dense 3,000-prototype seed-40 model.</li>
+<li><strong>Missing or mismatched cache.</strong> Use the matching backbone and create training/validation caches below. For stale hashes, IDs, or features, rebuild into a fresh <code>CACHE_DIR</code>.</li>
+</ul>
+<pre>VENV="${VENV:-../.venv}"
+PQ_CUB_PROTOCOL=strict "$VENV/bin/python" scripts/cache_features.py \
+  --backbone_ckpt "$BACKBONE_CKPT" --cub_path "$CUB_PATH" \
+  --out_dir "$CACHE_DIR" --splits train val</pre>
+<ul>
+<li><strong>Interrupted run or “output already exists”.</strong> This pilot <strong>cannot resume</strong>. Keep the old folder, set a new timestamped <code>PILOT_OUTPUT_DIR</code> (section 2), and restart the whole command.</li>
+<li><strong>GPU out of memory.</strong> Use a new output folder and smaller computation chunks:</li>
+</ul>
+<pre>PILOT_IMAGE_BATCH=8 CANDIDATE_CHUNK_SIZE=1 \
+  bash scripts/run_physical_pilot.sh</pre>
+<p><strong>Any other error, including a failed inference check:</strong> send <code>state.json</code>, <code>config.json</code> if present, the failing method’s <code>decisions.jsonl</code>, and the last 30 log lines. For an earlier failure, send the terminal message.</p>
+<pre>tail -n 30 "$PILOT_OUTPUT_DIR/run.log"</pre>
+<div class="footer">Page 2 of 2</div>
+</section>
+</body>
+</html>

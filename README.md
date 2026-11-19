@@ -185,3 +185,9 @@ splits/           fixed CUB validation split
 results/          data checks, baseline, Phase 2–4 results, capacity (backbone2/: improved backbone)
 slurm/            original cluster scripts (reference only)
 ```
+
+## Physical pruning pilot
+
+Run both seed-40 pilots with P1-only, greedy loss-aware, and batched physical pruning using
+`bash scripts/run_physical_pilot.sh`. Start with `--smoke`. Input paths, checks, settings, and commands
+are documented in [the pilot guide](docs/physical_pruning_pilot.md).
