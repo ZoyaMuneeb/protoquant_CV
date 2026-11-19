@@ -201,11 +201,13 @@ def main() -> None:
         md.append("")
 
     ikeys = sorted({k for (s, k) in iter_rows})
-    if ikeys:
+    bkeys = sorted({k for (s, k) in budget_rows})
+    if ikeys or bkeys:   # the epoch-matched control can exist without iterative runs (improved-backbone rerun)
         summary["iterative"] = {}
-        md += ["## Iterative pruning (Phase 4)", "",
-               "20 % of each class's edges removed per round, 5 epochs of retraining and rescoring between rounds, "
-               "full codebook during the rounds; then unused codes removed and 30 epochs (the B2 recipe). "
+        md += ["## Iterative pruning and longer retraining (Phase 4)", "",
+               "Iterative: 20 % of each class's edges removed per round, 5 epochs of retraining and rescoring between "
+               "rounds, full codebook during the rounds; then unused codes removed and 30 epochs (the B2 recipe). "
+               "Control: the one-shot B1 mask retrained with the B2 recipe for as many epochs in total. "
                "Same rules as above.", "",
                "| Model | Rounds | Total epochs | Codes | Best val | Test top-1 |", "|---|---|---|---|---|---|"]
         for key in ikeys:
@@ -214,7 +216,6 @@ def main() -> None:
                       f"{ms([r['codes'] for r in rs])} | {ms([r['best_val_top1'] for r in rs])} | "
                       f"{ms([r['test_top1'] for r in rs])} |")
             summary["iterative"][key] = {"rows": rs}
-        bkeys = sorted({k for (s, k) in budget_rows})
         for key in bkeys:
             rs = [budget_rows[(s, key)] for s in seeds if (s, key) in budget_rows]
             name = key[4:].split("_E")[0].replace("B1_", "B2_")
