@@ -147,6 +147,7 @@ batch 512 is the fallback and must be recorded in the change log.
 | 2026-11-18 | Phase 4 ablations implemented as specified in the methodology: P3 without the one-edge-per-class minimum (one-shot, K = 5/10/20) and P1-contrast vs P1 (paired, from the saved predictions) | Planned ablations; no change to methods or rules |
 | 2026-11-19 | Improved-backbone rerun added, see section 11 | Added after all main results were seen: our backbone (84.05 % test) is 4.4 points below the paper's (88.4 %), so the claim "longer retraining closes the gap to dense" is retested on a stronger backbone. Reported as a separate, post hoc experiment; main results unchanged |
 | 2026-11-19 | Code-level pruning added, see section 12 | New method, added after all main results were seen (exploratory, reported as post hoc): edge methods end at about 1,300 codes, and codes are the capacity that matters |
+| 2026-11-19 | Code-matched CB1 control added to section 12 | Added after the code-level results were seen: CB1-M800 ended with fewer active codes than CP1-M800, so the retrained comparison confounded code score with code count. Reported as post hoc |
 
 ## 10. Iterative pruning (Phase 4), fixed before running
 
@@ -208,3 +209,9 @@ Run on the improved backbone (section 11), K = 10 edges per class, seeds 40–42
   vs the B2 145-epoch control and vs the dense head. The compactness claim needs no meaningful loss against
   dense with at least 25 % fewer codes than B2 (≈ 1,300 → ≤ 975).
 * All choices fixed here before any code-level run; test read once per model.
+* **Code-matched CB1 control (post hoc, added 2026-11-19 after the results above):** CB1-M800 kept only ≈ 484
+  active codes vs ≈ 728 for CP1-M800, so the retrained CP1 vs CB1 comparison was not at equal codes. Per seed,
+  the CB1 budget M is set so its active codes are closest to those of CP1-M1000 (≈ 890; ties: smaller M), key
+  `CB1-eqCP1M1000_K10`. Evaluated one-shot (test read once, separate files), then retrained for 145 epochs with
+  the B2 recipe. Comparison: retrained CP1-M1000 vs this control (section 6 rules), answering whether the code
+  score matters once the head is retrained.

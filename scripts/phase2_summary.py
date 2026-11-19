@@ -89,7 +89,8 @@ def main() -> None:
         d = root / f"strict_s{s}"
         # Phase 2 one-shot masks, then the Phase 4 one-shot ablation (P3 without the minimum)
         for res_name, npz_name in (("results.json", "test_preds.npz"), ("ablation.json", "ablation_test_preds.npz"),
-                                   ("codeprune.json", "codeprune_test_preds.npz")):
+                                   ("codeprune.json", "codeprune_test_preds.npz"),
+                                   ("codeprune_matched.json", "codeprune_matched_test_preds.npz")):
             res = load(d / "masking" / res_name)
             for r in res.get("models", []):
                 key = "dense" if r["method"] == "dense" else f"{r['method']}_K{r['K']}"
@@ -253,6 +254,11 @@ def main() -> None:
             else:   # code-level pruning vs the edge-level B2 control at the same training budget
                 pairs.append((bkey, f"BUD_B1_K{k}_E{e}", f"{label} vs one-shot B2, both {e} epochs, K = {k}",
                               "fewer codes at no loss?"))
+            if score.startswith("CB1-eqCP1M"):   # code-matched control: CP1 vs CB1 at equal active codes
+                tgt = "CP1-M" + score.split("CP1M", 1)[1]
+                pairs.append((f"BUD_{tgt}_K{k}_E{e}", bkey,
+                              f"code-level {tgt} vs CB1 with as many codes, both {e} epochs, K = {k}",
+                              "does the code score matter after retraining?"))
             pairs.append((bkey, "dense", f"{label} at {e} epochs (K = {k}) vs dense head",
                           "is dense accuracy kept?"))
         for key in ikeys:
@@ -265,8 +271,8 @@ def main() -> None:
                 summary["iterative"].setdefault(key, {})[f"vs_{ref}"] = c
         md.append("")
 
-    ckeys = sorted({k for (s_, k) in rows if k.startswith(("CB1-", "CP1-"))},
-                   key=lambda x: (x.split("-")[0], -int(x.split("-M")[1].split("_K")[0])))
+    ckeys = sorted({k for (s_, k) in rows if k.startswith(("CB1-", "CP1-"))},   # CB1-eqCP1M1000: matched control
+                   key=lambda x: (x.split("-")[0], -int(x.split("M")[-1].split("_K")[0]), x))
     if ckeys:
         md += ["## Code-level pruning (one-shot, section 12)", "",
                "The M best codes by summed score (CB1: magnitude, CP1: activation-aware), then the top K edges of "
@@ -291,6 +297,12 @@ def main() -> None:
                 if c:
                     cmp_rows.append(f"| {key} vs {ref} | does the activation-aware code score help? | {cells(c)} |")
                     summary["code_level"][key]["vs_CB1"] = c
+            elif key.startswith("CB1-eqCP1M"):
+                tgt = "CP1-M" + key.split("CP1M", 1)[1]
+                c = compare(correct, [tgt], key, seeds).get(tgt)
+                if c:
+                    cmp_rows.append(f"| {tgt} vs {key} | does the code score help at equal active codes? | {cells(c)} |")
+                    summary["code_level"].setdefault(tgt, {})[f"vs_{key}"] = c
         if cmp_rows:
             md += ["| Comparison | Question | Δ | 95 % CI | Seeds (Δ) | Verdict |", "|---|---|---|---|---|---|",
                    *cmp_rows, ""]

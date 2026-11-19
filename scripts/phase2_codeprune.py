@@ -15,6 +15,11 @@ happen to touch (about 1,300 at K = 10). Code-level pruning chooses the codes fi
 Mask keys are "<score>-M<M>_K<K>", e.g. CP1-M800_K10. Writes to masking_dir: codeprune_masks.pt (loadable by
 phase2_retrain.py), codeprune.json (one-shot val + test top-1, codes kept, edges, active codes) and
 codeprune_test_preds.npz (per-image test predictions). Refuses to run again on an existing codeprune.json.
+
+Code-matched control (section 12, post hoc): with --match_active_to CP1-M1000_K10 --tag matched, rebuilds that
+CP1 mask, counts its active codes A for this seed, and builds only the CB1 mask whose budget M gives the active
+count closest to A (ties: smaller M). Key "CB1-eqCP1M1000_K10"; files codeprune_matched{.json,_masks.pt,
+_test_preds.npz}, so the earlier one-shot results are not touched and test is read once for the new mask.
 """
 
 import argparse
@@ -45,6 +50,34 @@ def code_masks(w_eff: torch.Tensor, scores: dict, budgets: list[int], k: int) ->
     return masks, info
 
 
+def matched_cb1(w_eff: torch.Tensor, scores: dict, target_key: str) -> tuple[dict, dict, torch.Tensor]:
+    """CB1 mask with as many active codes as the CP1 mask `target_key` (e.g. CP1-M1000_K10)."""
+    name, k = target_key.rsplit("_K", 1)
+    if not name.startswith("CP1-M"):
+        raise SystemExit(f"--match_active_to expects a CP1-M<M>_K<K> key, got {target_key}")
+    k, m_ref = int(k), int(name.split("-M")[1])
+    ref_mask = code_masks(w_eff, scores, [m_ref], k)[0][target_key]
+    target = int(ref_mask.any(0).sum())
+    edge = scores["B1"]
+    code_score = edge.masked_fill(~(w_eff > 0), 0).sum(0)
+    best = None
+    for m in range(target, w_eff.shape[1] + 1):        # active codes <= M, so start at the target
+        keep = torch.zeros(w_eff.shape[1], dtype=torch.bool)
+        keep[code_score.topk(m).indices] = True
+        mask = P.topk_per_class(edge, w_eff * keep, k)
+        gap = abs(int(mask.any(0).sum()) - target)
+        if best is None or gap < best[0]:
+            best = (gap, m, mask)
+        if gap == 0:
+            break
+    _, m, mask = best
+    key = f"CB1-eq{name.replace('-', '')}_K{k}"
+    per_class = mask.sum(1)
+    info = {key: {"code_budget": m, "target_key": target_key, "target_active_codes": target,
+                  "classes_below_k": int((per_class < k).sum()), "classes_with_no_edge": int((per_class == 0).sum())}}
+    return {key: mask}, info, ref_mask
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--backbone_ckpt", required=True)
@@ -54,14 +87,20 @@ def main() -> None:
     ap.add_argument("--seed", type=int, required=True)
     ap.add_argument("--budgets", type=int, nargs="+", default=[1200, 1000, 800, 600, 400])
     ap.add_argument("--k", type=int, default=10)
+    ap.add_argument("--match_active_to", default=None,
+                    help="build only the CB1 mask matched in active codes to this CP1 key (e.g. CP1-M1000_K10)")
+    ap.add_argument("--tag", default="", help="output name suffix, e.g. 'matched' -> codeprune_matched.json")
     args = ap.parse_args()
 
     if L.protocol_info()["protocol"] != "strict":
         raise SystemExit("runs under PQ_CUB_PROTOCOL=strict")
     out = Path(args.masking_dir)
     out.mkdir(parents=True, exist_ok=True)
-    if (out / "codeprune.json").exists():
-        raise SystemExit(f"{out / 'codeprune.json'} exists: test was already read for these masks")
+    stem = "codeprune" + (f"_{args.tag}" if args.tag else "")
+    if args.match_active_to and not args.tag:
+        raise SystemExit("--match_active_to needs --tag, so the earlier codeprune.json is not overwritten")
+    if (out / f"{stem}.json").exists():
+        raise SystemExit(f"{out / f'{stem}.json'} exists: test was already read for these masks")
 
     dev = L.device()
     model = L.load_protoquant(args.backbone_ckpt, args.pq_ckpt, dev)
@@ -73,7 +112,21 @@ def main() -> None:
         s[split], y[split], ids[split] = pooled_scores(model, d["features"], dev), d["labels"], d["img_ids"]
     mu_in, mu_out = P.class_means(s["train"], y["train"], w_eff.shape[0])
     scores = P.edge_scores(w_eff, mu_in, mu_out)
-    masks, info = code_masks(w_eff, scores, args.budgets, args.k)
+    extra = {}
+    if args.match_active_to:
+        masks, info, ref_mask = matched_cb1(w_eff, scores, args.match_active_to)
+        saved = out / "codeprune_masks.pt"   # the CP1 mask must be the one that was retrained
+        if saved.is_file():
+            old = torch.load(saved, map_location="cpu")["masks"].get(args.match_active_to)
+            same = old is not None and bool(torch.equal(old.bool(), ref_mask))
+            extra["cp1_mask_matches_saved"] = same
+            if not same:
+                print(f"[CODE] WARNING: rebuilt {args.match_active_to} differs from {saved}", flush=True)
+        for key, i in info.items():
+            print(f"[CODE] {key}: target {i['target_active_codes']} active codes -> CB1 budget M = {i['code_budget']}",
+                  flush=True)
+    else:
+        masks, info = code_masks(w_eff, scores, args.budgets, args.k)
 
     w = w_eff.double()
     rows, preds = [], {}
@@ -89,9 +142,10 @@ def main() -> None:
               f"edges {row['nonzero_edges']:5d} active codes {row['active_codes']:5d} "
               f"classes < K {row['classes_below_k']}", flush=True)
 
-    torch.save({"masks": masks, "pq_ckpt": args.pq_ckpt, "seed": args.seed}, out / "codeprune_masks.pt")
-    np.savez_compressed(out / "codeprune_test_preds.npz", img_ids=ids["test"].numpy(), labels=y["test"].numpy(), **preds)
-    L.write_json(out / "codeprune.json", {"seed": args.seed, "pq_ckpt": args.pq_ckpt, **L.protocol_info(), "models": rows})
+    torch.save({"masks": masks, "pq_ckpt": args.pq_ckpt, "seed": args.seed}, out / f"{stem}_masks.pt")
+    np.savez_compressed(out / f"{stem}_test_preds.npz", img_ids=ids["test"].numpy(), labels=y["test"].numpy(), **preds)
+    L.write_json(out / f"{stem}.json", {"seed": args.seed, "pq_ckpt": args.pq_ckpt, **L.protocol_info(), **extra,
+                                         "models": rows})
 
 
 if __name__ == "__main__":

@@ -287,6 +287,13 @@ One-shot masks at M = 1,200 / 1,000 / 800 / 600 / 400 (minutes), then CP1 at 1,0
 800 retrained for 145 epochs (about 6 GPU-hours; change with `RETRAIN_KEYS`). `results/backbone2/phase2_results.md`
 gets a "Code-level pruning" section and comparisons against the 145-epoch B2 control and the dense head.
 
+Code-matched control (post hoc): CB1 with as many active codes as CP1-M1000 (≈ 890), one-shot and retrained for
+145 epochs (about 2 GPU-hours), to test whether the code score still matters after retraining:
+
+```bash
+bash scripts/run_codeprune_control.sh
+```
+
 ### 10. Capacity metrics
 
 After Phase 2 (needs the GPU to itself, about 30 min):
