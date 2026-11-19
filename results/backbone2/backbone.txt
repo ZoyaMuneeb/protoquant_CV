@@ -1,0 +1,1 @@
+/home/shaikha/runs/backbone_sweep/continue_lr_2e-4_lr_5e-5/ckpt/cub200_convnext_tiny_full_20261118_223411.pth

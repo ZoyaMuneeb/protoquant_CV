@@ -1,0 +1,98 @@
+{
+  "runs": [
+    {
+      "protocol": "strict",
+      "seed": 40,
+      "s1_best_val": 83.66666412353516,
+      "s1_best_epoch": 18,
+      "s1_dead_ratio": 0.4092,
+      "s1_epochs": 30,
+      "b0_val_before": 83.66666412353516,
+      "b0_val_after": 83.66666412353516,
+      "b0_dead_before": 0.4092,
+      "b0_dead_after": 0.1933,
+      "b0_codes": "4096->3000",
+      "s2_best_val": 84.5,
+      "s2_best_epoch": 18,
+      "s2_epochs": 30,
+      "val_top1": 84.50000286102295,
+      "test_top1": 85.72661280632019,
+      "test_top5": 96.99689149856567,
+      "codebook_entries": 3000,
+      "nonzero_edges": 418866,
+      "active_codes": 3000,
+      "codebook_mb_fp32": 8.7890625,
+      "tests": {
+        "1_masked_head_invariance": "PASS",
+        "2_physical_vs_logical": "MEASURED",
+        "3_feature_cache_agreement": "PASS",
+        "4_b0_usage_split": "PASS"
+      },
+      "t2_changed": "42/600"
+    },
+    {
+      "protocol": "strict",
+      "seed": 41,
+      "s1_best_val": 84.33332824707031,
+      "s1_best_epoch": 22,
+      "s1_dead_ratio": 0.3899,
+      "s1_epochs": 30,
+      "b0_val_before": 84.5,
+      "b0_val_after": 84.5,
+      "b0_dead_before": 0.3901,
+      "b0_dead_after": 0.1673,
+      "b0_codes": "4096->3000",
+      "s2_best_val": 84.83333587646484,
+      "s2_best_epoch": 18,
+      "s2_epochs": 30,
+      "val_top1": 84.83333587646484,
+      "test_top1": 85.48498153686523,
+      "test_top5": 97.13496565818787,
+      "codebook_entries": 3000,
+      "nonzero_edges": 425517,
+      "active_codes": 3000,
+      "codebook_mb_fp32": 8.7890625,
+      "tests": {
+        "1_masked_head_invariance": "PASS",
+        "2_physical_vs_logical": "MEASURED",
+        "3_feature_cache_agreement": "PASS",
+        "4_b0_usage_split": "PASS"
+      },
+      "t2_changed": "32/600"
+    },
+    {
+      "protocol": "strict",
+      "seed": 42,
+      "s1_best_val": 83.83332824707031,
+      "s1_best_epoch": 11,
+      "s1_dead_ratio": 0.4377,
+      "s1_epochs": 30,
+      "b0_val_before": 83.83332824707031,
+      "b0_val_after": 83.83332824707031,
+      "b0_dead_before": 0.4375,
+      "b0_dead_after": 0.232,
+      "b0_codes": "4096->3000",
+      "s2_best_val": 84.66667175292969,
+      "s2_best_epoch": 28,
+      "s2_epochs": 30,
+      "val_top1": 84.50000286102295,
+      "test_top1": 85.74387431144714,
+      "test_top5": 97.23852276802063,
+      "codebook_entries": 3000,
+      "nonzero_edges": 424220,
+      "active_codes": 3000,
+      "codebook_mb_fp32": 8.7890625,
+      "tests": {
+        "1_masked_head_invariance": "PASS",
+        "2_physical_vs_logical": "MEASURED",
+        "3_feature_cache_agreement": "PASS",
+        "4_b0_usage_split": "PASS"
+      },
+      "t2_changed": "43/600"
+    }
+  ],
+  "backbone_test_top1": {
+    "strict": 86.95201873779297,
+    "paper": null
+  }
+}
