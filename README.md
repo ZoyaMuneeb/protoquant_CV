@@ -1,332 +1,178 @@
 # ProtoQuant pruning project (MLR 512)
 
-Can activation-aware and globally budgeted pruning improve ProtoQuant's accuracy–sparsity trade-off over
-its original weight-based pruning, and can validation-guided codebook reduction keep that trade-off at
-lower cost?
+**Question.** Can activation-aware or globally budgeted pruning beat ProtoQuant's original magnitude pruning,
+and how small can the model get before it loses accuracy?
 
-This repository is built on the official ProtoQuant code
-([gmum/protoquant](https://github.com/gmum/protoquant), commit `b80d7e9`, paper
-[arXiv 2602.06592](https://arxiv.org/abs/2602.06592)). Everything runs on **CUB-200-2011** with a
-**ConvNeXt-Tiny** backbone on a single NVIDIA GPU.
+Built on the official ProtoQuant code ([gmum/protoquant](https://github.com/gmum/protoquant), commit `b80d7e9`;
+paper [arXiv 2602.06592](https://arxiv.org/abs/2602.06592)). CUB-200-2011, ConvNeXt-Tiny, one NVIDIA GPU.
 
-> The upstream repository has no license file. Ask the authors before including their code in a public
-> release or a submission.
+> The upstream repository has no license file. Ask the authors before including their code in a public release.
 
 ## Status
 
 | Phase | What | State |
 |---|---|---|
-| 0 | Data, split, protocol, environment, GPU timing | **Done** (RTX 5070 Ti; Stage 1/2 at batch 1024; ≈ 33 GPU-hours; backbone val top-1 85.5 %) |
-| 1 | Official pipeline + strict-protocol baseline | **Done**: strict 84.43 ± 0.33 % (3 seeds), paper protocol 84.74 %, backbone 84.05 %; Tests 1–4 pass ([results](results/phase1_baseline.md)) |
-| 2 | Pruning methods (B1, B2, random, P1, P1-contrast, P3) + deletion-effect control, one-shot and retrained | **Done** ([results](results/phase2_results.md)) |
-| 3 | Evaluation: paired bootstrap, decision rules, capacity measures | **Done** ([results](results/phase2_results.md), [capacity](results/capacity.md)) |
-| 4 | Ablations: iterative vs one-shot (+ matched B1 and 145-epoch controls), with vs without retraining, P1 vs P1-contrast vs random, P3 with vs without the minimum | **Done** ([results](results/phase2_results.md)) |
-| 5 | Figures | Not started |
-| – | Adaptive codebook size (A1 shrinkage, A3 effective size) | Not started |
+| 0 | Data, held-out split, frozen protocol, GPU timing | Done |
+| 1 | Official pipeline + strict baseline | Done |
+| 2–3 | Pruning methods, paired-bootstrap evaluation, capacity | Done |
+| 4 | Iterative pruning, controls, ablations | Done |
+| – | Improved-backbone rerun | Done |
+| – | Code-level pruning | Done; code-matched CB1 control **running** |
+| 5 | Figures, prototype visualisations, demo | Not started |
 
-## Results so far
+## Key findings
 
-CUB-200-2011, ConvNeXt-Tiny, strict protocol, seeds 40–42, test top-1 (mean of 3 seeds). Dense
-ProtoQuant head: **84.43 %**, 3,000 codes, ≈ 447k edges. "Better" and "no meaningful loss" follow the
-paired-bootstrap rules in [docs/phase0_protocol.md](docs/phase0_protocol.md), section 6.
+1. **One-shot, activation-aware pruning (P1) beats magnitude pruning (B1) at every K**, on both backbones:
+   +2 to +6 points, better in every seed.
+2. **Retraining for 30 epochs erases that advantage.** Retrained P1 ≈ retrained B1 (B2, the paper's
+   "Pruned & Tuned").
+3. **Retraining length matters more than the pruning score.** B2 retrained for 145 instead of 30 epochs gains
+   +1.1 to +2.1 points and shows no meaningful loss against the dense head, with 0.45 % of its edges.
+4. **Gradual (iterative) pruning adds nothing** once training length is matched.
+5. **Code-level pruning (new) removes 32 % more codes than B2.** CP1 keeps 890 codes vs B2's 1,304, at no
+   meaningful loss against B2. Against dense, a 1-point loss is just not excluded (lower bound −1.07).
+6. **The global budget (P3) and the "contrast" variant don't help.** P3 starves classes at small K.
+   P1-contrast ≈ P1 in accuracy, but it is the only score that predicts single-edge deletion damage.
+7. **Pruning shrinks explanations 40× and the codebook by half, but not the model.** The backbone dominates
+   latency and memory, so the full model is only about 2 % faster.
 
-**Reproduction.** Our baseline is 3.3 points below the paper's 87.7 %, mostly because our fine-tuned
-backbone is weaker (84.05 % vs 88.4 %). Our magnitude pruning (B1) keeps almost exactly the paper's code
-counts (788 vs 786 at K = 5, 1,305 vs 1,286 at K = 10).
+Verdicts use the rules fixed before any run ([protocol](docs/phase0_protocol.md), section 6):
+- **better**: the 95 % paired-bootstrap interval is above 0 and every seed agrees;
+- **no meaningful loss**: the lower bound is above −1 point;
+- **loss not excluded**: otherwise.
 
-**One-shot pruning (no retraining).** Activation-aware P1 beats magnitude pruning at every K:
+Runs added after earlier results were seen are labelled post hoc in the protocol's change log.
 
-| K | B1 (paper) | P1 | P1-contrast | P3 (global budget) | random |
+## Results
+
+Test top-1 %, strict protocol, mean of seeds 40–42.
+
+### Baselines
+
+| | Backbone alone | ProtoQuant (dense, 3,000 codes) |
+|---|---|---|
+| Paper | 88.4 | 87.7 |
+| Ours, main backbone | 84.05 | 84.43 ± 0.33 |
+| Ours, improved backbone (lr sweep + continued fine-tune) | 86.95 | 85.65 ± 0.14 |
+
+Our B1 masks keep almost exactly the paper's code counts (1,305 vs 1,286 at K = 10).
+
+### One-shot pruning (no retraining), K edges per class
+
+| K | B1 (paper) | P1 | P1-contrast | P3 (global) | random |
 |---|---|---|---|---|---|
-| 5 | 66.64 | **72.48** (+5.85) | 72.67 | 60.76 | 3.77 |
-| 10 | 71.78 | **75.35** (+3.57) | 75.42 | 68.25 | 4.74 |
-| 20 | 75.60 | **77.63** (+2.03) | 77.90 | 74.04 | 8.73 |
+| **Main backbone** | | | | | |
+| 5 | 66.64 | **72.48** | 72.67 | 60.76 | 3.77 |
+| 10 | 71.78 | **75.35** | 75.42 | 68.25 | 4.74 |
+| 20 | 75.60 | **77.63** | 77.90 | 74.04 | 8.73 |
+| **Improved backbone** | | | | | |
+| 5 | 73.66 | **78.09** | 78.24 | 72.51 | 4.24 |
+| 10 | 77.06 | **79.52** | 79.65 | 76.72 | 4.93 |
+| 20 | 79.41 | **81.15** | 81.31 | 79.55 | 7.71 |
 
-**With retraining (K = 10).** Retraining length matters more than the pruning score or schedule:
+### With retraining, K = 10
 
-| Model | Codes | Training epochs | Test top-1 | vs dense |
+| Model | Codes | Epochs | Test | vs dense |
 |---|---|---|---|---|
-| B2 (B1 mask, retrained; the paper's "Pruned & Tuned") | 1,305 | 30 | 81.94 | |
-| P1, retrained | 1,456 | 30 | 82.25 (≈ B2) | |
-| **B2, retrained longer** | **1,305** | **145** | **84.08** | **no meaningful loss** (−0.36) |
-| Iterative B1 (20 % per round) | 1,564 | 145 | 83.89 | loss not excluded |
-| Iterative P1 (20 % per round) | 1,650 | 145 | 84.47 | **no meaningful loss** (+0.03) |
+| **Main backbone** (dense 84.43) | | | | |
+| B2 (B1 mask, retrained) | 1,305 | 30 | 81.94 | |
+| P1, retrained | 1,456 | 30 | 82.25 | |
+| B2, retrained longer | 1,305 | 145 | **84.08** | no meaningful loss (−0.36) |
+| Iterative B1 | 1,564 | 145 | 83.89 | loss not excluded |
+| Iterative P1 | 1,650 | 145 | 84.47 | no meaningful loss (+0.03) |
+| **Improved backbone** (dense 85.65) | | | | |
+| B2 | 1,304 | 30 | 84.36 | |
+| B2, retrained longer | 1,304 | 145 | **85.47** | no meaningful loss (−0.18) |
+| Code-level CP1, M = 1,000 | **890** | 145 | 85.15 | loss not excluded (−0.50, CI [−1.07, +0.07]) |
+| Code-level CP1, M = 800 | 728 | 145 | 84.53 | loss not excluded |
+| Code-level CB1, M = 800 (magnitude control) | 484 | 145 | 83.82 | loss not excluded |
 
-* At 30 epochs, retraining erases P1's one-shot advantage at every K.
-* Training 145 instead of 30 epochs adds +2.1 points; gradual (iterative) pruning adds nothing beyond that
-  (iterative B1 vs B2 at 145 epochs: −0.18, not significant).
-* Under the same iterative schedule P1 beats magnitude (+0.58, all seeds), but iterative P1 does not
-  significantly beat B2 at 145 epochs (+0.39, one seed negative).
-* So at K = 10, plain magnitude pruning plus long retraining keeps dense accuracy with 0.45 % of the
-  edges and 57 % fewer codes.
+**Iterative pruning.** Iterative P1 beats iterative B1 (+0.58, all seeds). But neither differs significantly
+from B2 trained for the same 145 epochs.
 
-**Ablations.** P1-contrast ≈ P1 (gaps ≤ 0.27 points), so P1 is not just rewarding codes every class
-shares. P3 loses to B1 because its global ranking starves classes; dropping the one-edge minimum changes
-little (−0.4 at K = 5, nothing at K ≥ 10). Only P1-contrast predicts single-edge deletion damage
-(Spearman ρ ≈ 0.24 vs ≈ −0.08 for magnitude and P1).
+**Code-level pruning, one-shot.** Choosing codes by the activation-aware score (CP1) beats choosing them by
+magnitude (CB1) by 27–47 points at every budget.
 
-**Capacity (K = 10, [details](results/capacity.md)).** Explanations shrink about 40× (≈ 300 codes for
-90 % of a dense prediction's evidence → 7–8). The codebook shrinks 45–57 % (8.8 → 3.8–4.8 MB). The head
-is 2–2.4× faster (4× at K = 5), but the full model only ≈ 2 % (93.8 → 92 ms per batch of 128), and peak
-GPU memory is unchanged (1.65 GB): the backbone dominates. Iterative P1 costs ≈ 44 GPU-minutes per model
-vs ≈ 27 for B2 at 145 epochs.
+**Code-level pruning, retrained.** CP1-M1000 vs B2 at 145 epochs: −0.32 [−0.71, +0.07], no meaningful loss.
+CB1-M800 ended with fewer active codes than CP1-M800, so the retrained CP1 vs CB1 gap is not yet at equal
+codes. That is what the running control tests.
 
-Runs added after earlier results were seen (P1 retrained at K = 5/20, the 145-epoch control, the
-iterative-vs-dense comparisons) are recorded as post hoc in the protocol's change log.
+### Ablations and controls
 
-The frozen protocol (split, recipe, operating points, metrics, decision criteria) is in
-[docs/phase0_protocol.md](docs/phase0_protocol.md). Read it before running anything.
+| Question | Answer |
+|---|---|
+| Does contrasting against other classes help (P1-contrast vs P1)? | Slightly: +0.07 to +0.27 one-shot (significant at some K), never more |
+| Does P3's one-edge-per-class minimum matter? | −0.4 at K = 5 without it (11 classes get no edge); none at K ≥ 10 |
+| Which score predicts real single-edge deletion damage (Spearman ρ)? | P1-contrast 0.24 / 0.42 (main / improved backbone); magnitude and P1 ≈ 0 |
+| Does longer retraining alone help (B2 at 145 vs 30 epochs)? | Yes: +2.13 (main), +1.11 (improved), both better |
 
-## What changed from the official code
+### Capacity, K = 10, main backbone ([details](results/capacity.md))
 
-* **Held-out validation split.** The original CUB loader uses the *test* set as its validation set
-  (for checkpoint selection and codebook pruning). [`codebook_train/src/datasets/cub.py`](codebook_train/src/datasets/cub.py)
-  now has two modes, set with the environment variable `PQ_CUB_PROTOCOL`:
-  * `strict` (default in our scripts): train on 5,394 images, select on a held-out 600-image validation
-    split ([`splits/cub200_val10_seed0.txt`](splits/cub200_val10_seed0.txt), 3 images per class, seed 0).
-    The test set (5,794) is only read through `get_cub200_test()`.
-  * `paper`: the authors' original behaviour, for the one-seed sanity check.
+| | Dense | Pruned |
+|---|---|---|
+| Codes needed for 90 % of a prediction's evidence | ≈ 308 | 7–8 |
+| Codebook | 8.8 MB | 3.8–4.8 MB |
+| Head latency | 1× | 1.85–2.4× faster |
+| Full-model latency (batch 128) | 93.8 ms | ≈ 92 ms |
+| Peak GPU memory | 1.65 GB | 1.65 GB |
 
-  Every run logs a line like `[CUB200] protocol=strict | train loader split='train' (5394 imgs) | validation loader split='val' (600 imgs)`.
-* **No SLURM, no wandb.** The cluster scripts in `slurm/` are replaced by plain shell scripts in
-  [`scripts/`](scripts/) (single GPU, `WANDB_MODE=disabled`). The `slurm/` folder is kept for reference.
-* **Stage 2 validates on every image.** The repository's data loaders drop the last incomplete batch,
-  also for validation. With 600 validation images and batch 1024 that would leave no validation batch
-  at all (accuracy 0, no checkpoint saved), so our Stage 1, B0 and Stage 2 scripts set
-  `val_dataloader.drop_last=False`.
+Training cost: iterative P1 ≈ 44 GPU-minutes per model vs ≈ 27 for B2 at 145 epochs.
 
-## Requirements
+Full tables:
+- main backbone: [`results/phase2_results.md`](results/phase2_results.md);
+- improved backbone: `results/backbone2/phase2_results.md`, written on the GPU machine.
 
-* Linux with one NVIDIA GPU (the Stage 1/2 Hydra pipelines require CUDA; macOS is not supported).
-* Python 3.11 (the authors' version). [`uv`](https://github.com/astral-sh/uv) is used if installed, otherwise `venv` + `pip`.
-* About 3 GB free disk for CUB (raw + cropped).
+## What we changed in the official code
+
+- **Held-out validation.** The original CUB loader selects checkpoints and prunes codes on the *test* set.
+  `PQ_CUB_PROTOCOL=strict` (our default) trains on 5,394 images and validates on a fixed 600-image split
+  ([`splits/`](splits/)). Test (5,794) is read once per final model, and a marker file next to the checkpoint
+  enforces this. `paper` keeps the original behaviour.
+- **Validation keeps the last batch.** With 600 validation images and batch 1,024, the original
+  `drop_last=True` would leave no validation batch at all.
+- **No SLURM or wandb.** Plain single-GPU shell scripts are in [`scripts/`](scripts/); `slurm/` is kept for
+  reference.
 
 ## How to run
 
-All commands are run from the repository root. By default the scripts put the virtual environment,
-data, runs and checkpoints in the **parent folder** of the repository (`../.venv`, `../data`, `../runs`,
-`../checkpoints`). Override with `PROJECT_ROOT`, `VENV`, `DATA_ROOT`, `RUNS_ROOT` or `CKPT_ROOT`.
+You need Linux with one NVIDIA GPU, Python 3.11 and about 3 GB of disk space. Run everything from the repository root.
 
-### 1. Environment
+The virtual environment, data, runs and checkpoints go in the parent folder (`../.venv`, `../data`,
+`../runs`, `../checkpoints`). Override them with `PROJECT_ROOT`, `RUNS_ROOT`, `RESULTS_DIR` and similar variables.
 
-```bash
-bash scripts/setup_env.sh
-```
+Every driver can resume: a finished step leaves a `DONE` file and is skipped next time.
 
-Installs CUDA 12.8 PyTorch wheels, then `requirements.txt`. For an older driver pick another wheel index,
-e.g. `TORCH_INDEX=https://download.pytorch.org/whl/cu121 bash scripts/setup_env.sh`.
+Set `BB=$(realpath ../checkpoints/backbone/<file>.pth)` first.
 
-### 2. Data
-
-```bash
-bash scripts/prepare_cub.sh
-```
-
-Downloads CUB-200-2011 from Caltech (1.1 GB, checksum verified), crops every image to its ground-truth
-bounding box with the authors' `crop_cub.py`, and runs the data checks
-([`scripts/check_phase0_data.py`](scripts/check_phase0_data.py)): counts, crop sizes, split stratification,
-split reproducibility and loader behaviour under both protocols. All checks must print `PASS`.
-Results go to `results/phase0_data_check.json`.
-
-Note: train and test images are oracle-cropped with annotation boxes, as in the paper's code.
-
-### 3. GPU timing and budget (Phase 0, days 1–3)
-
-```bash
-bash scripts/phase0_timing.sh
-```
-
-Short (3-epoch) runs of the backbone fine-tune, Stage 1 at 4,096 and 8,192 codes, and Stage 2, trying
-batch sizes from largest to smallest until one fits (Stage 1/2 start at the paper's 1024, then 512, 256, 128;
-the backbone starts at 256). Writes `results/phase0_timing.csv` (seconds per epoch,
-peak GPU memory) and `results/phase0_budget.md` (GPU-hour budget for the full run list).
-To reuse an existing backbone: `BACKBONE_CKPT=/path/backbone.pth bash scripts/phase0_timing.sh`.
-
-### 4. Backbone fine-tune (once)
-
-```bash
-bash scripts/run_backbone_finetune.sh
-```
-
-ConvNeXt-Tiny from ImageNet weights, 30 epochs, AdamW lr 5e-5, best epoch chosen on the held-out split.
-The checkpoint lands in `../checkpoints/backbone/`. It is then frozen for every later stage.
-
-### 5. Phase 1: official pipeline and baseline
-
-One command per protocol. Run the paper-protocol sanity check first (one seed, ~1.5 GPU-hours): it shows
-whether the pipeline lands near the paper's 87.7 %. Then the strict baseline (seeds 40, 41, 42, ~4.5 GPU-hours).
-
-```bash
-BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" PROTOCOL=paper bash scripts/run_phase1.sh
-```
-
-```bash
-BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" bash scripts/run_phase1.sh
-```
-
-Per seed, in `../runs/phase1/<protocol>_s<seed>/`:
-
-| Step | Script | Output |
+| Step | Command | GPU time |
 |---|---|---|
-| Stage 1: codebook, 4,096 codes, 30 epochs | `run_stage1_codebook.sh` | `stage1/codebook_*.pth` (best val epoch) |
-| B0: prune 4,096 → 3,000 in 8 steps by usage on the validation loader | `run_b0_prune.sh` | `b0/pruned_3000_*.pth`, `b0/b0_check.txt` (Test 4) |
-| Stage 2: ProtoQuant head, 30 epochs | `run_stage2_head.sh` | `stage2/pipnet_*.pth` (best val epoch) |
-| Evaluation: val, then test **once** | `eval_protoquant.py` | `eval/eval_{val,test}.{json,npz}` (per-image predictions) |
-| Tests 1–4 (strict only) | `phase1_tests.py` | `tests/tests.json` |
+| Environment | `bash scripts/setup_env.sh` | – |
+| Data (download, crop, checks must print PASS) | `bash scripts/prepare_cub.sh` | – |
+| Backbone fine-tune | `bash scripts/run_backbone_finetune.sh` | < 1 h |
+| Phase 1 baseline (3 seeds) | `BACKBONE_CKPT=$BB bash scripts/run_phase1.sh` | ~4.5 h |
+| Phase 2 one-shot + retraining | `BACKBONE_CKPT=$BB bash scripts/run_phase2.sh` | ~12 h |
+| Iterative pruning | `BACKBONE_CKPT=$BB bash scripts/run_iterative.sh` | ~4.5 h |
+| 145-epoch B2 control | `BACKBONE_CKPT=$BB bash scripts/run_budget_control.sh` | ~1.5 h |
+| Ablations (no training) | `BACKBONE_CKPT=$BB bash scripts/run_ablations.sh` | minutes |
+| Capacity (GPU to itself) | `BACKBONE_CKPT=$BB bash scripts/run_capacity.sh` | ~30 min |
+| Improved backbone: lr sweep | `bash scripts/run_backbone_sweep.sh` | ~2–3 h |
+| Improved backbone: rerun | `bash scripts/run_new_backbone.sh` | ~8 h |
+| Code-level pruning (improved backbone) | `bash scripts/run_codeprune.sh` | ~6 h |
+| Code-matched CB1 control | `bash scripts/run_codeprune_control.sh` | ~2 h |
 
-Also run once: the backbone alone on test (black-box baseline, `backbone_<protocol>/`) and, for strict,
-the fp16 feature cache for train/val/test (`feature_cache/`, ~0.9 GB). The script is resumable: a
-finished step leaves a `DONE` file and is skipped next time; an unfinished step is restarted. Under the
-strict protocol a model's test set can be read only once (a `*.test_read_strict.json` file next to the
-checkpoint records it).
-
-At the end it writes [`results/phase1_baseline.md`](results/phase1_baseline.md): test accuracy per seed
-and mean ± sd, Stage 1 dead-code ratio, B0 accuracy before/after pruning, codebook size, nonzero edges
-and the test results. What to check:
-
-* `b0_check.txt` and Test 4 say **PASS** (B0 counted usage on the 600 validation images, not test).
-* Tests 1 and 3 **PASS**. Test 2 is a measurement: how many validation predictions change when unused
-  codes are physically removed (the paper says none should).
-* Stage 2 `train.log` shows a validation accuracy every epoch, and `stage2/pipnet_*.pth` exists.
-* Paper protocol near 87.7 %; strict may be lower (less training data, honest selection). Report the gap.
-
-The stage scripts can also be run on their own; useful variables: `SEED`, `EPOCHS`, `BATCH_SIZE`, `LR`,
-`WARMUP_EPOCHS`, `MODEL`, `NUM_WORKERS`, and `PQ_CUB_PROTOCOL=paper`.
-
-### 6. Phase 2: pruning methods
-
-Runs on the Phase 1 strict checkpoints (seeds 40–42) and the feature cache; strict protocol only.
-
-```bash
-BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" STAGES=masking bash scripts/run_phase2.sh
-```
-
-```bash
-BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" bash scripts/run_phase2.sh
-```
-
-The first command is the one-shot comparison only (a few minutes, no training). The second adds the
-retrained models (21 runs, about 0.6 GPU-hours each, ~12 GPU-hours).
-
-| Stage | What | Output in `../runs/phase2/strict_s<seed>/` |
-|---|---|---|
-| masking | Masks for B1, random, P1, P1-contrast, P3 at K = 5, 10, 20 from the dense head (all scores on ReLU(W); P1 statistics from the training split); val + test accuracy with no retraining | `masking/results.json`, `masks.pt`, `test_preds.npz` |
-| masking | Deletion-effect control: 100 edges removed one at a time, Spearman ρ of real damage vs magnitude, P1, P1-contrast | `masking/deletion.json` |
-| retrain | B2 (B1 mask) at K = 5, 10, 20 and P1, P3, random, P1-contrast at K = 10: unused codes removed, then the Stage 2 recipe for 30 epochs with the mask held fixed, best val epoch, test read once | `retrain/<method>_K<k>/` |
-
-Change the retrained set with `RETRAIN_SPECS` (default `B1_K10 P1_K10 P3_K10 random_K10 P1contrast_K10 B1_K5 B1_K20`).
-[`results/phase2_results.md`](results/phase2_results.md) has, per K: test accuracy (mean ± sd), the
-difference to B1 (one-shot) or B2 (retrained) with its 95 % paired-bootstrap interval and per-seed signs,
-the verdict under the fixed rules, edges and active codes, and the deletion-effect correlations.
-
-### 7. Phase 4: iterative pruning, controls and ablations
-
-Fixed in [docs/phase0_protocol.md](docs/phase0_protocol.md), section 10, before any run.
-
-```bash
-BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" bash scripts/run_iterative.sh
-```
-
-Iterative B1 and iterative P1 at K = 10, seeds 40–42 (6 runs). Each run removes 20 % of each class's edges per
-round, retrains 5 epochs with the full codebook and rescores (P1 recomputes its class means through the current
-codes), for about 24 rounds. The final mask then goes through exactly the B2 recipe (unused codes removed, 30
-epochs, best validation epoch, test read once). Output in `../runs/phase2/strict_s<seed>/iterative/<score>_K10/`
-(`iterative.json` logs every round); `results/phase2_results.md` gets an "Iterative pruning" section comparing
-iterative vs one-shot (same score) and iterative P1 vs iterative B1. To time one run first:
-`SEEDS=40 SCORES=P1 bash scripts/run_iterative.sh`.
-
-Epoch-matched control (added after the iterative results, protocol section 10): the one-shot B1 mask at K = 10
-retrained for 145 epochs, the iterative runs' total, to separate gradual pruning from extra training
-(3 runs, ~30 min each):
-
-```bash
-BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" bash scripts/run_budget_control.sh
-```
-
-The summary then adds: iterative B1 vs this control, the control vs B2 at 30 epochs, and every iterative
-model vs the dense head.
-
-Phase 4 ablations that need no training (a few minutes): P3 without the one-edge-per-class minimum
-(one-shot masks at K = 5/10/20) and P1-contrast vs P1. The summary gets an "Ablations" section.
-
-```bash
-BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" bash scripts/run_ablations.sh
-```
-
-### 8. Improved-backbone rerun (post hoc)
-
-Our backbone (84.05 % test) is 4.4 points below the paper's (88.4 %). The authors continue an existing
-CUB fine-tune after a learning-rate sweep; we ran once from ImageNet at their continued-fine-tune lr. Protocol
-section 11 fixes the rerun. Two commands, one after the other:
-
-```bash
-bash scripts/run_backbone_sweep.sh
-```
-
-```bash
-bash scripts/run_new_backbone.sh
-```
-
-The sweep trains ConvNeXt-Tiny at lr 1e-4 / 2e-4 / 4e-4 (30 epochs, batch 128), then continues the best
-for 30 epochs at 5e-5, and selects on validation only (about 2–3 GPU-hours, `results/backbone_sweep.md`).
-The rerun uses the selected backbone for the strict baseline (3 seeds), one-shot masking, and B2 at K = 10
-for 30 and 145 epochs (about 8 GPU-hours). It writes to `../runs_bb2/` and `results/backbone2/`, so the main
-runs and results are untouched. Every summary script now writes to `RESULTS_DIR` (default `results/`).
-
-### 9. Code-level pruning (post hoc)
-
-Edge pruning keeps whatever codes its edges touch (about 1,300 at K = 10). Code-level pruning picks the codes
-first: the M codes with the highest summed P1 score over classes (CP1; CB1 = summed magnitude, as a control),
-then the top 10 edges of each class among them. Protocol section 12. On the improved backbone:
-
-```bash
-bash scripts/run_codeprune.sh
-```
-
-One-shot masks at M = 1,200 / 1,000 / 800 / 600 / 400 (minutes), then CP1 at 1,000 and 800 codes and CB1 at
-800 retrained for 145 epochs (about 6 GPU-hours; change with `RETRAIN_KEYS`). `results/backbone2/phase2_results.md`
-gets a "Code-level pruning" section and comparisons against the 145-epoch B2 control and the dense head.
-
-Code-matched control (post hoc): CB1 with as many active codes as CP1-M1000 (≈ 890), one-shot and retrained for
-145 epochs (about 2 GPU-hours), to test whether the code score still matters after retraining:
-
-```bash
-bash scripts/run_codeprune_control.sh
-```
-
-### 10. Capacity metrics
-
-After Phase 2 (needs the GPU to itself, about 30 min):
-
-```bash
-BACKBONE_CKPT="$(realpath ../checkpoints/backbone/<file>.pth)" bash scripts/run_capacity.sh
-```
-
-For the dense head, every one-shot mask, every retrained model, the iterative models and the 145-epoch control
-(seeds 40–42; whatever has finished), [`scripts/capacity.py`](scripts/capacity.py)
-reports codebook entries and memory (MB, fp32), nonzero edges, latency in ms per batch (head only and full
-model; median of 50 batches of 128 at 224 × 224, fp32), peak GPU memory, explanation size (codes needed for
-90 % of the predicted class's evidence, test set, no labels used) and training GPU-minutes (including the iterative pruning rounds). One-shot masks
-keep the full codebook, so their latency equals the dense model's. Output: `results/capacity.{md,json}`.
+Improved-backbone runs write to `../runs_bb2/` and `results/backbone2/`, so the main results are untouched.
+Each step's exact settings are fixed in [`docs/phase0_protocol.md`](docs/phase0_protocol.md):
+- section 10: iterative pruning;
+- section 11: the improved backbone;
+- section 12: code-level pruning.
 
 ## Repository layout
 
 ```
-codebook_train/        official ProtoQuant code (CUB loader patched for the strict protocol)
-docs/                  phase0_protocol.md — frozen protocol and decision rules
-scripts/               SLURM-free run scripts, split generator, data checks, timing/budget,
-                       Phase 1 driver, B0, evaluation, feature cache, implementation tests,
-                       Phase 2 masking/retraining, iterative pruning, controls, ablations, capacity
-splits/                fixed CUB validation split (+ summary json)
-results/               data checks, timing and budget, Phase 1 baseline, Phase 2–4 results, capacity
-slurm/                 original cluster scripts (reference only)
+codebook_train/   official ProtoQuant code (CUB loader patched for the strict protocol)
+docs/             phase0_protocol.md: frozen protocol, decision rules, change log
+scripts/          run drivers, pruning methods, evaluation, summaries, capacity
+splits/           fixed CUB validation split
+results/          data checks, baseline, Phase 2–4 results, capacity (backbone2/: improved backbone)
+slurm/            original cluster scripts (reference only)
 ```
-
-## Fixed protocol at a glance
-
-* Split: 5,394 train / 600 val / 5,794 test; test read once per final model.
-* Seeds 40, 41, 42; operating points K ∈ {5, 10, 20} edges per class (P3: same total).
-* Temperature T = 0.1 and starting codebook 4,096 → 3,000 (B0) in all main runs.
-* A method beats B1 at a given K only if the 95 % paired-bootstrap interval of the test-accuracy
-  difference is above zero and the sign agrees in all three seeds. Details in
-  [docs/phase0_protocol.md](docs/phase0_protocol.md).
