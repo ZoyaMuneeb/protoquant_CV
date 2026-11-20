@@ -165,3 +165,18 @@ Pruning timing includes selection, state updates, and compact-model construction
 synchronization. It excludes shared P1/cache setup, verification, validation, and checkpoint writing.
 Shared setup is recorded in each `starting_model.json`. GPU peak allocation includes resident model
 and cache tensors. No speed or accuracy result is asserted by the implementation itself.
+
+## Cache numerical-consistency diagnostics
+
+The preflight retains exact backbone equality, checkpoint hashes, and training/validation image-ID checks.
+It saves per-image statistics in `cache_feature_checks.json` before reporting a feature mismatch.
+The original per-value tolerance is `0.003 + 0.003 * abs(cached_value)`. A bounded numerical-drift pass
+allows at most 0.1% of coordinates outside that tolerance, requires every error to stay within twice
+that tolerance, and requires cosine similarity at least 0.99999. Accepted drift produces a warning.
+Nonfinite values, substantial outliers, and widespread mismatches still fail. Compact-deletion and
+checkpoint-reload equivalence checks keep their original strict tolerances.
+
+The diagnostics include input paths, feature error counts, maximum/mean errors, cosine, and (on a
+passed sample) cached-vs-fresh logits, predictions, and cross-entropy differences. Send this file with
+`state.json` and `run.log` when investigating cache issues. FP16/batch numerical drift can pass this
+preflight without rebuilding caches; the logged differences remain part of the experimental record.

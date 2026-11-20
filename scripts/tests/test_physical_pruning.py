@@ -19,7 +19,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "codebook_train"))
 from src.models.proto_quantnet import ProtoQuantNet
 from physical_pruning_lib import DeletionEvaluator, compact_model, p1_ranking, prune, spatial_logits
-from pilot_physical_pruning import balanced_indices, load_cache, run_pilots
+from pilot_physical_pruning import balanced_indices, compare_cached_features, load_cache, run_pilots
 
 
 torch.set_num_threads(1)
@@ -135,6 +135,62 @@ class PhysicalPruningTests(unittest.TestCase):
         result = prune(engine, torch.arange(12), 4, "batched", 6, 4, extra_loss_tolerance=10.0)
         self.assertEqual(result["accepted_batch_sizes"], [4])
         self.assertEqual(result["fallback_count"], 0)
+
+    def test_cache_check_accepts_two_small_tail_errors(self):
+        expected = torch.full((1, 768, 7, 7), 0.25, device=DEVICE)
+        actual = expected + 0.0002
+        actual.flatten()[:2] += 0.004
+        result = compare_cached_features(actual, expected)
+        self.assertTrue(result["passed"])
+        self.assertEqual(result["reason"], "bounded_numerical_drift")
+        self.assertEqual(result["failing_values"], 2)
+        self.assertEqual(result["total_values"], 37632)
+        self.assertGreater(result["cosine_similarity"], 0.99999)
+
+    def test_cache_check_preserves_strict_fp16_and_zero_matches(self):
+        torch.manual_seed(2)
+        actual = torch.randn(1, 768, 7, 7, device=DEVICE)
+        for fresh, cached in ((actual, actual.half().float()), (torch.zeros_like(actual), torch.zeros_like(actual))):
+            result = compare_cached_features(fresh, cached)
+            self.assertTrue(result["passed"])
+            self.assertEqual(result["reason"], "strict_match")
+
+    def test_cache_check_rejects_large_isolated_errors(self):
+        expected = torch.full((1, 768, 7, 7), 0.25, device=DEVICE)
+        actual = expected.clone()
+        actual.flatten()[0] += 0.05
+        result = compare_cached_features(actual, expected)
+        self.assertFalse(result["passed"])
+        self.assertGreater(result["max_scaled_error"], 2)
+
+    def test_cache_check_rejects_widespread_small_errors(self):
+        expected = torch.full((1, 768, 7, 7), 0.25, device=DEVICE)
+        result = compare_cached_features(expected + 0.004, expected)
+        self.assertFalse(result["passed"])
+        self.assertEqual(result["failing_values"], 37632)
+
+    def test_cache_check_rejects_direction_change_even_with_few_outliers(self):
+        expected = torch.zeros(1, 768, 7, 7, device=DEVICE)
+        expected.flatten()[0] = 0.001
+        actual = expected.clone()
+        actual.flatten()[1] = 0.004
+        result = compare_cached_features(actual, expected)
+        self.assertEqual(result["failing_values"], 1)
+        self.assertLess(result["max_scaled_error"], 2)
+        self.assertLess(result["cosine_similarity"], 0.99999)
+        self.assertFalse(result["passed"])
+
+    def test_cache_check_rejects_nonfinite_and_malformed_features(self):
+        expected = torch.ones(1, 768, 7, 7, device=DEVICE)
+        for value in (float("nan"), float("inf")):
+            actual = expected.clone()
+            actual.flatten()[0] = value
+            result = compare_cached_features(actual, expected)
+            self.assertFalse(result["passed"])
+            self.assertEqual(result["reason"], "nonfinite_features")
+        for actual in (expected.flatten(), expected[:, :0]):
+            with self.assertRaises(ValueError):
+                compare_cached_features(actual, expected)
 
     def test_balanced_training_subset(self):
         labels = torch.arange(12) % 3
