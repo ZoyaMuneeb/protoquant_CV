@@ -149,6 +149,7 @@ batch 512 is the fallback and must be recorded in the change log.
 | 2026-11-19 | Code-level pruning added, see section 12 | New method, added after all main results were seen (exploratory, reported as post hoc): edge methods end at about 1,300 codes, and codes are the capacity that matters |
 | 2026-11-19 | Code-matched CB1 control added to section 12 | Added after the code-level results were seen: CB1-M800 ended with fewer active codes than CP1-M800, so the retrained comparison confounded code score with code count. Reported as post hoc |
 | 2026-11-23 | Closed-form weight repair added, see section 13 | New method, added after all main results were seen (exploratory, reported as post hoc): tests whether re-fitting the surviving weights in seconds recovers what 145 epochs of retraining recover |
+| 2026-11-23 | CE step sweep added to section 13 | Added after the repair results were seen: the 300-step CE refit had not converged, so how much of retraining's gain a head-only refit recovers was understated. Step count chosen on validation; reported as post hoc |
 
 ## 10. Iterative pruning (Phase 4), fixed before running
 
@@ -235,3 +236,10 @@ CP1-M1000 and the code-matched CB1 (`CB1-eqCP1M1000`). No retraining; `scripts/p
   mask retrained (B2 / code-level, 145 epochs) and vs the dense head; LS vs CE; P1 vs B1 and CP1-M1000 vs the
   code-matched CB1 after repair (does the score matter once the weights are repaired?).
 * Test read once per model (separate files: `repair.json`, `repair_test_preds.npz`).
+* **CE step sweep (post hoc, added 2026-11-23 after the 300-step results were seen):** the 300-step CE refit had not
+  converged (training cross-entropy still roughly halving), so the same refit (lr 0.01, same masks, logical and
+  physical) is run to 10,000 steps and evaluated on validation at 300, 1,000, 3,000 and 10,000 steps. Per model, the
+  step count with the best validation top-1 is kept (ties: fewer steps); test is read once for it (separate files,
+  `repair_cesweep.*`, keys `<method>+CEsel` / `<method>+phys+CEsel`). The 300-step results stay as reported.
+  Comparisons: CEsel vs 300-step CE, vs the same mask retrained and vs dense; P1 vs B1 and CP1 vs the code-matched
+  CB1 after CEsel repair.

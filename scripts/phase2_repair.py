@@ -25,6 +25,11 @@ masking folder (masks.pt, codeprune_masks.pt, codeprune_matched_masks.pt). Write
 repair.json (val + test top-1 per model, edges, codes, fit statistics), repair_test_preds.npz (per-image test
 predictions, for the paired bootstrap) and repair_weights.pt (the repaired weights). Test is read once: the
 script refuses to run again on an existing repair.json.
+
+CE step sweep (section 13, post hoc): with --ce_sweep 300 1000 3000 10000 --tag cesweep, only the CE refit is run
+(keys "<method>+CEsel_K<K>" and "<method>+phys+CEsel_K<K>"), evaluated on validation at each step count; per model
+the step count with the best validation top-1 is kept (ties: fewer steps) and test is read once for it. Files
+repair_cesweep{.json,_test_preds.npz,_weights.pt}; the validation curve is saved in the json.
 """
 
 import argparse
@@ -97,6 +102,37 @@ def repair_ce(s: torch.Tensor, y: torch.Tensor, w0: torch.Tensor, mask: torch.Te
     return w.detach().double().cpu(), {"train_ce_before": before, "train_ce_after": after}
 
 
+def repair_ce_sweep(s: torch.Tensor, y: torch.Tensor, s_val: torch.Tensor, y_val: torch.Tensor, w0: torch.Tensor,
+                    mask: torch.Tensor, checkpoints: list[int], lr: float, dev) -> tuple[torch.Tensor, dict]:
+    """repair_ce run up to max(checkpoints) steps, evaluated on validation at every checkpoint. Returns the weights
+    of the checkpoint with the best validation top-1 (ties: fewer steps) and the whole curve. Test is not used."""
+    sd, yd, m = s.float().to(dev), y.to(dev), mask.float().to(dev)
+    svd, yvd = s_val.float().to(dev), y_val.to(dev)
+    w = (w0.float().to(dev) * m).clone().requires_grad_(True)
+    opt = torch.optim.Adam([w], lr=lr)
+    with torch.no_grad():
+        before = F.cross_entropy(sd @ w.t(), yd).item()
+    curve, best, step = [], None, 0
+    for target in sorted(checkpoints):
+        while step < target:
+            opt.zero_grad()
+            F.cross_entropy(sd @ w.t(), yd).backward()
+            opt.step()
+            with torch.no_grad():
+                w.clamp_(min=0).mul_(m)
+            step += 1
+        with torch.no_grad():
+            lv = svd @ w.t()
+            point = {"steps": step, "train_ce": F.cross_entropy(sd @ w.t(), yd).item(),
+                     "val_top1": acc(lv.cpu(), y_val), "val_ce": F.cross_entropy(lv, yvd).item(),
+                     "nonzero_edges": int((w > 0).sum())}
+        curve.append(point)
+        if best is None or point["val_top1"] > best[0]["val_top1"]:
+            best = (point, w.detach().double().cpu().clone())
+    return best[1], {"train_ce_before": before, "ce_steps_selected": best[0]["steps"],
+                     "train_ce_after": best[0]["train_ce"], "ce_curve": curve}
+
+
 @torch.no_grad()
 def check_physical(model, feats: torch.Tensor, mask: torch.Tensor, w_eff: torch.Tensor, dev) -> float:
     """Max |logit| difference between our physical pooled scores and the real compact model
@@ -122,13 +158,21 @@ def main() -> None:
     ap.add_argument("--ridge", type=float, default=1e-4)
     ap.add_argument("--ce_steps", type=int, default=300)
     ap.add_argument("--ce_lr", type=float, default=0.01)
+    ap.add_argument("--ce_sweep", type=int, nargs="+", default=None,
+                    help="CE step counts to try, e.g. 300 1000 3000 10000: runs only the CE refit (variants CEsel and "
+                         "phys+CEsel), picks the step count by validation top-1 per model, reads test once for it")
+    ap.add_argument("--tag", default="", help="output name suffix, e.g. 'cesweep' -> repair_cesweep.json")
     args = ap.parse_args()
 
     if L.protocol_info()["protocol"] != "strict":
         raise SystemExit("runs under PQ_CUB_PROTOCOL=strict")
+    if args.ce_sweep and not args.tag:
+        raise SystemExit("--ce_sweep needs --tag, so the earlier repair.json is not overwritten")
+    stem = "repair" + (f"_{args.tag}" if args.tag else "")
+    variants = ("CEsel", "phys+CEsel") if args.ce_sweep else ("phys", "LS", "CE", "phys+LS", "phys+CE")
     out = Path(args.masking_dir)
-    if (out / "repair.json").exists():
-        raise SystemExit(f"{out / 'repair.json'} exists: test was already read for these models")
+    if (out / f"{stem}.json").exists():
+        raise SystemExit(f"{out / f'{stem}.json'} exists: test was already read for these models")
     torch.manual_seed(args.seed)
 
     masks, source = {}, {}
@@ -172,7 +216,7 @@ def main() -> None:
             raise SystemExit(f"physical scores differ from the compact model for {key}: {checks[key]:.2e}")
         s_phys = {sp: pooled_scores(model, feats[sp], dev, codes) for sp in ("train", "val", "test")}
         base_val = acc(s["val"] @ (w_eff * mask).t(), y["val"])
-        for variant in ("phys", "LS", "CE", "phys+LS", "phys+CE"):
+        for variant in variants:
             phys = variant.startswith("phys")
             sc = s_phys if phys else s
             m_cols = mask[:, codes] if phys else mask
@@ -183,6 +227,9 @@ def main() -> None:
                 w, fit = repair_ls(sc["train"], z_train, m_cols, args.ridge)
             elif variant.endswith("CE"):
                 w, fit = repair_ce(sc["train"], y["train"], w0, m_cols, args.ce_steps, args.ce_lr, dev)
+            elif variant.endswith("CEsel"):
+                w, fit = repair_ce_sweep(sc["train"], y["train"], sc["val"], y["val"], w0, m_cols, args.ce_sweep,
+                                         args.ce_lr, dev)
             else:
                 w = w0
             secs = time.time() - t0
@@ -196,15 +243,20 @@ def main() -> None:
             rows.append(row)
             preds[name] = lt.argmax(1).numpy()
             weights[name] = {"weight": w.float(), "codes": codes if phys else None}
+            for p in fit.get("ce_curve", []):
+                print(f"[REPAIR]   {name}: {p['steps']:6d} steps  train CE {p['train_ce']:.4f}  "
+                      f"val {p['val_top1']:6.2f}  val CE {p['val_ce']:.4f}  edges {p['nonzero_edges']}", flush=True)
             print(f"[REPAIR] {name:28s} val {row['val_top1']:6.2f} (one-shot {base_val:6.2f}) "
                   f"test {row['test_top1']:6.2f}  edges {row['nonzero_edges']:5d}  codes {row['codebook_rows']:5d}  "
-                  f"{secs:6.2f} s", flush=True)
+                  f"{secs:6.2f} s" + (f"  steps {fit['ce_steps_selected']}" if "ce_steps_selected" in fit else ""),
+                  flush=True)
 
-    torch.save({"weights": weights, "pq_ckpt": args.pq_ckpt, "seed": args.seed}, out / "repair_weights.pt")
-    np.savez_compressed(out / "repair_test_preds.npz", img_ids=ids["test"].numpy(), labels=y["test"].numpy(), **preds)
-    L.write_json(out / "repair.json", {
+    torch.save({"weights": weights, "pq_ckpt": args.pq_ckpt, "seed": args.seed}, out / f"{stem}_weights.pt")
+    np.savez_compressed(out / f"{stem}_test_preds.npz", img_ids=ids["test"].numpy(), labels=y["test"].numpy(), **preds)
+    L.write_json(out / f"{stem}.json", {
         "seed": args.seed, "pq_ckpt": args.pq_ckpt, **L.protocol_info(), "dense_val_top1": dense_val,
-        "ridge": args.ridge, "ce_steps": args.ce_steps, "ce_lr": args.ce_lr,
+        "ridge": args.ridge, "ce_steps": args.ce_steps, "ce_lr": args.ce_lr, "ce_sweep": args.ce_sweep,
+        "selection": "CE step count chosen per model by validation top-1 (ties: fewer steps)" if args.ce_sweep else None,
         "physical_check_max_logit_error": checks, "models": rows})
 
 

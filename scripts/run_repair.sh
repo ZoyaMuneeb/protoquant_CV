@@ -8,7 +8,14 @@
 # once (into the seed's masking folder: repair.json, repair_test_preds.npz, repair_weights.pt). Then rebuilds the
 # Phase 2 summary. Minutes on a GPU, no training. Needs run_codeprune.sh and run_codeprune_control.sh done first
 # (missing masks are skipped). Resumable: a seed with repair.json is skipped.
+#
+#   CE_SWEEP="300 1000 3000 10000" bash scripts/run_repair.sh
+#
+# runs only the CE refit, picks the step count per model on validation and reads test once for it, into
+# repair_cesweep.{json,...} (the 300-step results in repair.json are kept).
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+TAG="${REPAIR_TAG:-${CE_SWEEP:+cesweep}}"
+STEM="repair${TAG:+_${TAG}}"
 SEL_FILE="${RUNS_ROOT}/backbone_sweep/SELECTED"
 if [ -z "${BACKBONE_CKPT:-}" ]; then
     [ -f "${SEL_FILE}" ] || { echo "No ${SEL_FILE}: set BACKBONE_CKPT"; exit 1; }
@@ -30,11 +37,12 @@ for SEED in ${SEEDS}; do
     : "${PQ:?no Phase 1 strict Stage 2 checkpoint for seed ${SEED} in ${P1_ROOT}}"
     M="${P2_ROOT}/strict_s${SEED}/masking"
     [ -f "${M}/masks.pt" ] || { echo "No ${M}/masks.pt: run the Phase 2 masking first"; exit 1; }
-    if [ -f "${M}/repair.json" ]; then echo "[REPAIR] skip (done): seed ${SEED}"; continue; fi
+    if [ -f "${M}/${STEM}.json" ]; then echo "[REPAIR] skip (done): seed ${SEED} (${STEM}.json)"; continue; fi
     gpu_check
     $PY/phase2_repair.py --backbone_ckpt "${BACKBONE_CKPT}" --pq_ckpt "${PQ}" \
         --cache_dir "${P1_ROOT}/feature_cache" --masking_dir "${M}" --seed "${SEED}" \
-        ${REPAIR_KEYS:+--keys ${REPAIR_KEYS}} 2>&1 | tee "${M}/repair.log"   # pipefail: stops on failure
+        ${REPAIR_KEYS:+--keys ${REPAIR_KEYS}} ${CE_SWEEP:+--ce_sweep ${CE_SWEEP}} ${TAG:+--tag ${TAG}} \
+        2>&1 | tee "${M}/${STEM}.log"   # pipefail: stops on failure
 done
 
 $PY/phase2_summary.py --phase2_root "${P2_ROOT}" --out_md "${RESULTS_DIR}/phase2_results.md" \
