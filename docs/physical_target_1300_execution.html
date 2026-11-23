@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>ProtoQuant: 1,300-Prototype Pruning - How to Run It</title>
+<style>
+@page { size: Letter; margin: 0.4in 0.52in; }
+* { box-sizing: border-box; }
+html, body { margin: 0; color: #242424; background: #fff; }
+body { font: 10.5pt/1.27 Arial, Helvetica, sans-serif; }
+.sheet { position: relative; height: 10.15in; padding: 0.28in 0 0.15in; break-after: page; }
+.sheet:last-child { break-after: auto; }
+.running { position: absolute; top: 0; left: 0; color: #757575; font-size: 6.5pt; }
+.footer { position: absolute; bottom: 0; right: 0; color: #757575; font-size: 6.5pt; }
+h1, h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: normal; }
+h1 { font-size: 23pt; line-height: 1.1; margin: 0 0 9px; letter-spacing: -0.3px; }
+h2 { font-size: 16pt; line-height: 1.16; margin: 13px 0 7px; }
+p { margin: 0 0 8px; }
+.meta { font-size: 9pt; color: #606060; margin-bottom: 12px; }
+.meta span { padding: 2px 5px; border-radius: 3px; background: #f2f2f2; }
+pre { font: 8.7pt/1.28 Consolas, 'Liberation Mono', monospace; margin: 7px 0 9px; padding: 8px 10px;
+      background: #f7f7f5; border-radius: 5px; white-space: pre; break-inside: avoid; }
+code { font: 0.94em Consolas, 'Liberation Mono', monospace; background: #f2f1ed; padding: 1px 3px; border-radius: 2px; }
+pre code { font: inherit; background: none; padding: 0; }
+.small { font-size: 10pt; }
+table { width: 100%; border-collapse: collapse; font-size: 10.3pt; margin: 9px 0; break-inside: avoid; }
+th, td { text-align: left; vertical-align: top; border: 0.6px solid #dfdcd5; padding: 5px 7px; }
+th { background: #f3f3f3; color: #555; font-weight: normal; }
+th:first-child, td:first-child { width: 29%; }
+ul { margin: 5px 0 8px; padding-left: 18px; }
+li { margin-bottom: 6px; }
+.page2 { font-size: 10.2pt; line-height: 1.25; }
+.page2 h2:first-of-type { margin-top: 0; }
+.page2 pre { font-size: 8.7pt; }
+.page2 table { font-size: 10pt; }
+
+.page2 { font-size: 10pt; line-height: 1.22; }
+.page2 p { margin-bottom: 7px; }
+.page2 table { font-size: 9.8pt; }
+.page2 li { margin-bottom: 4px; }
+.page2 td, .page2 th { padding-top: 4px; padding-bottom: 4px; }
+</style></head><body>
+<section class="sheet">
+<div class="running">ProtoQuant: Improved-Backbone Physical Pruning to 1,300</div>
+<h1>ProtoQuant: 1,300-Prototype<br>Pruning - How to Run It</h1>
+<p class="meta"><span>Nov 23, 2026</span> &nbsp;|&nbsp; <span>Improved backbone</span> &nbsp;|&nbsp; <span>Seed 40</span></p>
+<p>Compare <strong>dense ProtoQuant (3,000 prototypes)</strong>, <strong>P1-only (1,300)</strong> and <strong>batched loss-aware physical pruning (1,300)</strong>. All use the same improved-backbone checkpoint and data split. Selection uses training data; assessment uses validation. There is no retraining or test-set evaluation.</p>
+<h2>1. Setup</h2>
+<p><strong>Use after the new runner has been published</strong> to this branch. From your existing clone:</p>
+<pre>cd /home/shaikha/protoquant_CV
+git fetch origin
+git switch pilot/physical-lossaware
+git pull --ff-only origin pilot/physical-lossaware
+ls -l scripts/run_physical_target.sh</pre>
+<p>If the launcher is missing, stop and ask us to publish the update. Set the following paths in the <strong>same terminal</strong>; this resets the old pilot's checkpoint/cache settings:</p>
+<pre>export VENV=/home/shaikha/.venv
+export BACKBONE_CKPT=/home/shaikha/runs/backbone_sweep/continue_lr_2e-4_lr_5e-5/ckpt/\
+cub200_convnext_tiny_full_20261118_223411.pth
+export BB2_RUNS_ROOT=/home/shaikha/runs_bb2
+export PHASE1_ROOT="$BB2_RUNS_ROOT/phase1"
+export CACHE_DIR="$PHASE1_ROOT/feature_cache"
+export CUB_PATH=/home/shaikha/data/cub200_cropped
+unset PQ_CKPT P1_REUSE_DIR DENSE_EVAL_PREFIX TARGET_OUTPUT_DIR
+ls -lh "$VENV/bin/python" "$BACKBONE_CKPT" \
+  "$PHASE1_ROOT"/strict_s40/stage2/pipnet_*.pth \
+  "$CACHE_DIR/train.pt" "$CACHE_DIR/val.pt"
+test -d "$CUB_PATH/CUB_200_2011/images" &amp;&amp; echo "Dataset found"</pre>
+<p class="small">Copy both lines of the continued backbone path. The listing must succeed and the last check must print <code>Dataset found</code>. The launcher discovers exactly one dense seed-40 checkpoint in <code>runs_bb2/phase1/strict_s40/stage2</code>. If there are several, set <code>PQ_CKPT</code> to the correct file's full path. Keep this improved backbone and its cache together.</p>
+<h2>2. Run</h2>
+<p><strong>a) Smoke test first.</strong> Runs correctness tests plus a small real-input check: 200 training images, 32 validation images and two deletions. Pruned models end at <strong>2,998</strong>.</p>
+<pre>bash scripts/run_physical_target.sh --smoke</pre>
+<p><strong>b) Complete comparison.</strong> After smoke succeeds, run all three configurations; each pruned model ends at <strong>1,300</strong>.</p>
+<pre>bash scripts/run_physical_target.sh --target-count 1300</pre>
+<p class="small">Each command creates a fresh output folder automatically. Full-run runtime has not yet been measured; CUDA is required. Defaults: 400 training/calibration images, shortlist 64 and deletion batch 8. Optional synthetic-only check: <code>bash scripts/run_physical_target.sh --self-test</code>.</p>
+<div class="footer">Page 1 of 2</div>
+</section>
+<section class="sheet page2">
+<div class="running">ProtoQuant: Improved-Backbone Physical Pruning to 1,300</div>
+<h2>3. Check</h2>
+<p>The launcher prints <code>[TARGET] output=...</code>. Default folders are under <code>/home/shaikha/runs_bb2/physical_target_1300_*</code>. In another terminal, select the newest folder, confirm it matches the printed path, and watch progress:</p>
+<pre>export TARGET_OUTPUT_DIR="$(ls -dt \
+  /home/shaikha/runs_bb2/physical_target_1300_* | head -n 1)"
+tail -f "$TARGET_OUTPUT_DIR/run.log"</pre>
+<p>When finished, open <code>results.md</code>. Success means a final <code>[DONE]</code> message, a <code>DONE</code> file and <code>state.json</code> showing <code>completed</code>.</p>
+<table><thead><tr><th>Configuration</th><th>Expected result after the complete run</th></tr></thead><tbody>
+<tr><td><code>dense</code></td><td><strong>3,000</strong> physical prototypes; original checkpoint reused without retraining.</td></tr>
+<tr><td><code>p1</code></td><td><strong>1,300</strong> prototypes; compact model saved as <code>p1/pruned.pth</code>.</td></tr>
+<tr><td><code>batched</code></td><td><strong>1,300</strong> prototypes; <code>batched/pruned.pth</code> and deletion/fallback decisions in <code>batched/decisions.jsonl</code>.</td></tr>
+<tr><td>Summary / checks</td><td>Three rows in <code>results.md</code>, <code>results.csv</code> and <code>results.json</code>: validation accuracy/loss, classifier connections, pruning time and GPU memory. Physical-inference and compact-checkpoint reload checks pass.</td></tr>
+</tbody></table>
+<p class="small">Dense results are checked when available; a cached pass supplies loss/memory metrics. Keep <code>P1_REUSE_DIR</code> unset initially. Pruning time excludes setup, validation, checks and saving.</p>
+<p><strong>Send back:</strong> root <code>results.md</code>, <code>results.csv</code>, <code>results.json</code>, <code>config.json</code>, <code>calibration.json</code>, <code>cache_feature_checks.json</code>, <code>starting_checks.json</code> and <code>run.log</code>; also <code>p1/results.json</code>, <code>batched/results.json</code> and <code>batched/decisions.jsonl</code>. Keep checkpoints on the GPU machine.</p>
+<h2>4. If something breaks</h2>
+<ul>
+<li><strong>Missing or ambiguous checkpoint / missing dataset.</strong> Repeat section 1. Set <code>PQ_CKPT</code> explicitly if discovery finds several files. Use the improved-backbone dense seed-40 checkpoint with 3,000 prototypes.</li>
+<li><strong>Cache warning or mismatch.</strong> An <code>accepted bounded numerical cache drift</code> warning is allowed. For a failed check, send cache diagnostics and <code>run.log</code>; verify the matched inputs first. If caches are missing or rebuilding is agreed, use a fresh folder:</li>
+</ul>
+<pre>export CACHE_DIR="$PHASE1_ROOT/cache_pilot_$(date +%Y%m%d_%H%M%S)"
+PQ_CUB_PROTOCOL=strict "$VENV/bin/python" scripts/cache_features.py \
+  --backbone_ckpt "$BACKBONE_CKPT" --cub_path "$CUB_PATH" \
+  --out_dir "$CACHE_DIR" --splits train val</pre>
+<ul>
+<li><strong>GPU out of memory.</strong> Start a new run with smaller chunks (add <code>--smoke</code> if retrying smoke):</li>
+</ul>
+<pre>unset TARGET_OUTPUT_DIR
+PILOT_IMAGE_BATCH=8 CANDIDATE_CHUNK_SIZE=1 \
+  bash scripts/run_physical_target.sh --target-count 1300</pre>
+<ul>
+<li><strong>Interrupted run or output already exists.</strong> There is <strong>no resume</strong>. Keep the old folder, run <code>unset TARGET_OUTPUT_DIR</code> in the execution terminal, and rerun the same smoke/full command. A fresh folder is created.</li>
+<li><strong>Existing dense report is incompatible.</strong> Verify the input bundle first. To skip this optional reference, set <code>export DENSE_EVAL_PREFIX=""</code>, then start a new run; dense validation will still be measured.</li>
+</ul>
+<p><strong>Reporting errors:</strong> share <code>state.json</code>, <code>config.json</code>, cache diagnostics, the failing method's <code>decisions.jsonl</code> where present, and <code>run.log</code>. For an earlier failure, send terminal output.</p>
+<pre>tail -n 30 "$TARGET_OUTPUT_DIR/run.log"</pre>
+<div class="footer">Page 2 of 2</div>
+</section></body></html>
