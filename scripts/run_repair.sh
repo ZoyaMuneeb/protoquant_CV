@@ -13,8 +13,15 @@
 #
 # runs only the CE refit, picks the step count per model on validation and reads test once for it, into
 # repair_cesweep.{json,...} (the 300-step results in repair.json are kept).
+#
+#   CACHED_RETRAIN=1 bash scripts/run_repair.sh
+#
+# runs the retraining recipe (145 epochs) on the cached features, head only and codes + head, into
+# repair_cachedrt.{json,...}. Roughly 10-30 min per seed on the GPU.
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+[ -n "${CE_SWEEP:-}" ] && [ -n "${CACHED_RETRAIN:-}" ] && { echo "set CE_SWEEP or CACHED_RETRAIN, not both"; exit 1; }
 TAG="${REPAIR_TAG:-${CE_SWEEP:+cesweep}}"
+TAG="${TAG:-${CACHED_RETRAIN:+cachedrt}}"
 STEM="repair${TAG:+_${TAG}}"
 SEL_FILE="${RUNS_ROOT}/backbone_sweep/SELECTED"
 if [ -z "${BACKBONE_CKPT:-}" ]; then
@@ -41,7 +48,7 @@ for SEED in ${SEEDS}; do
     gpu_check
     $PY/phase2_repair.py --backbone_ckpt "${BACKBONE_CKPT}" --pq_ckpt "${PQ}" \
         --cache_dir "${P1_ROOT}/feature_cache" --masking_dir "${M}" --seed "${SEED}" \
-        ${REPAIR_KEYS:+--keys ${REPAIR_KEYS}} ${CE_SWEEP:+--ce_sweep ${CE_SWEEP}} ${TAG:+--tag ${TAG}} \
+        ${REPAIR_KEYS:+--keys ${REPAIR_KEYS}} ${CE_SWEEP:+--ce_sweep ${CE_SWEEP}} ${CACHED_RETRAIN:+--cached_retrain} ${TAG:+--tag ${TAG}} \
         2>&1 | tee "${M}/${STEM}.log"   # pipefail: stops on failure
 done
 

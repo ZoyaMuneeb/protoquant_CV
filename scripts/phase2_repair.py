@@ -30,6 +30,13 @@ CE step sweep (section 13, post hoc): with --ce_sweep 300 1000 3000 10000 --tag 
 (keys "<method>+CEsel_K<K>" and "<method>+phys+CEsel_K<K>"), evaluated on validation at each step count; per model
 the step count with the best validation top-1 is kept (ties: fewer steps) and test is read once for it. Files
 repair_cesweep{.json,_test_preds.npz,_weights.pt}; the validation curve is saved in the json.
+
+Retraining recipe on cached features (section 13, post hoc): with --cached_retrain --tag cachedrt, the masks are
+retrained with the retraining recipe of phase2_retrain.py (AdamW lr 0.05, weight decay 5e-4, warm-up + cosine,
+label smoothing 0.1, batch 1,024, 145 epochs, mask held fixed, unused codes removed, best epoch on validation) but
+on the cached features instead of augmented images (no MixUp / CutMix / image augmentation). Two variants:
+"<method>+phys+rtH_K<K>" (head only, codes frozen) and "<method>+phys+rtCH_K<K>" (codes + head). Head only vs
+codes + head isolates code adaptation; codes + head vs real retraining isolates augmentation and image training.
 """
 
 import argparse
@@ -133,6 +140,67 @@ def repair_ce_sweep(s: torch.Tensor, y: torch.Tensor, s_val: torch.Tensor, y_val
                      "train_ce_after": best[0]["train_ce"], "ce_curve": curve}
 
 
+def cached_logits(feats: torch.Tensor, codes: torch.Tensor, w_raw: torch.Tensor, temperature: float,
+                  eps: float = 1e-6) -> torch.Tensor:
+    """ProtoQuantNet.forward from cached backbone features (B, C, H, W), differentiable in codes and w_raw:
+    cosine similarity per position, softmax over codes / T, max over positions, ReLU(W) head."""
+    x = feats.float().flatten(2).transpose(1, 2)                        # (B, HW, C)
+    x = x / (x.norm(dim=-1, keepdim=True) + eps)
+    c = codes / (codes.norm(dim=-1, keepdim=True) + eps)
+    s = F.softmax((x @ c.t()) / temperature, dim=-1).amax(dim=1)       # (B, M)
+    return s @ torch.relu(w_raw).t()
+
+
+def retrain_cached(feats: dict, y: dict, codes0: torch.Tensor, w0_raw: torch.Tensor, mask: torch.Tensor,
+                   train_codes: bool, temperature: float, args, seed: int, dev) -> tuple[dict, dict]:
+    """The retraining recipe (phase2_retrain.py) run on the cached training features instead of augmented images:
+    AdamW (lr, weight decay), warm-up + cosine schedule stepped per epoch, label smoothing 0.1 (no MixUp/CutMix:
+    they need images), batch 1,024, mask re-applied after every step, best epoch on validation. Head only
+    (train_codes=False) or codes + head. Returns val/test logits of the best epoch and the fit record."""
+    from src.utils import SchedulerArgs, create_schedulers
+    codes = torch.nn.Parameter(codes0.float().clone().to(dev), requires_grad=train_codes)
+    w = torch.nn.Parameter(w0_raw.float().clone().to(dev))
+    m = mask.float().to(dev)
+    opt = torch.optim.AdamW([w] + ([codes] if train_codes else []), lr=args.rt_lr, weight_decay=args.rt_wd,
+                            betas=(0.9, 0.999), eps=1e-8)
+    sched = create_schedulers([opt], SchedulerArgs(epochs=args.rt_epochs, warmup_epochs=args.rt_warmup,
+                                                   lr=args.rt_lr))[0]
+    ftr, ytr = feats["train"].to(dev), y["train"].to(dev)
+    g = torch.Generator().manual_seed(seed)
+    bs = args.rt_batch
+
+    def predict(split: str) -> torch.Tensor:
+        with torch.no_grad():
+            f = feats[split]
+            return torch.cat([cached_logits(f[i:i + 256].to(dev), codes, w, temperature).cpu()
+                              for i in range(0, len(f), 256)]).double()
+
+    best, curve, t0 = None, [], time.time()
+    for epoch in range(args.rt_epochs):
+        perm = torch.randperm(len(ytr), generator=g)
+        for i in range(0, len(perm) - bs + 1, bs):          # drop_last, as in retraining
+            idx = perm[i:i + bs].to(dev)
+            opt.zero_grad()
+            F.cross_entropy(cached_logits(ftr[idx], codes, w, temperature), ytr[idx], label_smoothing=0.1).backward()
+            opt.step()
+            with torch.no_grad():
+                w.mul_(m)                                   # pruned edges stay pruned
+        lv = predict("val")
+        val = acc(lv, y["val"])
+        sched.step(epoch)
+        curve.append(val)
+        if best is None or val > best[0]:
+            best = (val, epoch, codes.detach().clone(), w.detach().clone())
+    with torch.no_grad():
+        codes.copy_(best[2])
+        w.copy_(best[3])
+    lv, lt = predict("val"), predict("test")
+    fit = {"best_epoch": best[1], "epochs": args.rt_epochs, "train_codes": train_codes, "val_curve": curve,
+           "train_seconds": time.time() - t0,
+           "code_change_mean_cosine": float(F.cosine_similarity(best[2].cpu(), codes0.float(), dim=1).mean())}
+    return {"val": lv, "test": lt, "w_eff": torch.relu(best[3]).double().cpu(), "codes": best[2].cpu()}, fit
+
+
 @torch.no_grad()
 def check_physical(model, feats: torch.Tensor, mask: torch.Tensor, w_eff: torch.Tensor, dev) -> float:
     """Max |logit| difference between our physical pooled scores and the real compact model
@@ -162,14 +230,25 @@ def main() -> None:
                     help="CE step counts to try, e.g. 300 1000 3000 10000: runs only the CE refit (variants CEsel and "
                          "phys+CEsel), picks the step count by validation top-1 per model, reads test once for it")
     ap.add_argument("--tag", default="", help="output name suffix, e.g. 'cesweep' -> repair_cesweep.json")
+    ap.add_argument("--cached_retrain", action="store_true",
+                    help="run only the retraining recipe on cached features (variants phys+rtH: head only, "
+                         "phys+rtCH: codes + head), best epoch on validation, test read once")
+    ap.add_argument("--rt_epochs", type=int, default=145)
+    ap.add_argument("--rt_warmup", type=int, default=5)
+    ap.add_argument("--rt_lr", type=float, default=0.05)
+    ap.add_argument("--rt_wd", type=float, default=5e-4)
+    ap.add_argument("--rt_batch", type=int, default=1024)
     args = ap.parse_args()
 
     if L.protocol_info()["protocol"] != "strict":
         raise SystemExit("runs under PQ_CUB_PROTOCOL=strict")
-    if args.ce_sweep and not args.tag:
-        raise SystemExit("--ce_sweep needs --tag, so the earlier repair.json is not overwritten")
+    if (args.ce_sweep or args.cached_retrain) and not args.tag:
+        raise SystemExit("--ce_sweep / --cached_retrain need --tag, so the earlier repair.json is not overwritten")
+    if args.ce_sweep and args.cached_retrain:
+        raise SystemExit("run --ce_sweep and --cached_retrain separately")
     stem = "repair" + (f"_{args.tag}" if args.tag else "")
-    variants = ("CEsel", "phys+CEsel") if args.ce_sweep else ("phys", "LS", "CE", "phys+LS", "phys+CE")
+    variants = (("CEsel", "phys+CEsel") if args.ce_sweep else ("phys+rtH", "phys+rtCH") if args.cached_retrain
+                else ("phys", "LS", "CE", "phys+LS", "phys+CE"))
     out = Path(args.masking_dir)
     if (out / f"{stem}.json").exists():
         raise SystemExit(f"{out / f'{stem}.json'} exists: test was already read for these models")
@@ -222,8 +301,13 @@ def main() -> None:
             m_cols = mask[:, codes] if phys else mask
             w0 = (w_eff * mask)[:, codes] if phys else w_eff * mask
             t0 = time.time()
-            fit = {}
-            if variant.endswith("LS"):
+            fit, lv = {}, None
+            if variant.startswith("phys+rt"):
+                w0_raw = (model.classifier.weight.detach().cpu().double() * mask)[:, codes]
+                res, fit = retrain_cached(feats, y, model.codes.detach().cpu()[codes], w0_raw, m_cols,
+                                          variant == "phys+rtCH", model.temperature, args, args.seed, dev)
+                w, lv, lt = res["w_eff"], res["val"], res["test"]
+            elif variant.endswith("LS"):
                 w, fit = repair_ls(sc["train"], z_train, m_cols, args.ridge)
             elif variant.endswith("CE"):
                 w, fit = repair_ce(sc["train"], y["train"], w0, m_cols, args.ce_steps, args.ce_lr, dev)
@@ -233,7 +317,8 @@ def main() -> None:
             else:
                 w = w0
             secs = time.time() - t0
-            lv, lt = sc["val"] @ w.t(), sc["test"] @ w.t()
+            if lv is None:
+                lv, lt = sc["val"] @ w.t(), sc["test"] @ w.t()
             name = f"{method}+{variant}_K{k}"
             row = {"method": f"{method}+{variant}", "K": int(k), "base_key": key, "mask_file": source[key],
                    "variant": variant, "physical": phys, "codebook_rows": int(len(codes) if phys else mask.shape[1]),
@@ -242,13 +327,15 @@ def main() -> None:
                    "repair_seconds": secs, **P.mask_stats(w > 0), **fit}
             rows.append(row)
             preds[name] = lt.argmax(1).numpy()
-            weights[name] = {"weight": w.float(), "codes": codes if phys else None}
+            weights[name] = {"weight": w.float(), "codes": codes if phys else None,
+                             **({"code_vectors": res["codes"]} if variant == "phys+rtCH" else {})}
             for p in fit.get("ce_curve", []):
                 print(f"[REPAIR]   {name}: {p['steps']:6d} steps  train CE {p['train_ce']:.4f}  "
                       f"val {p['val_top1']:6.2f}  val CE {p['val_ce']:.4f}  edges {p['nonzero_edges']}", flush=True)
             print(f"[REPAIR] {name:28s} val {row['val_top1']:6.2f} (one-shot {base_val:6.2f}) "
                   f"test {row['test_top1']:6.2f}  edges {row['nonzero_edges']:5d}  codes {row['codebook_rows']:5d}  "
-                  f"{secs:6.2f} s" + (f"  steps {fit['ce_steps_selected']}" if "ce_steps_selected" in fit else ""),
+                  f"{secs:6.2f} s" + (f"  steps {fit['ce_steps_selected']}" if "ce_steps_selected" in fit else "")
+                  + (f"  best epoch {fit['best_epoch']}" if "best_epoch" in fit else ""),
                   flush=True)
 
     torch.save({"weights": weights, "pq_ckpt": args.pq_ckpt, "seed": args.seed}, out / f"{stem}_weights.pt")
@@ -256,7 +343,10 @@ def main() -> None:
     L.write_json(out / f"{stem}.json", {
         "seed": args.seed, "pq_ckpt": args.pq_ckpt, **L.protocol_info(), "dense_val_top1": dense_val,
         "ridge": args.ridge, "ce_steps": args.ce_steps, "ce_lr": args.ce_lr, "ce_sweep": args.ce_sweep,
-        "selection": "CE step count chosen per model by validation top-1 (ties: fewer steps)" if args.ce_sweep else None,
+        "selection": ("CE step count chosen per model by validation top-1 (ties: fewer steps)" if args.ce_sweep else
+                      "best epoch by validation top-1 (as retraining)" if args.cached_retrain else None),
+        "cached_retrain": {k: getattr(args, k) for k in ("rt_epochs", "rt_warmup", "rt_lr", "rt_wd", "rt_batch")}
+        if args.cached_retrain else None,
         "physical_check_max_logit_error": checks, "models": rows})
 
 

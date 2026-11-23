@@ -150,6 +150,7 @@ batch 512 is the fallback and must be recorded in the change log.
 | 2026-11-19 | Code-matched CB1 control added to section 12 | Added after the code-level results were seen: CB1-M800 ended with fewer active codes than CP1-M800, so the retrained comparison confounded code score with code count. Reported as post hoc |
 | 2026-11-23 | Closed-form weight repair added, see section 13 | New method, added after all main results were seen (exploratory, reported as post hoc): tests whether re-fitting the surviving weights in seconds recovers what 145 epochs of retraining recover |
 | 2026-11-23 | CE step sweep added to section 13 | Added after the repair results were seen: the 300-step CE refit had not converged, so how much of retraining's gain a head-only refit recovers was understated. Step count chosen on validation; reported as post hoc |
+| 2026-11-23 | Retraining recipe on cached features added to section 13 | Added after the CE sweep was seen: splits the remaining gap to retraining into code adaptation (codes + head vs head only, same recipe) and augmentation / image training (vs real retraining). Reported as post hoc |
 
 ## 10. Iterative pruning (Phase 4), fixed before running
 
@@ -243,3 +244,12 @@ CP1-M1000 and the code-matched CB1 (`CB1-eqCP1M1000`). No retraining; `scripts/p
   `repair_cesweep.*`, keys `<method>+CEsel` / `<method>+phys+CEsel`). The 300-step results stay as reported.
   Comparisons: CEsel vs 300-step CE, vs the same mask retrained and vs dense; P1 vs B1 and CP1 vs the code-matched
   CB1 after CEsel repair.
+* **Retraining recipe on cached features (post hoc, added 2026-11-23 after the CE sweep was seen):** the CE refit
+  closed only part of the gap to retraining, so the remaining gap is split into code adaptation and augmentation.
+  The same masks (physical: unused codes removed) are retrained with the exact retraining recipe (AdamW lr 0.05,
+  weight decay 5e-4, 5 warm-up epochs + cosine, label smoothing 0.1, batch 1,024, 145 epochs, mask held fixed, best
+  epoch on validation) but on the cached training features instead of augmented images (no MixUp / CutMix / image
+  augmentation): head only (`<method>+phys+rtH`) and codes + head (`<method>+phys+rtCH`). Comparisons: codes + head
+  vs head only (does adapting the codes help?), each vs the same mask retrained on images (what is left is
+  augmentation / image training) and vs dense; P1 vs B1 and CP1 vs the code-matched CB1 after each. Test read once
+  per model (`repair_cachedrt.*`).

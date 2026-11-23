@@ -92,7 +92,8 @@ def main() -> None:
                                    ("codeprune.json", "codeprune_test_preds.npz"),
                                    ("codeprune_matched.json", "codeprune_matched_test_preds.npz"),
                                    ("repair.json", "repair_test_preds.npz"),
-                                   ("repair_cesweep.json", "repair_cesweep_test_preds.npz")):
+                                   ("repair_cesweep.json", "repair_cesweep_test_preds.npz"),
+                                   ("repair_cachedrt.json", "repair_cachedrt_test_preds.npz")):
             res = load(d / "masking" / res_name)
             for r in res.get("models", []):
                 key = "dense" if r["method"] == "dense" else f"{r['method']}_K{r['K']}"
@@ -321,11 +322,13 @@ def main() -> None:
                "LS: per-class non-negative least squares against the dense model's logits. CE: the same weights "
                "re-fitted to the labels (projected Adam). phys: codes no class uses are removed first, so the softmax "
                "renormalises over the kept codes (as in retraining). CEsel: CE refit with the step count (300 / 1,000 / "
-               "3,000 / 10,000) chosen per model on validation (post hoc); the chosen counts are in brackets. Δ vs the "
+               "3,000 / 10,000) chosen per model on validation (post hoc); the chosen counts are in brackets. rtH / rtCH: "
+               "the retraining recipe (145 epochs, best epoch on validation) run on the cached features, head only / "
+               "codes + head (post hoc); best epochs in brackets. Δ vs the "
                "same mask one-shot (no repair, every code in the softmax).", "",
                "| Model | Codes in softmax | Edges | Val top-1 | Test top-1 | Δ vs one-shot | 95 % CI | Seeds (Δ) | Verdict | Fit (s) |",
                "|---|---|---|---|---|---|---|---|---|---|"]
-        variants = ("phys", "LS", "CE", "phys+LS", "phys+CE", "CEsel", "phys+CEsel")
+        variants = ("phys", "LS", "CE", "phys+LS", "phys+CE", "CEsel", "phys+CEsel", "phys+rtH", "phys+rtCH")
         for base in rep_bases:
             m, k = base.rsplit("_K", 1)
             keys = [f"{m}+{v}_K{k}" for v in variants]
@@ -341,7 +344,9 @@ def main() -> None:
                     continue
                 c = cmp_.get(key)
                 steps = [r["ce_steps_selected"] for r in rs if "ce_steps_selected" in r]
-                label = key.rsplit('_K', 1)[0] + (f" ({', '.join(map(str, steps))} steps)" if steps else "")
+                ep = [r["best_epoch"] for r in rs if "best_epoch" in r]
+                label = key.rsplit('_K', 1)[0] + (f" ({', '.join(map(str, steps))} steps)" if steps else "") + \
+                    (f" (best epoch {', '.join(map(str, ep))})" if ep else "")
                 md.append(f"| {label} | {ms([r['codebook_rows'] for r in rs])} | "
                           f"{ms([r['nonzero_edges'] for r in rs])} | {ms([r['val_top1'] for r in rs])} | "
                           f"{ms([r['test_top1'] for r in rs])} | {cells(c)} | {ms([r['repair_seconds'] for r in rs])} |")
@@ -351,7 +356,7 @@ def main() -> None:
         retrained = sorted({k for (s_, k) in budget_rows} | {k for (s_, k) in retrain_rows})
         for base in rep_bases:
             m, k = base.rsplit("_K", 1)
-            for v in ("phys+LS", "phys+CE", "phys+CEsel"):
+            for v in ("phys+LS", "phys+CE", "phys+CEsel", "phys+rtH", "phys+rtCH"):
                 key = f"{m}+{v}_K{k}"
                 for ref in retrained:   # the same mask retrained (30 or 145 epochs, codes physically removed)
                     if ref == f"R_{base}" or ref.startswith(f"BUD_{base}_E"):
@@ -363,11 +368,14 @@ def main() -> None:
                           "which repair target is better?"))
             pairs.append((f"{m}+phys+CEsel_K{k}", f"{m}+phys+CE_K{k}", f"{m}: CE, steps chosen on val vs 300 steps, physical",
                           "do more CE steps help?"))
+            pairs.append((f"{m}+phys+rtCH_K{k}", f"{m}+phys+rtH_K{k}",
+                          f"{m}: codes + head vs head only, retraining recipe on cached features",
+                          "does adapting the codes help?"))
         for base in rep_bases:   # does the pruning score still matter once the weights are repaired?
             m, k = base.rsplit("_K", 1)
             ref = "B1" if m == "P1" else ("CB1-eqCP1M" + m[5:]) if m.startswith("CP1-M") else None
             if ref and f"{ref}_K{k}" in rep_bases:
-                for v in ("LS", "CEsel"):
+                for v in ("LS", "CEsel", "rtH", "rtCH"):
                     pairs.append((f"{m}+phys+{v}_K{k}", f"{ref}+phys+{v}_K{k}", f"{m} vs {ref}, both physical + {v} repair",
                                   "does the score matter after repair?"))
         rep_rows = []
