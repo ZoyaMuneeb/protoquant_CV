@@ -148,6 +148,7 @@ batch 512 is the fallback and must be recorded in the change log.
 | 2026-11-19 | Improved-backbone rerun added, see section 11 | Added after all main results were seen: our backbone (84.05 % test) is 4.4 points below the paper's (88.4 %), so the claim "longer retraining closes the gap to dense" is retested on a stronger backbone. Reported as a separate, post hoc experiment; main results unchanged |
 | 2026-11-19 | Code-level pruning added, see section 12 | New method, added after all main results were seen (exploratory, reported as post hoc): edge methods end at about 1,300 codes, and codes are the capacity that matters |
 | 2026-11-19 | Code-matched CB1 control added to section 12 | Added after the code-level results were seen: CB1-M800 ended with fewer active codes than CP1-M800, so the retrained comparison confounded code score with code count. Reported as post hoc |
+| 2026-11-23 | Closed-form weight repair added, see section 13 | New method, added after all main results were seen (exploratory, reported as post hoc): tests whether re-fitting the surviving weights in seconds recovers what 145 epochs of retraining recover |
 
 ## 10. Iterative pruning (Phase 4), fixed before running
 
@@ -215,3 +216,22 @@ Run on the improved backbone (section 11), K = 10 edges per class, seeds 40–42
   `CB1-eqCP1M1000_K10`. Evaluated one-shot (test read once, separate files), then retrained for 145 epochs with
   the B2 recipe. Comparison: retrained CP1-M1000 vs this control (section 6 rules), answering whether the code
   score matters once the head is retrained.
+
+## 13. Closed-form weight repair (post hoc, exploratory, added 2026-11-23)
+
+Run on the improved backbone (section 11), seeds 40–42, on the saved K = 10 masks: B1, P1, random, CB1-M1000,
+CP1-M1000 and the code-matched CB1 (`CB1-eqCP1M1000`). No retraining; `scripts/phase2_repair.py`.
+
+* **Method (LS, main):** keep each mask's surviving edges and w ≥ 0, and re-fit only their weights so the pruned
+  head reproduces the dense head's logits on the training split: per class, non-negative least squares
+  min_{v ≥ 0} mean_i (s_i[S_k]·v − z_ik)² + 10⁻⁴·|v|², with z = s·ReLU(W)ᵀ the dense logits. Inspired by OBS and
+  layer-wise reconstruction (SparseGPT), applied to the prototype head.
+* **Control (CE):** the same surviving weights re-fitted to the training labels instead: full-batch Adam on
+  cross-entropy over the cached pooled scores, lr 0.01, 300 steps, projected onto w ≥ 0 and the mask each step.
+* **Settings:** logical (every code stays in the softmax, as one-shot masking) and physical (codes no class uses
+  are removed first, as the retraining recipe does; pooled scores recomputed, repair fits on those). Physical is
+  the comparison with retraining. Ridge, steps and lr are fixed here; nothing is tuned on validation or test.
+* **Comparisons (section 6 rules):** each repaired model vs the same mask one-shot; physical LS and CE vs the same
+  mask retrained (B2 / code-level, 145 epochs) and vs the dense head; LS vs CE; P1 vs B1 and CP1-M1000 vs the
+  code-matched CB1 after repair (does the score matter once the weights are repaired?).
+* Test read once per model (separate files: `repair.json`, `repair_test_preds.npz`).

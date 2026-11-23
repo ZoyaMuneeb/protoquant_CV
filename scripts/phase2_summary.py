@@ -90,7 +90,8 @@ def main() -> None:
         # Phase 2 one-shot masks, then the Phase 4 one-shot ablation (P3 without the minimum)
         for res_name, npz_name in (("results.json", "test_preds.npz"), ("ablation.json", "ablation_test_preds.npz"),
                                    ("codeprune.json", "codeprune_test_preds.npz"),
-                                   ("codeprune_matched.json", "codeprune_matched_test_preds.npz")):
+                                   ("codeprune_matched.json", "codeprune_matched_test_preds.npz"),
+                                   ("repair.json", "repair_test_preds.npz")):
             res = load(d / "masking" / res_name)
             for r in res.get("models", []):
                 key = "dense" if r["method"] == "dense" else f"{r['method']}_K{r['K']}"
@@ -271,7 +272,7 @@ def main() -> None:
                 summary["iterative"].setdefault(key, {})[f"vs_{ref}"] = c
         md.append("")
 
-    ckeys = sorted({k for (s_, k) in rows if k.startswith(("CB1-", "CP1-"))},   # CB1-eqCP1M1000: matched control
+    ckeys = sorted({k for (s_, k) in rows if k.startswith(("CB1-", "CP1-")) and "+" not in k},   # "+": repaired
                    key=lambda x: (x.split("-")[0], -int(x.split("M")[-1].split("_K")[0]), x))
     if ckeys:
         md += ["## Code-level pruning (one-shot, section 12)", "",
@@ -306,6 +307,71 @@ def main() -> None:
         if cmp_rows:
             md += ["| Comparison | Question | Δ | 95 % CI | Seeds (Δ) | Verdict |", "|---|---|---|---|---|---|",
                    *cmp_rows, ""]
+
+    rep_bases = []   # closed-form weight repair (section 13): "<method>+<variant>_K<K>" from repair.json
+    for (s_, k) in rows:
+        base = rows[(s_, k)].get("base_key")
+        if base and "+" in k and base not in rep_bases:
+            rep_bases.append(base)
+    if rep_bases:
+        summary["repair"] = {}
+        md += ["## Closed-form weight repair (no retraining, section 13)", "",
+               "The surviving weights of a pruned head re-fitted on the cached training features, mask and w ≥ 0 kept. "
+               "LS: per-class non-negative least squares against the dense model's logits. CE: the same weights "
+               "re-fitted to the labels (projected Adam). phys: codes no class uses are removed first, so the softmax "
+               "renormalises over the kept codes (as in retraining). Δ vs the same mask one-shot (no repair, every "
+               "code in the softmax).", "",
+               "| Model | Codes in softmax | Edges | Val top-1 | Test top-1 | Δ vs one-shot | 95 % CI | Seeds (Δ) | Verdict | Fit (s) |",
+               "|---|---|---|---|---|---|---|---|---|---|"]
+        variants = ("phys", "LS", "CE", "phys+LS", "phys+CE")
+        for base in rep_bases:
+            m, k = base.rsplit("_K", 1)
+            keys = [f"{m}+{v}_K{k}" for v in variants]
+            cmp_ = compare(correct, keys, base, seeds)
+            rs0 = [rows[(s_, base)] for s_ in seeds if (s_, base) in rows]
+            if rs0:
+                md.append(f"| {m} one-shot | {ms([r.get('active_codes') for r in rs0])} (all in softmax) | "
+                          f"{ms([r['nonzero_edges'] for r in rs0])} | {ms([r['val_top1'] for r in rs0])} | "
+                          f"{ms([r['test_top1'] for r in rs0])} | ref |  |  |  |  |")
+            for key in keys:
+                rs = [rows[(s_, key)] for s_ in seeds if (s_, key) in rows]
+                if not rs:
+                    continue
+                c = cmp_.get(key)
+                md.append(f"| {key.rsplit('_K', 1)[0]} | {ms([r['codebook_rows'] for r in rs])} | "
+                          f"{ms([r['nonzero_edges'] for r in rs])} | {ms([r['val_top1'] for r in rs])} | "
+                          f"{ms([r['test_top1'] for r in rs])} | {cells(c)} | {ms([r['repair_seconds'] for r in rs])} |")
+                summary["repair"][key] = {"rows": rs, "vs_one_shot": c}
+        md.append("")
+        pairs = []
+        retrained = sorted({k for (s_, k) in budget_rows} | {k for (s_, k) in retrain_rows})
+        for base in rep_bases:
+            m, k = base.rsplit("_K", 1)
+            for v in ("phys+LS", "phys+CE"):
+                key = f"{m}+{v}_K{k}"
+                for ref in retrained:   # the same mask retrained (30 or 145 epochs, codes physically removed)
+                    if ref == f"R_{base}" or ref.startswith(f"BUD_{base}_E"):
+                        e = ref.rsplit("_E", 1)[1] if ref.startswith("BUD_") else "30"
+                        pairs.append((key, ref, f"{m} {v} vs {m} retrained {e} epochs, K = {k}",
+                                      "can repair replace retraining?"))
+                pairs.append((key, "dense", f"{m} {v} (K = {k}) vs dense head", "is dense accuracy kept?"))
+            pairs.append((f"{m}+phys+LS_K{k}", f"{m}+phys+CE_K{k}", f"{m}: LS (dense logits) vs CE (labels), physical",
+                          "which repair target is better?"))
+        for base in rep_bases:   # does the pruning score still matter once the weights are repaired?
+            m, k = base.rsplit("_K", 1)
+            ref = "B1" if m == "P1" else ("CB1-eqCP1M" + m[5:]) if m.startswith("CP1-M") else None
+            if ref and f"{ref}_K{k}" in rep_bases:
+                pairs.append((f"{m}+phys+LS_K{k}", f"{ref}+phys+LS_K{k}", f"{m} vs {ref}, both physical + LS repair",
+                              "does the score matter after repair?"))
+        rep_rows = []
+        for key, ref, label, q in pairs:
+            c = compare(correct, [key], ref, seeds).get(key)
+            if c:
+                rep_rows.append(f"| {label} | {q} | {cells(c)} |")
+                summary["repair"].setdefault(key, {})[f"vs_{ref}"] = c
+        if rep_rows:
+            md += ["| Comparison | Question | Δ | 95 % CI | Seeds (Δ) | Verdict |", "|---|---|---|---|---|---|",
+                   *rep_rows, ""]
 
     abl = []   # Phase 4 ablations that need no training (methodology, Phase 4)
     for k in ks:

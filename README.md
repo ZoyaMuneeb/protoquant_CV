@@ -18,6 +18,7 @@ paper [arXiv 2602.06592](https://arxiv.org/abs/2602.06592)). CUB-200-2011, ConvN
 | 4 | Iterative pruning, controls, ablations | Done |
 | – | Improved-backbone rerun | Done |
 | – | Code-level pruning + code-matched CB1 control | Done |
+| – | Closed-form weight repair (no retraining) | Code ready, not run |
 | 5 | Figures, prototype visualisations, demo | Not started |
 
 ## Key findings
@@ -168,12 +169,14 @@ Set `BB=$(realpath ../checkpoints/backbone/<file>.pth)` first.
 | Improved backbone: rerun | `bash scripts/run_new_backbone.sh` | ~8 h |
 | Code-level pruning (improved backbone) | `bash scripts/run_codeprune.sh` | ~6 h |
 | Code-matched CB1 control | `bash scripts/run_codeprune_control.sh` | ~2 h |
+| Closed-form weight repair (no retraining) | `bash scripts/run_repair.sh` | minutes |
 
 Improved-backbone runs write to `../runs_bb2/` and `results/backbone2/`, so the main results are untouched.
 Each step's exact settings are fixed in [`docs/phase0_protocol.md`](docs/phase0_protocol.md):
 - section 10: iterative pruning;
 - section 11: the improved backbone;
-- section 12: code-level pruning.
+- section 12: code-level pruning;
+- section 13: closed-form weight repair.
 
 ## Repository layout
 
