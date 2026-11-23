@@ -18,7 +18,7 @@ paper [arXiv 2602.06592](https://arxiv.org/abs/2602.06592)). CUB-200-2011, ConvN
 | 4 | Iterative pruning, controls, ablations | Done |
 | – | Improved-backbone rerun | Done |
 | – | Code-level pruning + code-matched CB1 control | Done |
-| – | Closed-form weight repair (no retraining) | Code ready, not run |
+| – | Weight repair and decomposition of retraining (head refit, codes + head on cached features) | Done |
 | 5 | Figures, prototype visualisations, demo | Not started |
 
 ## Key findings
@@ -40,6 +40,20 @@ paper [arXiv 2602.06592](https://arxiv.org/abs/2602.06592)). CUB-200-2011, ConvN
    P1-contrast ≈ P1 in accuracy, but it is the only score that predicts single-edge deletion damage.
 8. **Pruning shrinks explanations 40× and the codebook by half, but not the model.** The backbone dominates
    latency and memory, so the full model is only about 2 % faster.
+9. **Why retraining erases the score: the codes adapt.** We split retraining's gain into steps (K = 10,
+   improved backbone). Re-fitting only the head recovers about 40–60 % of it in seconds. Letting the codes
+   adapt too, with the retraining recipe run on cached features, recovers almost all the rest. Training on
+   augmented images adds only the last 0.8–1.3 points.
+10. **A head refit alone already removes the score's advantage.** After re-fitting the kept weights, P1 vs B1
+    is +0.21 [−0.25, +0.68] and CP1 vs CB1 (890 codes) is +0.40 [−0.31, +1.09]. One-shot they were +2.46 and
+    +8.19.
+11. **Retraining on cached features is a cheap near-substitute.** Codes + head trained for 145 epochs on
+    cached features take about 8–17 s per model instead of about 41 min on images. They land 0.8–1.3 points
+    below full retraining. Even random edges reach 80.8 % this way (7.4 % with a head refit only).
+12. **Matching the dense model's logits by least squares fails** (a negative result): −6.6 to −10.3 points
+    against one-shot for B1, P1 and CP1 (physical). It restores the logits' scale but not the ranking of classes.
+13. **Removing unused codes alone helps code-level pruning** (physical vs logical, one-shot): +2.3 points for
+    CP1-M1000 and +16.3 for CB1-M1000, because the softmax renormalises over the kept codes.
 
 Verdicts use the rules fixed before any run ([protocol](docs/phase0_protocol.md), section 6):
 - **better**: the 95 % paired-bootstrap interval is above 0 and every seed agrees;
@@ -107,6 +121,45 @@ with far fewer active codes (e.g. 484 vs 728 at M = 800). At equal active codes 
 
 So the smaller codebook comes from pruning at the code level plus long retraining, not from the CP1 score.
 
+### Where retraining's gain comes from (improved backbone, K = 10, post hoc)
+
+Every model has unused codes physically removed. Steps, left to right:
+- **head refit:** the kept weights re-fitted to the labels on cached features (Adam, step count chosen on
+  validation);
+- **recipe, head:** the full retraining recipe on cached features, codes frozen (145 epochs, best epoch on
+  validation);
+- **recipe, codes + head:** the same with the codes trained too;
+- **retrained:** the real retraining on augmented images (145 epochs).
+
+| Mask | Codes | One-shot | Head refit | Recipe, head | Recipe, codes + head | Retrained |
+|---|---|---|---|---|---|---|
+| B1 | 1,304 | 77.06 | 80.53 | 80.46 | **84.64** | 85.47 |
+| P1 | 1,574 | 79.52 | 80.74 | 80.66 | **83.99** | – |
+| CP1-M1000 | 890 | 71.14 | 77.08 | 76.73 | **83.88** | 85.15 |
+| CB1 matched to 890 codes | 890 | 62.95 | 76.68 | 75.99 | **84.13** | 85.01 |
+| CB1-M1000 | 579 | 35.80 | 68.52 | 65.63 | **82.87** | – |
+| random | 1,432 | 4.93 | 7.88 | 7.44 | **80.80** | – |
+| Time per model | | – | ≈ 5–6 s | ≈ 5–9 s | ≈ 8–17 s | ≈ 41 min |
+
+- **Codes + head vs head only** (same recipe): +3.3 to +17.2 points (+73 for random edges), better in every
+  seed for every mask.
+- **Codes + head on cached features vs retrained on images:** −0.83 (B1), −1.27 (CP1), −0.87 (CB1).
+- **Against dense**, codes + head on cached features is −1.0 to −1.8 for B1, P1, CP1 and the matched CB1
+  (loss not excluded; −2.8 for CB1-M1000 at 579 codes). B2 retrained on
+  images for 145 epochs shows no meaningful loss.
+
+How the score's advantage shrinks (Δ test points, 3 seeds):
+
+| Comparison | One-shot | Head refit | Recipe, codes + head | Retrained 145 epochs |
+|---|---|---|---|---|
+| P1 vs B1 | **+2.46** (better) | +0.21 | −0.64 | – |
+| CP1 vs CB1, 890 codes | **+8.19** (better) | +0.40 | −0.25 | +0.14 |
+
+Least-squares repair against the dense logits loses 6.6–10.3 points against one-shot for B1, P1 and CP1, a
+negative result. A CE
+refit with a fixed 300 steps recovers less than the step count chosen on validation. The full repair table is
+in `results/backbone2/phase2_results.md`.
+
 ### Ablations and controls
 
 | Question | Answer |
@@ -130,7 +183,7 @@ Training cost: iterative P1 ≈ 44 GPU-minutes per model vs ≈ 27 for B2 at 145
 
 Full tables:
 - main backbone: [`results/phase2_results.md`](results/phase2_results.md);
-- improved backbone: `results/backbone2/phase2_results.md`, written on the GPU machine.
+- improved backbone: [`results/backbone2/phase2_results.md`](results/backbone2/phase2_results.md).
 
 ## What we changed in the official code
 
@@ -169,14 +222,16 @@ Set `BB=$(realpath ../checkpoints/backbone/<file>.pth)` first.
 | Improved backbone: rerun | `bash scripts/run_new_backbone.sh` | ~8 h |
 | Code-level pruning (improved backbone) | `bash scripts/run_codeprune.sh` | ~6 h |
 | Code-matched CB1 control | `bash scripts/run_codeprune_control.sh` | ~2 h |
-| Closed-form weight repair (no retraining) | `bash scripts/run_repair.sh` | minutes |
+| Weight repair: LS and CE refit (no retraining) | `bash scripts/run_repair.sh` | minutes |
+| Weight repair: CE step count chosen on validation | `CE_SWEEP="300 1000 3000 10000" bash scripts/run_repair.sh` | minutes |
+| Retraining recipe on cached features (head only, codes + head) | `CACHED_RETRAIN=1 bash scripts/run_repair.sh` | ~10–30 min |
 
 Improved-backbone runs write to `../runs_bb2/` and `results/backbone2/`, so the main results are untouched.
 Each step's exact settings are fixed in [`docs/phase0_protocol.md`](docs/phase0_protocol.md):
 - section 10: iterative pruning;
 - section 11: the improved backbone;
 - section 12: code-level pruning;
-- section 13: closed-form weight repair.
+- section 13: weight repair and the retraining recipe on cached features.
 
 ## Repository layout
 
