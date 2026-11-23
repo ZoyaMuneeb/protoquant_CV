@@ -5,9 +5,14 @@
 #
 #   CARS_SRC=/path/to/downloaded/stanford_cars bash scripts/prepare_cars.sh
 #
-# CARS_SRC holds either the devkit files (cars_train_annos.mat, cars_test_annos_withlabels.mat, cars_meta.mat,
-# cars_train/, cars_test/) or cars_annos.mat + car_ims/. Output: ${DATA_ROOT}/cars196/stanford_cars and
-# splits/cars196_val10_seed0.txt (commit the split file so every run uses the same one).
+# CARS_SRC holds one of:
+#   * the devkit files (cars_train_annos.mat, cars_test_annos_withlabels.mat, cars_meta.mat, cars_train/, cars_test/);
+#   * cars_annos.mat + car_ims/;
+#   * the Hugging Face Parquet files (needs `pip install pyarrow`), only the train and test splits:
+#       huggingface-cli download tanganke/stanford_cars --repo-type dataset \
+#           --include "data/train-*" "data/test-*" --local-dir "${CARS_SRC}"
+# Output: ${DATA_ROOT}/cars196/stanford_cars and splits/cars196_val10_seed0.txt (commit the split file so every
+# run uses the same one).
 export PQ_DATASET=cars196
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 : "${CARS_SRC:?Set CARS_SRC to the folder with the downloaded Stanford Cars files}"
