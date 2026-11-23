@@ -12,6 +12,8 @@ from pathlib import Path
 
 PAPER_TOP1 = 87.7      # ProtoQuant, CUB-200, ConvNeXt-T (paper)
 PAPER_BACKBONE = 88.4  # black-box ConvNeXt-T (paper)
+if __import__("os").environ.get("PQ_DATASET", "cub200") != "cub200":   # paper numbers are for CUB only
+    PAPER_TOP1 = PAPER_BACKBONE = "–"
 NUM = r"([0-9]+(?:\.[0-9]+)?(?:e-?[0-9]+)?)"
 
 

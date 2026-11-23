@@ -10,7 +10,14 @@ PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${REPO_ROOT}/.." && pwd)}"
 VENV="${VENV:-${PROJECT_ROOT}/.venv}"
 DATA_ROOT="${DATA_ROOT:-${PROJECT_ROOT}/data}"           # holds raw/ and cub200_cropped/
 CUB_RAW="${CUB_RAW:-${DATA_ROOT}/raw/CUB_200_2011}"
-CUB_PATH="${CUB_PATH:-${DATA_ROOT}/cub200_cropped}"        # parent of CUB_200_2011/ (what the loaders expect)
+# Dataset: PQ_DATASET=cub200 (default) or cars196 (Stanford Cars in the CUB layout, scripts/prepare_cars.py).
+# CUB_PATH is the dataset root every script reads, whichever dataset is active.
+export PQ_DATASET="${PQ_DATASET:-cub200}"
+case "${PQ_DATASET}" in
+    cub200)  CUB_PATH="${CUB_PATH:-${DATA_ROOT}/cub200_cropped}" ;;   # parent of CUB_200_2011/ (what the loaders expect)
+    cars196) CUB_PATH="${CUB_PATH:-${DATA_ROOT}/cars196}" ;;          # parent of stanford_cars/
+    *) echo "PQ_DATASET must be cub200 or cars196, got ${PQ_DATASET}" >&2; exit 1 ;;
+esac
 RUNS_ROOT="${RUNS_ROOT:-${PROJECT_ROOT}/runs}"
 CKPT_ROOT="${CKPT_ROOT:-${PROJECT_ROOT}/checkpoints}"
 RESULTS_DIR="${RESULTS_DIR:-${REPO_ROOT}/results}"          # summaries; set per experiment to keep runs apart
@@ -19,6 +26,8 @@ mkdir -p "${RESULTS_DIR}"
 # Strict protocol by default: 90 % train / 10 % held-out val; test read once.
 export PQ_CUB_PROTOCOL="${PQ_CUB_PROTOCOL:-strict}"
 export PQ_CUB_SPLIT_FILE="${PQ_CUB_SPLIT_FILE:-${REPO_ROOT}/splits/cub200_val10_seed0.txt}"
+export PQ_CARS_SPLIT_FILE="${PQ_CARS_SPLIT_FILE:-${REPO_ROOT}/splits/cars196_val10_seed0.txt}"
+if [ "${PQ_DATASET}" = "cars196" ]; then SPLIT_FILE="${PQ_CARS_SPLIT_FILE}"; else SPLIT_FILE="${PQ_CUB_SPLIT_FILE}"; fi
 
 # No wandb, single process.
 export WANDB_MODE=disabled
@@ -68,6 +77,6 @@ for line in sys.stdin:
 }
 
 log_protocol() {
-    echo "[PROTOCOL] PQ_CUB_PROTOCOL=${PQ_CUB_PROTOCOL} split_file=${PQ_CUB_SPLIT_FILE}"
-    echo "[PROTOCOL] split sha256=$(python -c "import hashlib,sys;print(hashlib.sha256(open(sys.argv[1],'rb').read()).hexdigest())" "${PQ_CUB_SPLIT_FILE}")"
+    echo "[PROTOCOL] dataset=${PQ_DATASET} PQ_CUB_PROTOCOL=${PQ_CUB_PROTOCOL} split_file=${SPLIT_FILE}"
+    echo "[PROTOCOL] split sha256=$(python -c "import hashlib,sys;print(hashlib.sha256(open(sys.argv[1],'rb').read()).hexdigest())" "${SPLIT_FILE}")"
 }

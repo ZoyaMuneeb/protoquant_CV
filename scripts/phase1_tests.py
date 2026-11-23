@@ -32,17 +32,28 @@ B0_EXPECTED = {
 }
 
 
+def b0_expected(protocol: str) -> str:
+    """The loader line B0 must log. Strict: counts from the active dataset's split file (CUB or Cars)."""
+    if protocol != "strict":
+        return B0_EXPECTED[protocol]
+    from src.datasets.cub import get_split_file, load_split_file
+    cls = L.DATASET_CLASS
+    n = load_split_file(get_split_file(cls.SPLIT_ENV, cls.DEFAULT_SPLIT))["split"].value_counts()
+    return f"train loader split='train' ({n.get('train', 0)} imgs) | validation loader split='val' ({n.get('val', 0)} imgs)"
+
+
 def check_b0_log(log: str, protocol: str) -> dict:
     text = Path(log).read_text(errors="replace")
-    lines = [ln for ln in text.splitlines() if "[CUB200]" in ln]
-    expected = B0_EXPECTED[protocol]
+    tag = f"[{L.DATASET_CLASS.TAG}]"
+    lines = [ln for ln in text.splitlines() if tag in ln]
+    expected = b0_expected(protocol)
     found = any(expected in ln for ln in lines)
     test_requested = any("TEST split requested" in ln for ln in lines)
     steps = len(re.findall(r"Pruned codebook from \d+ to \d+ entries", text))
     ok = found and not test_requested and steps > 0
     res = {
         "test": "4_b0_usage_split", "status": "PASS" if ok else "FAIL", "protocol": protocol,
-        "expected_loader_line": expected, "loader_lines": [ln.split("[CUB200]", 1)[1].strip() for ln in lines],
+        "expected_loader_line": expected, "loader_lines": [ln.split(tag, 1)[1].strip() for ln in lines],
         "test_split_requested": test_requested, "pruning_steps_logged": steps,
     }
     print(f"[TEST 4] {res['status']}: B0 usage split = "

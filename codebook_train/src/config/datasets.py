@@ -59,6 +59,14 @@ class StanfordCarsConfig(BaseDatasetConfig):
 
 
 @dataclass
+class Cars196Config(BaseDatasetConfig):
+    """Stanford Cars converted to the CUB layout with the strict protocol (scripts/prepare_cars.py). Same
+    transforms as StanfordCarsConfig: full images, resize 256, crop 224."""
+    name: str = "cars196"
+    num_classes: int = 196
+
+
+@dataclass
 class Flowers102Config(BaseDatasetConfig):
     name: str = "flowers102"
     num_classes: int = 102
@@ -89,6 +97,7 @@ config_store = ConfigStore.instance()
 config_store.store(group="dataset", name="cub200", node=CUB200Config)
 config_store.store(group="dataset", name="imagenet1k", node=ImageNet1KConfig)
 config_store.store(group="dataset", name="stanford_cars", node=StanfordCarsConfig)
+config_store.store(group="dataset", name="cars196", node=Cars196Config)
 config_store.store(group="dataset", name="flowers102", node=Flowers102Config)
 config_store.store(group="dataset", name="stanford_dogs", node=StanfordDogsConfig)
 config_store.store(group="dataset", name="funnybirds", node=FunnyBirdsConfig)

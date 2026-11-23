@@ -30,7 +30,7 @@ python -u train_codebook.py \
     val_dataloader.drop_last=False \
     codebook=cosine codebook.embedding_dim=768 codebook.num_entries="${CODEBOOK_ENTRIES}" \
     codebook_optimizer=adamw codebook_optimizer.lr="${LR}" base_optimizer=adamw base_optimizer.lr="${LR}" \
-    dataset=cub200 dataset._path="${CUB_PATH}" dataset.use_deit_transforms=False \
+    dataset="${PQ_DATASET}" dataset._path="${CUB_PATH}" dataset.use_deit_transforms=False \
     dataset.use_raw_transforms=False dataset.use_resize_norm_transforms=False dataset.autoaugment=False \
     training.use_mixup=True wandb.is_enabled=False seed="${SEED}" training.unfreeze_before=0 \
     codebook_path="" codebook_init=orthogonal \

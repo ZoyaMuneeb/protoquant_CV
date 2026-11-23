@@ -29,7 +29,7 @@ python -u train_protoquant.py \
     train_dataloader.batch_size="${BATCH_SIZE}" val_dataloader.batch_size="${BATCH_SIZE}" \
     train_dataloader.num_workers="${NUM_WORKERS}" val_dataloader.num_workers="${VAL_WORKERS}" \
     val_dataloader.drop_last=False \
-    dataset=cub200 dataset._path="${CUB_PATH}" dataset.autoaugment=False dataset.use_raw_transforms=False \
+    dataset="${PQ_DATASET}" dataset._path="${CUB_PATH}" dataset.autoaugment=False dataset.use_raw_transforms=False \
     wandb.is_enabled=False seed="${SEED}" \
     distributed.world_size="${WORLD_SIZE}" distributed.init_method="file://${RUN_DIR}/ddp_init" \
     base_optimizer=adamw base_optimizer.lr="${LR}" \

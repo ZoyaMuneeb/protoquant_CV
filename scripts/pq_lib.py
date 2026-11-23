@@ -22,13 +22,26 @@ import torch  # noqa: E402
 import torch.nn.functional as F  # noqa: E402
 from omegaconf import OmegaConf  # noqa: E402
 
-from src.config.datasets import CUB200Config  # noqa: E402
+from src.config.datasets import Cars196Config, CUB200Config  # noqa: E402
 from src.construct_model import construct_model_no_cfg, get_backbone  # noqa: E402
-from src.datasets.cub import CUB200, get_protocol, get_split_file  # noqa: E402
+from src.datasets.cub import CUB200, Cars196, get_protocol, get_split_file  # noqa: E402
 from src.datasets.transforms import get_transforms_from_config  # noqa: E402
 from src.pipnet_utils import build_pipnet_model  # noqa: E402
 
-NUM_CLASSES = 200
+# Dataset switch for every script (eval, cache, tests, retraining): PQ_DATASET=cub200 (default) or cars196.
+DATASETS = {"cub200": (CUB200, CUB200Config, 200), "cars196": (Cars196, Cars196Config, 196)}
+DATASET = os.environ.get("PQ_DATASET", "cub200").strip().lower()
+if DATASET not in DATASETS:
+    raise SystemExit(f"PQ_DATASET must be one of {list(DATASETS)}, got '{DATASET}'")
+DATASET_CLASS, DATASET_CONFIG, NUM_CLASSES = DATASETS[DATASET]
+
+
+def dataset_config(path: str):
+    """The Hydra dataset config of the active dataset (transforms as in the training pipelines)."""
+    cfg = OmegaConf.structured(DATASET_CONFIG(_path=path))
+    cfg.autoaugment = False
+    cfg.use_raw_transforms = False
+    return cfg
 
 
 def device() -> torch.device:
@@ -45,16 +58,13 @@ def sha256(path: str | Path) -> str:
 
 def eval_transform(cub_path: str, model_name: str = "convnext_tiny"):
     """The deterministic (validation) transform the training scripts use for CUB."""
-    cfg = OmegaConf.structured(CUB200Config(_path=cub_path))
-    cfg.autoaugment = False
-    cfg.use_raw_transforms = False
-    return get_transforms_from_config(cfg, model_name=model_name)[1]
+    return get_transforms_from_config(dataset_config(cub_path), model_name=model_name)[1]
 
 
 def dataset(cub_path: str, split: str, model_name: str = "convnext_tiny") -> CUB200:
     if split == "test":
-        print(f"[CUB200] protocol={get_protocol()} | TEST split requested", flush=True)
-    return CUB200(root=cub_path, split=split, transform=eval_transform(cub_path, model_name))
+        print(f"[{DATASET_CLASS.TAG}] protocol={get_protocol()} | TEST split requested", flush=True)
+    return DATASET_CLASS(root=cub_path, split=split, transform=eval_transform(cub_path, model_name))
 
 
 def loader(ds, batch_size: int, num_workers: int):
@@ -113,8 +123,9 @@ def head_stats(model) -> dict:
 
 
 def protocol_info() -> dict:
-    split_file = get_split_file()
+    split_file = get_split_file(DATASET_CLASS.SPLIT_ENV, DATASET_CLASS.DEFAULT_SPLIT)
     return {
+        "dataset": DATASET,
         "protocol": get_protocol(),
         "split_file": str(split_file),
         "split_sha256": sha256(split_file) if split_file.is_file() else None,

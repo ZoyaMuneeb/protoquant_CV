@@ -26,8 +26,6 @@ from timm.data.mixup import Mixup
 from timm.loss import SoftTargetCrossEntropy
 
 import pq_lib as L
-from src.config.datasets import CUB200Config
-from src.datasets.cub import CUB200
 from src.datasets.transforms import get_transforms_from_config
 from src.pipnet_utils import TrainingWrapper
 from src.utils import SchedulerArgs, create_schedulers, set_reproducibility
@@ -93,12 +91,12 @@ def main() -> None:
           f"edges {int(mask.sum())}", flush=True)
 
     # ---- data (strict protocol: train 5,394 / val 600) ------------------------------------------
-    dcfg = OmegaConf.structured(CUB200Config(_path=args.cub_path))
+    dcfg = L.dataset_config(args.cub_path)
     dcfg.autoaugment = False
     dcfg.use_raw_transforms = False
     train_tf, val_tf = get_transforms_from_config(dcfg, model_name="convnext_tiny")
-    train_ds = CUB200(root=args.cub_path, split="train", transform=train_tf)
-    val_ds = CUB200(root=args.cub_path, split="val", transform=val_tf)
+    train_ds = L.DATASET_CLASS(root=args.cub_path, split="train", transform=train_tf)
+    val_ds = L.DATASET_CLASS(root=args.cub_path, split="val", transform=val_tf)
     g = torch.Generator().manual_seed(args.seed)
     train_dl = torch.utils.data.DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, generator=g,
                                            num_workers=args.num_workers, pin_memory=True, drop_last=True,
@@ -106,7 +104,7 @@ def main() -> None:
     val_dl = torch.utils.data.DataLoader(val_ds, batch_size=min(args.batch_size, 256), shuffle=False,
                                          num_workers=args.val_workers, pin_memory=True, drop_last=False,
                                          persistent_workers=args.val_workers > 0)
-    print(f"[CUB200] protocol=strict | train {len(train_ds)} | val {len(val_ds)}", flush=True)
+    print(f"[{L.DATASET_CLASS.TAG}] protocol=strict | train {len(train_ds)} | val {len(val_ds)}", flush=True)
 
     wrapper = TrainingWrapper(model)
     val_before = evaluate(wrapper, val_dl, dev)

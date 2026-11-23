@@ -1,6 +1,6 @@
 from src.config.main_config import DataloaderConfig
 from src.datasets.imagenet import get_imagenet1k
-from src.datasets.cub import get_cub200
+from src.datasets.cub import get_cub200, get_cars196
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.data.distributed import DistributedSampler
 from src.datasets.stanford_cars import get_stanford_cars
@@ -23,6 +23,7 @@ AVAILABLE_DATASET = (
 
 DATASET_DICT = {
     "cub200": get_cub200,
+    "cars196": get_cars196,  # Stanford Cars, CUB layout + strict protocol (pruning project)
     "imagenet1k": get_imagenet1k,
     "stanford_cars": get_stanford_cars,
     "flowers102": get_flowers102,

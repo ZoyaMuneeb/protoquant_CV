@@ -15,6 +15,11 @@ pipelines) picks it up without further changes:
   only reachable through ``get_cub200_test`` and is read once per final model.
 
 The split file has one line per image: ``<img_id> <train|val|test>``.
+
+Stanford Cars (``Cars196``, added for the pruning project's replication) reuses this loader: it is converted
+once (scripts/prepare_cars.py) to the same layout as CUB (images/, images.txt, image_class_labels.txt,
+train_test_split.txt) under ``<root>/stanford_cars``, and its split file comes from ``PQ_CARS_SPLIT_FILE``
+(default splits/cars196_val10_seed0.txt). Same protocols, same leak checks.
 """
 
 import logging
@@ -43,8 +48,8 @@ def get_protocol() -> str:
     return protocol
 
 
-def get_split_file() -> Path:
-    return Path(os.environ.get("PQ_CUB_SPLIT_FILE", str(DEFAULT_SPLIT_FILE)))
+def get_split_file(env: str = "PQ_CUB_SPLIT_FILE", default: Path = DEFAULT_SPLIT_FILE) -> Path:
+    return Path(os.environ.get(env, str(default)))
 
 
 def load_split_file(path: Path) -> pd.DataFrame:
@@ -61,6 +66,11 @@ def load_split_file(path: Path) -> pd.DataFrame:
 
 
 class CUB200(VisionDataset):
+    SUBDIR = "CUB_200_2011"
+    TAG = "CUB200"
+    SPLIT_ENV = "PQ_CUB_SPLIT_FILE"
+    DEFAULT_SPLIT = DEFAULT_SPLIT_FILE
+
     def __init__(
         self,
         root,
@@ -72,7 +82,7 @@ class CUB200(VisionDataset):
     ):
         super().__init__(root, transform=transform, target_transform=target_transform)
 
-        self.root = os.path.join(root, "CUB_200_2011")
+        self.root = os.path.join(root, self.SUBDIR)
         # Backwards compatible: `train=True/False` means the official splits.
         if split is None:
             split = "train_full" if train else "test"
@@ -106,7 +116,7 @@ class CUB200(VisionDataset):
         elif split == "test":
             self.data = data[data["is_train"] == 0].copy()
         else:
-            self.split_file = Path(split_file) if split_file else get_split_file()
+            self.split_file = Path(split_file) if split_file else get_split_file(self.SPLIT_ENV, self.DEFAULT_SPLIT)
             split_df = load_split_file(self.split_file)
             data = data.merge(split_df, on="img_id", how="left", validate="1:1")
             if data["split"].isna().any():
@@ -146,10 +156,19 @@ class CUB200(VisionDataset):
         return image, label
 
 
+class Cars196(CUB200):
+    """Stanford Cars in the CUB layout (scripts/prepare_cars.py), full images (not cropped to boxes)."""
+    SUBDIR = "stanford_cars"
+    TAG = "CARS196"
+    SPLIT_ENV = "PQ_CARS_SPLIT_FILE"
+    DEFAULT_SPLIT = Path(__file__).resolve().parents[3] / "splits" / "cars196_val10_seed0.txt"
+
+
 def get_cub200(
     path: str,
     train_transform: Compose,
     test_transform: Compose,
+    cls: type = CUB200,
 ) -> tuple[CUB200, CUB200]:
     """Constructs the CUB200-2011 training and selection datasets.
 
@@ -171,12 +190,12 @@ def get_cub200(
     else:
         train_split, val_split = "train_full", "test"
 
-    train_dataset = CUB200(root=path, split=train_split, transform=train_transform)
-    validate_dataset = CUB200(root=path, split=val_split, transform=test_transform)
+    train_dataset = cls(root=path, split=train_split, transform=train_transform)
+    validate_dataset = cls(root=path, split=val_split, transform=test_transform)
 
     # Logged on purpose: Test 4 checks which split code-usage pruning reads.
     msg = (
-        f"[CUB200] protocol={protocol} | train loader split='{train_split}' "
+        f"[{cls.TAG}] protocol={protocol} | train loader split='{train_split}' "
         f"({len(train_dataset)} imgs) | validation loader split='{val_split}' "
         f"({len(validate_dataset)} imgs)"
     )
@@ -188,10 +207,15 @@ def get_cub200(
     return train_dataset, validate_dataset
 
 
-def get_cub200_test(path: str, test_transform: Compose) -> CUB200:
+def get_cub200_test(path: str, test_transform: Compose, cls: type = CUB200) -> CUB200:
     """Official CUB test split. Under the strict protocol, read once per final model."""
-    dataset = CUB200(root=path, split="test", transform=test_transform)
-    msg = f"[CUB200] protocol={get_protocol()} | TEST split requested ({len(dataset)} imgs)"
+    dataset = cls(root=path, split="test", transform=test_transform)
+    msg = f"[{cls.TAG}] protocol={get_protocol()} | TEST split requested ({len(dataset)} imgs)"
     logger.warning(msg)
     print(msg, flush=True)
     return dataset
+
+
+def get_cars196(path: str, train_transform: Compose, test_transform: Compose) -> tuple[Cars196, Cars196]:
+    """Stanford Cars (CUB layout) training and selection datasets, same protocols as get_cub200."""
+    return get_cub200(path, train_transform, test_transform, cls=Cars196)

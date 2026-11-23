@@ -24,7 +24,7 @@ python -u prune_codebook.py \
     hydra.run.dir="${RUN_DIR}" \
     codebook=cosine codebook.num_entries="${CODEBOOK_ENTRIES}" codebook.embedding_dim=768 \
     codebook_path="${CODEBOOK_CKPT}" \
-    dataset=cub200 dataset._path="${CUB_PATH}" dataset.autoaugment=False dataset.use_raw_transforms=False \
+    dataset="${PQ_DATASET}" dataset._path="${CUB_PATH}" dataset.autoaugment=False dataset.use_raw_transforms=False \
     wandb.is_enabled=False \
     model.name="${MODEL}" model.checkpoint_path="${BACKBONE_CKPT}" model.global_pool="" \
     seed="${SEED}" steps="${STEPS}" target_num_codes="${TARGET_ENTRIES}" \

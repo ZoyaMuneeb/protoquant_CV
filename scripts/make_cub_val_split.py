@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-"""Phase 0: create the fixed, class-stratified validation split for CUB-200-2011.
+"""Phase 0: create the fixed, class-stratified validation split for CUB-200-2011 (or Stanford Cars in the
+CUB layout, scripts/prepare_cars.py: --cub_root <cars root>/stanford_cars --name "Stanford Cars").
 
 Holds out 10 % of the official training images (stratified by class, fixed
 seed). The official test images stay 'test'. The output has one line per image
@@ -24,6 +25,7 @@ def main() -> None:
     p.add_argument("--out", required=True, type=Path)
     p.add_argument("--val_fraction", type=float, default=0.10)
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--name", default="CUB-200-2011", help="dataset name for the file header (e.g. Stanford Cars)")
     args = p.parse_args()
 
     labels = pd.read_csv(args.cub_root / "image_class_labels.txt", sep=" ", names=["img_id", "label"])
@@ -44,7 +46,7 @@ def main() -> None:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with open(args.out, "w") as f:
         f.write(
-            f"# CUB-200-2011 strict-protocol split | val_fraction={args.val_fraction} "
+            f"# {args.name} strict-protocol split | val_fraction={args.val_fraction} "
             f"stratified by class | sklearn train_test_split random_state={args.seed}\n"
         )
         for i, s in zip(df.img_id, df.split):

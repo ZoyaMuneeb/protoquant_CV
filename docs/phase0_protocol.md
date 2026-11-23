@@ -151,6 +151,7 @@ batch 512 is the fallback and must be recorded in the change log.
 | 2026-11-23 | Closed-form weight repair added, see section 13 | New method, added after all main results were seen (exploratory, reported as post hoc): tests whether re-fitting the surviving weights in seconds recovers what 145 epochs of retraining recover |
 | 2026-11-23 | CE step sweep added to section 13 | Added after the repair results were seen: the 300-step CE refit had not converged, so how much of retraining's gain a head-only refit recovers was understated. Step count chosen on validation; reported as post hoc |
 | 2026-11-23 | Retraining recipe on cached features added to section 13 | Added after the CE sweep was seen: splits the remaining gap to retraining into code adaptation (codes + head vs head only, same recipe) and augmentation / image training (vs real retraining). Reported as post hoc |
+| 2026-11-23 | Stanford Cars replication added, see section 14 | Added after all CUB results were seen, to test whether the main findings generalise to a second dataset; methods, budget rule and seeds fixed before any Cars run. Reported as post hoc |
 
 ## 10. Iterative pruning (Phase 4), fixed before running
 
@@ -253,3 +254,29 @@ CP1-M1000 and the code-matched CB1 (`CB1-eqCP1M1000`). No retraining; `scripts/p
   vs head only (does adapting the codes help?), each vs the same mask retrained on images (what is left is
   augmentation / image training) and vs dense; P1 vs B1 and CP1 vs the code-matched CB1 after each. Test read once
   per model (`repair_cachedrt.*`).
+
+## 14. Stanford Cars replication (post hoc, added 2026-11-23, fixed before any Cars run)
+
+Goal: check whether the main CUB findings hold on a second fine-grained dataset. Stanford Cars (196 classes,
+8,144 train / 8,041 test images) was chosen over Stanford Dogs (its images come from ImageNet, on which the
+backbone was pre-trained) and Flowers102 (10 training images per class, accuracy near the ceiling).
+
+* **Data and protocol:** the download is converted once to the CUB layout (`scripts/prepare_cars.py`), full
+  images (not cropped to the boxes, as the official Stanford Cars configuration), labels 1–196. The same strict
+  protocol as CUB: 10 % of the official training images held out for validation (stratified by class, seed 0,
+  `splits/cars196_val10_seed0.txt`), official test images read once per final model. Transforms: the official
+  Stanford Cars ones (resize 256, crop 224).
+* **Backbone:** ConvNeXt-Tiny from ImageNet, the improved-backbone recipe without a sweep: lr 2e-4 for 30
+  epochs, then continued at lr 5e-5 for 30 epochs; the run with the better validation top-1 is used.
+* **Dense model:** Stage 1 (4,096 codes) → B0 (3,000) → Stage 2, as on CUB; seed 40 (more seeds if time
+  allows; with one seed the "every seed agrees" part of the decision rule cannot apply and is reported as such).
+* **Methods (the best CUB methods and their references), K = 10:** one-shot magnitude (B1), activation-aware
+  (P1) and random masks (plus the other one-shot masks, which cost nothing); code-level masks; the head refit
+  (CE, step count chosen on validation) and the retraining recipe on cached features (head only, codes + head)
+  for B1, P1, random and the chosen code-level mask; full retraining on images for 145 epochs of B1 ("Pruned &
+  Tuned") and the chosen code-level mask.
+* **Code budget:** the code-level activation-aware mask (CP1) whose active codes are closest to 68 % of the
+  magnitude mask's at K = 10 (890 / 1,304 on CUB), chosen from code counts only, before any accuracy is seen.
+* **Comparisons:** the section 6 rules, as on CUB (one-shot vs magnitude; repaired / cached-retrained vs one-shot,
+  vs retrained and vs dense; code-level retrained vs "Pruned & Tuned" and vs dense).
+* Runs: `bash scripts/prepare_cars.sh`, then `bash scripts/run_cars.sh` (`../runs_cars`, `results/cars`).

@@ -21,7 +21,7 @@ MON=$(start_gpu_monitor "${RUN_DIR}/gpu_mem.csv")
 cd "${CODE_DIR}"
 python -u train_full.py -lr "${LR}" \
     --model_name "${MODEL}" -b "${BATCH_SIZE}" -e "${EPOCHS}" \
-    --dataset cub200 --data_path "${CUB_PATH}" \
+    --dataset "${PQ_DATASET}" --data_path "${CUB_PATH}" \
     --checkpoint_path "${BACKBONE_DIR}" \
     ${LOAD_CHECKPOINT:+--load_checkpoint "${LOAD_CHECKPOINT}"} \
     --warmup_epochs "${WARMUP_EPOCHS}" \

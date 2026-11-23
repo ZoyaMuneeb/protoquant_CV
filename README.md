@@ -19,6 +19,7 @@ paper [arXiv 2602.06592](https://arxiv.org/abs/2602.06592)). CUB-200-2011, ConvN
 | – | Improved-backbone rerun | Done |
 | – | Code-level pruning + code-matched CB1 control | Done |
 | – | Weight repair and decomposition of retraining (head refit, codes + head on cached features) | Done |
+| – | Stanford Cars replication | Code ready, not run |
 | 5 | Figures, prototype visualisations, demo | Not started |
 
 ## Key findings
@@ -193,6 +194,9 @@ Full tables:
   enforces this. `paper` keeps the original behaviour.
 - **Validation keeps the last batch.** With 600 validation images and batch 1,024, the original
   `drop_last=True` would leave no validation batch at all.
+- **Stanford Cars with the same strict protocol.** `scripts/prepare_cars.py` converts the download to the CUB
+  layout, and dataset `cars196` reuses the strict CUB loader (held-out validation split, test read once).
+  `PQ_DATASET=cars196` switches every script; the default stays CUB.
 - **No SLURM or wandb.** Plain single-GPU shell scripts are in [`scripts/`](scripts/); `slurm/` is kept for
   reference.
 
@@ -225,13 +229,16 @@ Set `BB=$(realpath ../checkpoints/backbone/<file>.pth)` first.
 | Weight repair: LS and CE refit (no retraining) | `bash scripts/run_repair.sh` | minutes |
 | Weight repair: CE step count chosen on validation | `CE_SWEEP="300 1000 3000 10000" bash scripts/run_repair.sh` | minutes |
 | Retraining recipe on cached features (head only, codes + head) | `CACHED_RETRAIN=1 bash scripts/run_repair.sh` | ~10–30 min |
+| Stanford Cars: data + split (once) | `CARS_SRC=/path/to/download bash scripts/prepare_cars.sh` | – |
+| Stanford Cars: replication (1 seed) | `bash scripts/run_cars.sh` | ~7 h |
 
 Improved-backbone runs write to `../runs_bb2/` and `results/backbone2/`, so the main results are untouched.
 Each step's exact settings are fixed in [`docs/phase0_protocol.md`](docs/phase0_protocol.md):
 - section 10: iterative pruning;
 - section 11: the improved backbone;
 - section 12: code-level pruning;
-- section 13: weight repair and the retraining recipe on cached features.
+- section 13: weight repair and the retraining recipe on cached features;
+- section 14: the Stanford Cars replication.
 
 ## Repository layout
 

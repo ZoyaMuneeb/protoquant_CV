@@ -150,6 +150,7 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 NUM_CLASSES = {
     "stanford_cars": 196,
+    "cars196": 196,
     "flowers102": 102,
     "cub200": 200,
     "stanford_dogs": 120,
@@ -567,6 +568,7 @@ if __name__ == "__main__":
         type=str,
         choices=[
             "stanford_cars",
+            "cars196",
             "flowers102",
             "cub200",
             "stanford_dogs",
