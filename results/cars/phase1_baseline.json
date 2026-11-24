@@ -1,0 +1,38 @@
+{
+  "runs": [
+    {
+      "protocol": "strict",
+      "seed": 40,
+      "s1_best_val": 86.01226806640625,
+      "s1_best_epoch": 21,
+      "s1_dead_ratio": 0.3008,
+      "s1_epochs": 30,
+      "b0_val_before": 86.01226806640625,
+      "b0_val_after": 86.01226806640625,
+      "b0_dead_before": 0.3008,
+      "b0_dead_after": 0.0453,
+      "b0_codes": "4096->3000",
+      "s2_best_val": 87.60736083984375,
+      "s2_best_epoch": 25,
+      "s2_epochs": 30,
+      "val_top1": 87.60735988616943,
+      "test_top1": 89.05608654022217,
+      "test_top5": 98.30867052078247,
+      "codebook_entries": 3000,
+      "nonzero_edges": 353640,
+      "active_codes": 3000,
+      "codebook_mb_fp32": 8.7890625,
+      "tests": {
+        "1_masked_head_invariance": "PASS",
+        "2_physical_vs_logical": "MEASURED",
+        "3_feature_cache_agreement": "PASS",
+        "4_b0_usage_split": "PASS"
+      },
+      "t2_changed": "52/815"
+    }
+  ],
+  "backbone_test_top1": {
+    "strict": 91.90399050712585,
+    "paper": null
+  }
+}
