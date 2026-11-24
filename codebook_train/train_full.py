@@ -231,8 +231,13 @@ def main(args):
     else:
         train_sampler = None
         val_sampler = None
+    # timm's MixUp/CutMix needs an even batch: drop the last one only when it would be odd (Stanford Cars:
+    # 7,329 images at batch 128). An even last batch (CUB: 18) is kept, so CUB runs are unchanged.
+    n_train = len(train_sampler) if train_sampler is not None else len(train_dataset)
+    drop_odd_last = args.use_mixup and (n_train % args.batch_size) % 2 == 1
     train_loader = DataLoader(
         dataset=train_dataset,
+        drop_last=drop_odd_last,
         batch_size=args.batch_size,
         shuffle=(train_sampler is None),
         sampler=train_sampler,
