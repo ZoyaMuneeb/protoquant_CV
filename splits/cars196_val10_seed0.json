@@ -1,0 +1,14 @@
+{
+  "file": "/home/shaikha/protoquant_CV/splits/cars196_val10_seed0.txt",
+  "sha256": "4901228b425c017fe012729e7db75ac8a4c0fe5a3c73cd83146e692b7265e1d4",
+  "seed": 0,
+  "val_fraction": 0.1,
+  "counts": {
+    "test": 8041,
+    "train": 7329,
+    "val": 815
+  },
+  "val_per_class_min": 2,
+  "val_per_class_max": 7,
+  "classes_in_val": 196
+}
