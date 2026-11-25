@@ -21,6 +21,7 @@ one NVIDIA GPU.
 | – | Code-level pruning + code-matched CB1 control | Done |
 | – | Weight repair and decomposition of retraining (head refit, codes + head on cached features) | Done |
 | – | Stanford Cars replication | Done (3 seeds, incl. code-matched CB1 control) |
+| – | Interpretability (purity on CUB, explanation size and code change on CUB and Cars) | Done (3 seeds) |
 | 5 | Figures, prototype visualisations, demo | Not started |
 
 ## Key findings
@@ -64,6 +65,17 @@ one NVIDIA GPU.
     on CUB, a small advantage survives a head refit (+0.63 [+0.17, +1.07]); it is gone once the codes adapt
     (−0.23 [−0.52, +0.07]). At equal codes (874), CP1 beats CB1 by +9.88 [+9.01, +10.74] one-shot, but after 145
     epochs of retraining no difference is detectable (−0.29 [−0.65, +0.06]).
+15. **Pruning keeps more part-consistent codes and makes explanations 37–50× shorter** (post hoc). CUB purity is 0.340
+    for dense, 0.418 for the codes magnitude pruning keeps (before any retraining) and 0.322 for random ones. Codes that
+    make up 90 % of a prediction's score fall from 247 to 6–7 (CUB) and from 290 to 6–7 (Cars); by the repository's
+    thresholded rule the reduction is only about 2×.
+16. **Retraining on images preserves average purity but not what each code shows** (same-code change −0.007 to
+    +0.023). Only 21–31 % (CUB) and 15–23 % (Cars) of a code's top-10 patches stay the same as in the dense model.
+17. **Activation-aware codes stay slightly purer after retraining** (CUB, 890 codes): CP1 − CB1 is +0.018, +0.021,
+    +0.029 (train) and +0.027, +0.020, +0.024 (test) in seeds 40–42, at about equal accuracy. Small, no interval
+    computed, and not testable on Cars (no part labels).
+18. **Accuracy does not guarantee interpretability.** Random edges with codes + head trained on cached features reach
+    80.8 % on CUB, but their purity is 0.256 and almost none of the dense model's top patches remain (0.8 %).
 
 Verdicts use the rules fixed before any run ([protocol](docs/phase0_protocol.md), section 6):
 - **better**: the 95 % paired-bootstrap interval is above 0 and every seed agrees;
@@ -207,6 +219,47 @@ Where retraining's gain comes from (K = 10, unused codes removed, columns as in 
   activation-aware score, as on CUB, and no detectable advantage for magnitude either.
 - **Code-matched CB1 vs B2, both retrained:** −0.03 [−0.33, +0.26], no meaningful loss with 35 % fewer codes.
 
+### Interpretability (3 seeds, post hoc)
+
+Purity, as in the authors' code (PIP-Net protocol): share of a code's top-10 patches showing the same bird part, CUB
+only (Cars has no part labels). Explanation size: codes making up 90 % of the predicted class's score / the
+repository's rule (score × weight > 0.001, scores below 0.1 ignored). Same patches: share of a code's top-10 training
+patches unchanged from the dense model. K = 10, means over seeds 40–42.
+
+CUB:
+
+| Model | Codes | Purity train | Purity test | Same-code purity change | Codes for 90 % / per image | Same patches |
+|---|---|---|---|---|---|---|
+| Dense | 3,000 | 0.340 | 0.345 | – | 247 / 6.9 | – |
+| B1, no retraining | 1,304 | 0.418 | 0.420 | 0.000 | 6.3 / 2.4 | 100 % |
+| B1, unused codes removed | 1,304 | 0.408 | 0.407 | −0.011 | 6.4 / 4.3 | 85.2 % |
+| B1, cached codes + head | 1,304 | 0.391 | 0.384 | −0.027 | 5.6 / 3.4 | 39.9 % |
+| B2 (145 epochs) | 1,304 | 0.415 | 0.413 | −0.003 | 6.8 / 3.4 | 30.5 % |
+| CB1, code-matched, no retraining | 890 | 0.378 | 0.377 | 0.000 | 5.9 / 1.1 | 100 % |
+| CB1, code-matched, retrained | 889 | 0.401 | 0.395 | +0.023 | 5.8 / 3.3 | 21.2 % |
+| CP1-M1000, no retraining | 890 | 0.431 | 0.426 | 0.000 | 6.6 / 3.3 | 100 % |
+| CP1-M1000, cached codes + head | 890 | 0.387 | 0.384 | −0.043 | 4.5 / 3.0 | 33.5 % |
+| CP1-M1000, retrained | 890 | 0.424 | 0.418 | −0.007 | 5.8 / 3.7 | 23.2 % |
+| random, no retraining | 1,432 | 0.322 | 0.327 | 0.000 | 1.4 / 0.9 | 100 % |
+| random, cached codes + head | 878 | 0.256 | 0.263 | −0.027 | 2.4 / 2.1 | 0.8 % |
+| Chance (random patches) | – | 0.108 | 0.109 | – | – | – |
+
+Cars:
+
+| Model | Codes | Codes for 90 % / per image | Same patches |
+|---|---|---|---|
+| Dense | 3,000 | 290 / 4.4 | – |
+| B2 (145 epochs) | 1,339 | 6.5 / 2.5 | 23.2 % |
+| CB1, code-matched, retrained | 873 | 5.7 / 2.5 | 15.2 % |
+| CP1-M1000, retrained | 873 | 5.8 / 2.9 | 19.8 % |
+| random, cached codes + head | 968 | 2.6 / 1.9 | 0.8 % |
+
+- **The dense mean covers all 3,000 codes**, so dense vs pruned purity reflects which codes are kept. Use the same-code
+  change to judge retraining.
+- **Not a replication of the paper's purity (0.47):** different backbone checkpoint, split and code count, and 7 × 7
+  maps. Compare our models with each other.
+- **Deviations from the authors' code:** protocol section 15. Full tables below.
+
 ### Ablations and controls
 
 CUB, unless a row says otherwise.
@@ -233,7 +286,8 @@ Training cost: iterative P1 ≈ 44 GPU-minutes per model vs ≈ 27 for B2 at 145
 Full tables:
 - main backbone: [`results/phase2_results.md`](results/phase2_results.md);
 - improved backbone: [`results/backbone2/phase2_results.md`](results/backbone2/phase2_results.md);
-- Stanford Cars: [`results/cars/phase2_results.md`](results/cars/phase2_results.md).
+- Stanford Cars: [`results/cars/phase2_results.md`](results/cars/phase2_results.md);
+- interpretability: [CUB](results/backbone2/interpretability.md), [Cars](results/cars/interpretability.md).
 
 ## What we changed in the official code
 
