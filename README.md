@@ -277,6 +277,9 @@ Set `BB=$(realpath ../checkpoints/backbone/<file>.pth)` first.
 | Stanford Cars: data + split (once) | `CARS_SRC=/path/to/download bash scripts/prepare_cars.sh` | – |
 | Stanford Cars: replication (1 seed) | `bash scripts/run_cars.sh` | ~7 h (estimate) |
 | Stanford Cars: 3 seeds | `SEEDS="40 41 42" RETRAIN_SEEDS="40 41 42" bash scripts/run_cars.sh` | – |
+| Interpretability: agreement with the authors' purity code | `CHECK=1 bash scripts/run_interpretability.sh` | minutes |
+| Interpretability, CUB | `bash scripts/run_interpretability.sh` | ~15–30 min (estimate) |
+| Interpretability, Cars (no purity) | `PQ_DATASET=cars196 bash scripts/run_interpretability.sh` | ~15–30 min (estimate) |
 
 Improved-backbone runs write to `../runs_bb2/` and `results/backbone2/`, so the main results are untouched.
 Each step's exact settings are fixed in [`docs/phase0_protocol.md`](docs/phase0_protocol.md):
@@ -284,7 +287,8 @@ Each step's exact settings are fixed in [`docs/phase0_protocol.md`](docs/phase0_
 - section 11: the improved backbone;
 - section 12: code-level pruning;
 - section 13: weight repair and the retraining recipe on cached features;
-- section 14: the Stanford Cars replication.
+- section 14: the Stanford Cars replication;
+- section 15: interpretability (purity, explanation size, meaning kept).
 
 ## Repository layout
 

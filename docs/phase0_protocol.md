@@ -152,6 +152,7 @@ batch 512 is the fallback and must be recorded in the change log.
 | 2026-11-23 | CE step sweep added to section 13 | Added after the repair results were seen: the 300-step CE refit had not converged, so how much of retraining's gain a head-only refit recovers was understated. Step count chosen on validation; reported as post hoc |
 | 2026-11-23 | Retraining recipe on cached features added to section 13 | Added after the CE sweep was seen: splits the remaining gap to retraining into code adaptation (codes + head vs head only, same recipe) and augmentation / image training (vs real retraining). Reported as post hoc |
 | 2026-11-23 | Stanford Cars replication added, see section 14 | Added after all CUB results were seen, to test whether the main findings generalise to a second dataset; methods, budget rule and seeds fixed before any Cars run. Reported as post hoc |
+| 2026-11-25 | Interpretability measurements added, see section 15 | Added after all accuracy results were seen; metrics fixed before any is computed on a project model. Reported as post hoc |
 
 ## 10. Iterative pruning (Phase 4), fixed before running
 
@@ -285,3 +286,26 @@ backbone was pre-trained) and Flowers102 (10 training images per class, accuracy
   retraining is untested here. The backbone drops the last training batch when its size is odd (MixUp needs even
   batches).
 * Runs: `bash scripts/prepare_cars.sh`, then `bash scripts/run_cars.sh` (`../runs_cars`, `results/cars`).
+
+## 15. Interpretability of the finished models (post hoc, added 2026-11-25, fixed before any measurement)
+
+Goal: check whether pruning and retraining keep the codes interpretable. No model is trained, selected or changed.
+
+* **Models:** dense; per K = 10 mask (B1, P1, CP1-M1000, the code-matched CB1 and random, where available): pruned,
+  pruned with unused codes removed, cached features (head only; codes + head) and retrained on images (145 epochs
+  where available, otherwise 30). Seeds 40–42, CUB (improved backbone) and Cars.
+* **Purity (CUB only, Cars has no part labels):** the authors' implementation of the PIP-Net protocol: top-10
+  uncropped images per used code, 32 × 32 patch at the strongest position, left / right parts merged, best part's
+  share over the images showing it; official train and test images. Also: chance level (random patches) and the
+  change for the same code against the dense model, since removing codes alone changes the mean.
+* **Explanation size:** per class, edges with weight > 0.1 (the repository's local size) and all nonzero edges; per
+  test image, the repository's rule (score × weight > 0.001 for the predicted class) and the codes making up 90 %
+  of the predicted class's score, which does not depend on the weight scale.
+* **Meaning kept:** same code against the dense model: share of the top-10 training patches that are the same, and
+  code-vector cosine. "Unused codes removed" shows how much removal alone changes, before any retraining.
+* **Deviations from the authors' code:** their evaluation subtracts 0.001 from every head weight at each test batch
+  and zeroes codes never found above 0.1 in training; neither is done, as both change the model being measured.
+* **Reading the results:** the paper's purity (0.47) uses another backbone checkpoint, split and code count, and the
+  job script in the repository a 26 × 26 model (ours is 7 × 7), so models are compared with each other first.
+* Runs: `CHECK=1 bash scripts/run_interpretability.sh` (agreement with the authors' code), then
+  `bash scripts/run_interpretability.sh` and `PQ_DATASET=cars196 bash scripts/run_interpretability.sh`.
