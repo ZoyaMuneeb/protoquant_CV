@@ -20,7 +20,7 @@ one NVIDIA GPU.
 | – | Improved-backbone rerun | Done |
 | – | Code-level pruning + code-matched CB1 control | Done |
 | – | Weight repair and decomposition of retraining (head refit, codes + head on cached features) | Done |
-| – | Stanford Cars replication | Done (3 seeds; no code-matched CB1 control) |
+| – | Stanford Cars replication | Done (3 seeds, incl. code-matched CB1 control) |
 | 5 | Figures, prototype visualisations, demo | Not started |
 
 ## Key findings
@@ -37,7 +37,8 @@ one NVIDIA GPU.
    is just not excluded (lower bound −1.07).
 6. **The score again matters only before retraining.** At equal codes (890), the activation-aware code score
    (CP1) beats magnitude (CB1) by +8.2 points one-shot. After 145 epochs of retraining the two are the same
-   (+0.14, CI [−0.28, +0.56]). The same pattern holds for edges (findings 1–2) and for codes.
+   (+0.14, CI [−0.28, +0.56]). The same pattern holds for edges (findings 1–2) and for codes, and for codes on
+   Cars (finding 14).
 7. **The global budget (P3) and the "contrast" variant don't help.** P3 starves classes at small K.
    P1-contrast ≈ P1 in accuracy. On CUB it is the only score that predicts single-edge deletion damage, but
    this did not replicate on Cars (ρ = 0.08).
@@ -61,7 +62,8 @@ one NVIDIA GPU.
     (88.49 vs 88.99; −0.50 [−0.96, −0.05], a small drop) with 0.54 % of the edges. Code-level CP1 uses 35 % fewer
     codes than B2 with no meaningful loss (−0.32 [−0.66, +0.00]), as on CUB. P1 beats B1 one-shot at every K. Unlike
     on CUB, a small advantage survives a head refit (+0.63 [+0.17, +1.07]); it is gone once the codes adapt
-    (−0.23 [−0.52, +0.07]).
+    (−0.23 [−0.52, +0.07]). At equal codes (874), CP1 beats CB1 by +9.88 [+9.01, +10.74] one-shot, but after 145
+    epochs of retraining no difference is detectable (−0.29 [−0.65, +0.06]).
 
 Verdicts use the rules fixed before any run ([protocol](docs/phase0_protocol.md), section 6):
 - **better**: the 95 % paired-bootstrap interval is above 0 and every seed agrees;
@@ -188,18 +190,22 @@ Where retraining's gain comes from (K = 10, unused codes removed, columns as in 
 | B1 | 1,339 | 72.73 | 79.90 | 79.19 | **86.85** | 88.49 |
 | P1 | 1,486 | 75.33 | 80.52 | 80.05 | **86.62** | – |
 | CP1-M1000 | 874 | 69.85 | 78.33 | 77.44 | **86.88** | 88.16 |
+| CB1, code-matched | 874 | 59.97 | – | – | – | 88.46 |
 | random | 1,427 | 5.25 | 7.64 | 7.15 | **83.77** | – |
 | Time per model | | – | ≈ 5–6 s | ≈ 8–12 s | ≈ 14–22 s | not timed here |
 
 - **Against dense:** B2 −0.50 [−0.96, −0.05], no meaningful loss (but a small real drop). CP1-M1000
-  −0.82 [−1.29, −0.37], loss not excluded.
+  −0.82 [−1.29, −0.37], loss not excluded. Code-matched CB1 −0.53 [−0.99, −0.08], no meaningful loss, narrowly.
 - **CP1-M1000 vs B2, both retrained:** −0.32 [−0.66, +0.00], no meaningful loss (seeds −0.55, −0.76, +0.34).
 - **Codes + head on cached features vs retrained on images:** −1.64 (B1), −1.28 (CP1-M1000).
 - **P1 vs B1:** +0.63 [+0.17, +1.07] after the head refit and +0.85 [+0.42, +1.29] after the head-only recipe (both
   better; about +0.2 and no difference on CUB), then −0.23 [−0.52, +0.07] after codes + head.
 - **Code-level, one-shot:** CP1 beats CB1 by 23–45 points at the same budget M, but CB1 keeps fewer active codes. With
   fewer codes, CP1 still wins: 61.91 at 573 codes vs 48.81 for CB1 at 680.
-- **Not tested:** a code-matched CB1 control, so whether the code score still matters after retraining on Cars.
+- **CP1-M1000 vs code-matched CB1 (874 codes each):** one-shot +9.88 [+9.01, +10.74], better. After 145 epochs
+  −0.29 [−0.65, +0.06], no meaningful loss (seeds −0.46, −0.31, −0.10), so no retained advantage for the
+  activation-aware score, as on CUB, and no detectable advantage for magnitude either.
+- **Code-matched CB1 vs B2, both retrained:** −0.03 [−0.33, +0.26], no meaningful loss with 35 % fewer codes.
 
 ### Ablations and controls
 
