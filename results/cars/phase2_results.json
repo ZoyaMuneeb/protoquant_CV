@@ -857,6 +857,64 @@
         "verdict": "no meaningful loss"
       }
     },
+    "BUD_CB1-eqCP1M1000_K10_E145": {
+      "rows": [
+        {
+          "total_epochs": 145,
+          "best_val_top1": 87.97546012269939,
+          "test_top1": 88.7949287891388,
+          "codes": 879
+        },
+        {
+          "total_epochs": 145,
+          "best_val_top1": 87.97546012269939,
+          "test_top1": 88.2104218006134,
+          "codes": 869
+        },
+        {
+          "total_epochs": 145,
+          "best_val_top1": 89.32515337423312,
+          "test_top1": 88.35965394973755,
+          "codes": 874
+        }
+      ],
+      "vs_BUD_B1_K10_E145": {
+        "diff_mean": -0.033163371056667945,
+        "ci95": [
+          -0.3274882891845956,
+          0.2611615470712598
+        ],
+        "seed_diffs": [
+          -0.0870538490237549,
+          -0.4477055092650173,
+          0.4352692451187634
+        ],
+        "seeds": [
+          40,
+          41,
+          42
+        ],
+        "verdict": "no meaningful loss"
+      },
+      "vs_dense": {
+        "diff_mean": -0.5347593582887702,
+        "ci95": [
+          -0.9907557103179541,
+          -0.08290842764166995
+        ],
+        "seed_diffs": [
+          -0.2611615470712647,
+          -0.7213033204825248,
+          -0.6218132073125271
+        ],
+        "seeds": [
+          40,
+          41,
+          42
+        ],
+        "verdict": "no meaningful loss"
+      }
+    },
     "BUD_CP1-M1000_K10_E145": {
       "rows": [
         {
@@ -878,6 +936,24 @@
           "codes": 874
         }
       ],
+      "vs_BUD_CB1-eqCP1M1000_K10_E145": {
+        "diff_mean": -0.2901794967458442,
+        "ci95": [
+          -0.6508311569871077,
+          0.058035899349168855
+        ],
+        "seed_diffs": [
+          -0.46014177341126006,
+          -0.310906603656258,
+          -0.09949011316999767
+        ],
+        "seeds": [
+          40,
+          41,
+          42
+        ],
+        "verdict": "no meaningful loss"
+      },
       "vs_BUD_B1_K10_E145": {
         "diff_mean": -0.32334286780251215,
         "ci95": [
@@ -1030,6 +1106,73 @@
           -29.299838328566096,
           -31.911453799278693,
           -30.058450441487384
+        ],
+        "seeds": [
+          40,
+          41,
+          42
+        ],
+        "verdict": "loss not excluded"
+      }
+    },
+    "CB1-eqCP1M1000_K10": {
+      "rows": [
+        {
+          "method": "CB1-eqCP1M1000",
+          "K": 10,
+          "val_top1": 61.717791411042946,
+          "test_top1": 61.78336027857232,
+          "nonzero_edges": 1960,
+          "active_codes": 879,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 1643,
+          "target_key": "CP1-M1000_K10",
+          "target_active_codes": 879,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
+        },
+        {
+          "method": "CB1-eqCP1M1000",
+          "K": 10,
+          "val_top1": 58.65030674846625,
+          "test_top1": 57.97786344981968,
+          "nonzero_edges": 1960,
+          "active_codes": 869,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 1622,
+          "target_key": "CP1-M1000_K10",
+          "target_active_codes": 869,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
+        },
+        {
+          "method": "CB1-eqCP1M1000",
+          "K": 10,
+          "val_top1": 61.963190184049076,
+          "test_top1": 60.14177341126725,
+          "nonzero_edges": 1960,
+          "active_codes": 874,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 1591,
+          "target_key": "CP1-M1000_K10",
+          "target_active_codes": 874,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
+        }
+      ],
+      "vs_B1": {
+        "diff_mean": -12.759607014052978,
+        "ci95": [
+          -13.551382498030925,
+          -11.98855863698545
+        ],
+        "seed_diffs": [
+          -10.757368486506646,
+          -14.401193881358033,
+          -13.120258674294249
         ],
         "seeds": [
           40,
@@ -1360,6 +1503,24 @@
           42
         ],
         "verdict": "loss not excluded"
+      },
+      "vs_CB1-eqCP1M1000_K10": {
+        "diff_mean": 9.878539153504956,
+        "ci95": [
+          9.012146084649505,
+          10.744932222360402
+        ],
+        "seed_diffs": [
+          7.499067280189031,
+          12.349210297226708,
+          9.787339883099122
+        ],
+        "seeds": [
+          40,
+          41,
+          42
+        ],
+        "verdict": "**better**"
       },
       "vs_CB1": {
         "diff_mean": 27.542179662562706,

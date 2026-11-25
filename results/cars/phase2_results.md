@@ -43,11 +43,15 @@ Iterative: 20 % of each class's edges removed per round, 5 epochs of retraining 
 | Model | Rounds | Total epochs | Codes | Best val | Test top-1 |
 |---|---|---|---|---|---|
 | B2_K10 one-shot, 145 ± 0 epochs (control) | - | 145 ± 0 | 1,339 ± 21 | 88.43 ± 0.19 | 88.49 ± 0.50 |
+| CB1-eqCP1M1000_K10 code-level, 145 ± 0 epochs | - | 145 ± 0 | 874 ± 5 | 88.43 ± 0.78 | 88.46 ± 0.30 |
 | CP1-M1000_K10 code-level, 145 ± 0 epochs | - | 145 ± 0 | 874 ± 5 | 87.81 ± 0.43 | 88.16 ± 0.23 |
 
 | Comparison | Question | Δ | 95 % CI | Seeds (Δ) | Verdict |
 |---|---|---|---|---|---|
 | one-shot B2 at 145 epochs (K = 10) vs dense head | is dense accuracy kept? | -0.50 | [-0.96, -0.05] | -0.17, -0.27, -1.06 | no meaningful loss |
+| code-level CB1-eqCP1M1000 vs one-shot B2, both 145 epochs, K = 10 | fewer codes at no loss? | -0.03 | [-0.33, +0.26] | -0.09, -0.45, +0.44 | no meaningful loss |
+| code-level CP1-M1000 vs CB1 with as many codes, both 145 epochs, K = 10 | does the code score matter after retraining? | -0.29 | [-0.65, +0.06] | -0.46, -0.31, -0.10 | no meaningful loss |
+| code-level CB1-eqCP1M1000 at 145 epochs (K = 10) vs dense head | is dense accuracy kept? | -0.53 | [-0.99, -0.08] | -0.26, -0.72, -0.62 | no meaningful loss |
 | code-level CP1-M1000 vs one-shot B2, both 145 epochs, K = 10 | fewer codes at no loss? | -0.32 | [-0.66, +0.00] | -0.55, -0.76, +0.34 | no meaningful loss |
 | code-level CP1-M1000 at 145 epochs (K = 10) vs dense head | is dense accuracy kept? | -0.82 | [-1.29, -0.37] | -0.72, -1.03, -0.72 | loss not excluded |
 
@@ -59,6 +63,7 @@ The M best codes by summed score (CB1: magnitude, CP1: activation-aware), then t
 |---|---|---|---|---|---|---|---|---|---|
 | CB1-M1200_K10 | 680 ± 27 | 1,960 ± 0 | 0 ± 0 | 50.67 ± 1.17 | 48.81 ± 1.69 | -23.91 | [-24.86, -22.97] | -21.79, -24.67, -25.28 | loss not excluded |
 | CB1-M1000_K10 | 558 ± 27 | 1,960 ± 0 | 0 ± 0 | 42.99 ± 0.95 | 42.30 ± 1.59 | -30.42 | [-31.40, -29.43] | -29.30, -31.91, -30.06 | loss not excluded |
+| CB1-eqCP1M1000_K10 | 874 ± 5 | 1,960 ± 0 | 0 ± 0 | 60.78 ± 1.85 | 59.97 ± 1.91 | -12.76 | [-13.55, -11.99] | -10.76, -14.40, -13.12 | loss not excluded |
 | CB1-M800_K10 | 448 ± 33 | 1,960 ± 0 | 0 ± 0 | 33.99 ± 1.12 | 33.06 ± 1.78 | -39.67 | [-40.68, -38.67] | -40.38, -40.48, -38.15 | loss not excluded |
 | CB1-M600_K10 | 317 ± 23 | 1,960 ± 0 | 0 ± 0 | 21.80 ± 1.86 | 22.02 ± 2.49 | -50.71 | [-51.71, -49.72] | -50.70, -52.75, -48.66 | loss not excluded |
 | CB1-M400_K10 | 237 ± 15 | 1,960 ± 0 | 0 ± 0 | 8.51 ± 2.82 | 8.65 ± 2.65 | -64.08 | [-65.00, -63.16] | -63.35, -66.61, -62.27 | loss not excluded |
@@ -70,6 +75,7 @@ The M best codes by summed score (CB1: magnitude, CP1: activation-aware), then t
 
 | Comparison | Question | Δ | 95 % CI | Seeds (Δ) | Verdict |
 |---|---|---|---|---|---|
+| CP1-M1000_K10 vs CB1-eqCP1M1000_K10 | does the code score help at equal active codes? | +9.88 | [+9.01, +10.74] | +7.50, +12.35, +9.79 | **better** |
 | CP1-M1200_K10 vs CB1-M1200_K10 | does the activation-aware code score help? | +23.02 | [+22.05, +24.00] | +20.81, +24.67, +23.58 | **better** |
 | CP1-M1000_K10 vs CB1-M1000_K10 | does the activation-aware code score help? | +27.54 | [+26.52, +28.54] | +26.04, +29.86, +26.73 | **better** |
 | CP1-M800_K10 vs CB1-M800_K10 | does the activation-aware code score help? | +33.81 | [+32.80, +34.83] | +34.75, +35.18, +31.51 | **better** |
