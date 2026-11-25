@@ -12,10 +12,13 @@ percentiles of the mean difference (in points). Same images, paired predictions 
 
 import argparse
 import json
+import os
 import statistics
 from pathlib import Path
 
 import numpy as np
+
+NUM_CLASSES = {"cub200": 200, "cars196": 196}[os.environ.get("PQ_DATASET", "cub200")]
 
 N_BOOT = 10_000
 ONE_SHOT = ("B1", "random", "P1", "P1contrast", "P3", "P3nomin")
@@ -167,7 +170,7 @@ def main() -> None:
     for k in ks:
         keys = [f"{m}_K{k}" for m in ONE_SHOT]
         cmp_ = compare(correct, keys, f"B1_K{k}", seeds)
-        md += [f"### K = {k} edges per class (N = {k * 200:,})", "",
+        md += [f"### K = {k} edges per class (N = {k * NUM_CLASSES:,})", "",
                "| Method | Val top-1 | Test top-1 | Δ vs B1 | 95 % CI | Seeds (Δ) | Verdict | Edges | Active codes |",
                "|---|---|---|---|---|---|---|---|---|"]
         for key in keys:

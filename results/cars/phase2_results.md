@@ -6,7 +6,7 @@ Dense head (no pruning): test 88.99 ± 0.06 %, 362,768 nonzero edges.
 
 ## One-shot masking (no retraining)
 
-### K = 5 edges per class (N = 1,000)
+### K = 5 edges per class (N = 980)
 
 | Method | Val top-1 | Test top-1 | Δ vs B1 | 95 % CI | Seeds (Δ) | Verdict | Edges | Active codes |
 |---|---|---|---|---|---|---|---|---|
@@ -16,7 +16,7 @@ Dense head (no pruning): test 88.99 ± 0.06 %, 362,768 nonzero edges.
 | P1contrast | 70.27 ± 0.98 | 71.49 ± 0.52 | +3.23 | [+2.68, +3.79] | +3.76, +3.71, +2.24 | **better** | 980 ± 0 | 873 ± 6 |
 | P3 (min-1 classes: 9 ± 3) | 64.70 ± 0.46 | 66.53 ± 0.37 | -1.72 | [-2.31, -1.13] | -0.99, -2.00, -2.18 | loss not excluded | 980 ± 0 | 890 ± 6 |
 
-### K = 10 edges per class (N = 2,000)
+### K = 10 edges per class (N = 1,960)
 
 | Method | Val top-1 | Test top-1 | Δ vs B1 | 95 % CI | Seeds (Δ) | Verdict | Edges | Active codes |
 |---|---|---|---|---|---|---|---|---|
@@ -26,7 +26,7 @@ Dense head (no pruning): test 88.99 ± 0.06 %, 362,768 nonzero edges.
 | P1contrast | 74.23 ± 0.65 | 75.21 ± 0.22 | +2.48 | [+1.99, +2.97] | +2.90, +2.62, +1.92 | **better** | 1,960 ± 0 | 1,498 ± 10 |
 | P3 (min-1 classes: 1 ± 1) | 70.96 ± 0.75 | 72.75 ± 0.72 | +0.02 | [-0.54, +0.58] | +0.95, +0.35, -1.22 | no meaningful loss | 1,960 ± 0 | 1,480 ± 13 |
 
-### K = 20 edges per class (N = 4,000)
+### K = 20 edges per class (N = 3,920)
 
 | Method | Val top-1 | Test top-1 | Δ vs B1 | 95 % CI | Seeds (Δ) | Verdict | Edges | Active codes |
 |---|---|---|---|---|---|---|---|---|

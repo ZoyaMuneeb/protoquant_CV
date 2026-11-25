@@ -279,4 +279,9 @@ backbone was pre-trained) and Flowers102 (10 training images per class, accuracy
   magnitude mask's at K = 10 (890 / 1,304 on CUB), chosen from code counts only, before any accuracy is seen.
 * **Comparisons:** the section 6 rules, as on CUB (one-shot vs magnitude; repaired / cached-retrained vs one-shot,
   vs retrained and vs dense; code-level retrained vs "Pruned & Tuned" and vs dense).
+* **Outcome (2026-11-25):** seeds 41 and 42 were added after the seed-40 results were seen, with the same settings.
+  The budget rule chose CP1-M1000 on seed 40 (879 of 1,347 codes, 65 %), reused for seeds 41 and 42 (874 ± 5 of
+  1,339 ± 21). No code-matched magnitude (CB1) control was run, so the score's effect on code-level pruning after
+  retraining is untested here. The backbone drops the last training batch when its size is odd (MixUp needs even
+  batches).
 * Runs: `bash scripts/prepare_cars.sh`, then `bash scripts/run_cars.sh` (`../runs_cars`, `results/cars`).

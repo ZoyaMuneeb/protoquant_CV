@@ -9,7 +9,7 @@ Pipeline per seed: Stage 1 (4,096 codes) → B0 (usage pruning to 3,000 on the p
 | strict | 40, 41, 42 | 88.99 ± 0.06 (n=3) | – |
 | backbone only (strict) | – | 91.90 | – |
 
-The paper selects checkpoints and prunes codes on the test set. The strict baseline trains on 10 % fewer images and selects on a 600-image validation split, so a gap to the paper is a finding, not a failed reproduction.
+The paper selects checkpoints and prunes codes on the test set. The strict baseline trains on 10 % fewer images and selects on a 815-image validation split, so a gap to the paper is a finding, not a failed reproduction.
 
 ## Per run
 

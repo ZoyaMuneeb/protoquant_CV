@@ -4,7 +4,8 @@
 and how small can the model get before it loses accuracy?
 
 Built on the official ProtoQuant code ([gmum/protoquant](https://github.com/gmum/protoquant), commit `b80d7e9`;
-paper [arXiv 2602.06592](https://arxiv.org/abs/2602.06592)). CUB-200-2011, ConvNeXt-Tiny, one NVIDIA GPU.
+paper [arXiv 2602.06592](https://arxiv.org/abs/2602.06592)). CUB-200-2011 and Stanford Cars, ConvNeXt-Tiny,
+one NVIDIA GPU.
 
 > The upstream repository has no license file. Ask the authors before including their code in a public release.
 
@@ -19,7 +20,7 @@ paper [arXiv 2602.06592](https://arxiv.org/abs/2602.06592)). CUB-200-2011, ConvN
 | – | Improved-backbone rerun | Done |
 | – | Code-level pruning + code-matched CB1 control | Done |
 | – | Weight repair and decomposition of retraining (head refit, codes + head on cached features) | Done |
-| – | Stanford Cars replication | Code ready, not run |
+| – | Stanford Cars replication | Done (3 seeds; no code-matched CB1 control) |
 | 5 | Figures, prototype visualisations, demo | Not started |
 
 ## Key findings
@@ -38,14 +39,15 @@ paper [arXiv 2602.06592](https://arxiv.org/abs/2602.06592)). CUB-200-2011, ConvN
    (CP1) beats magnitude (CB1) by +8.2 points one-shot. After 145 epochs of retraining the two are the same
    (+0.14, CI [−0.28, +0.56]). The same pattern holds for edges (findings 1–2) and for codes.
 7. **The global budget (P3) and the "contrast" variant don't help.** P3 starves classes at small K.
-   P1-contrast ≈ P1 in accuracy, but it is the only score that predicts single-edge deletion damage.
+   P1-contrast ≈ P1 in accuracy. On CUB it is the only score that predicts single-edge deletion damage, but
+   this did not replicate on Cars (ρ = 0.08).
 8. **Pruning shrinks explanations 40× and the codebook by half, but not the model.** The backbone dominates
    latency and memory, so the full model is only about 2 % faster.
 9. **Why retraining erases the score: the codes adapt.** We split retraining's gain into steps (K = 10,
    improved backbone). Re-fitting only the head recovers about 40–60 % of it in seconds. Letting the codes
    adapt too, with the retraining recipe run on cached features, recovers almost all the rest. Training on
    augmented images adds only the last 0.8–1.3 points.
-10. **A head refit alone already removes the score's advantage.** After re-fitting the kept weights, P1 vs B1
+10. **On CUB, a head refit alone already removes the score's advantage.** After re-fitting the kept weights, P1 vs B1
     is +0.21 [−0.25, +0.68] and CP1 vs CB1 (890 codes) is +0.40 [−0.31, +1.09]. One-shot they were +2.46 and
     +8.19.
 11. **Retraining on cached features is a cheap near-substitute.** Codes + head trained for 145 epochs on
@@ -55,6 +57,11 @@ paper [arXiv 2602.06592](https://arxiv.org/abs/2602.06592)). CUB-200-2011, ConvN
     against one-shot for B1, P1 and CP1 (physical). It restores the logits' scale but not the ranking of classes.
 13. **Removing unused codes alone helps code-level pruning** (physical vs logical, one-shot): +2.3 points for
     CP1-M1000 and +16.3 for CB1-M1000, because the softmax renormalises over the kept codes.
+14. **The main results hold on Stanford Cars** (3 seeds). B2 at 145 epochs shows no meaningful loss against dense
+    (88.49 vs 88.99; −0.50 [−0.96, −0.05], a small drop) with 0.54 % of the edges. Code-level CP1 uses 35 % fewer
+    codes than B2 with no meaningful loss (−0.32 [−0.66, +0.00]), as on CUB. P1 beats B1 one-shot at every K. Unlike
+    on CUB, a small advantage survives a head refit (+0.63 [+0.17, +1.07]); it is gone once the codes adapt
+    (−0.23 [−0.52, +0.07]).
 
 Verdicts use the rules fixed before any run ([protocol](docs/phase0_protocol.md), section 6):
 - **better**: the 95 % paired-bootstrap interval is above 0 and every seed agrees;
@@ -65,7 +72,7 @@ Runs added after earlier results were seen are labelled post hoc in the protocol
 
 ## Results
 
-Test top-1 %, strict protocol, mean of seeds 40–42.
+Test top-1 %, strict protocol. Mean of seeds 40–42. CUB unless stated; Cars has its own section.
 
 ### Baselines
 
@@ -161,13 +168,48 @@ negative result. A CE
 refit with a fixed 300 steps recovers less than the step count chosen on validation. The full repair table is
 in `results/backbone2/phase2_results.md`.
 
+### Stanford Cars (3 seeds, post hoc)
+
+Backbone alone 91.90, dense ProtoQuant 88.99 ± 0.06 (362,768 edges). Split: 7,329 train / 815 validation / 8,041
+test. Seeds 41 and 42 were added after the seed-40 results were seen, with the same settings.
+
+One-shot:
+
+| K | B1 | P1 | P1-contrast | P3 (global) | random | P1 vs B1 |
+|---|---|---|---|---|---|---|
+| 5 | 68.25 | **71.50** | 71.49 | 66.53 | 3.51 | +3.24 [+2.68, +3.80] |
+| 10 | 72.73 | **75.33** | 75.21 | 72.75 | 5.25 | +2.61 [+2.12, +3.09] |
+| 20 | 77.67 | **79.55** | 79.56 | 78.37 | 9.16 | +1.88 [+1.43, +2.32] |
+
+Where retraining's gain comes from (K = 10, unused codes removed, columns as in the CUB table above):
+
+| Mask | Codes | One-shot | Head refit | Recipe, head | Recipe, codes + head | Retrained |
+|---|---|---|---|---|---|---|
+| B1 | 1,339 | 72.73 | 79.90 | 79.19 | **86.85** | 88.49 |
+| P1 | 1,486 | 75.33 | 80.52 | 80.05 | **86.62** | – |
+| CP1-M1000 | 874 | 69.85 | 78.33 | 77.44 | **86.88** | 88.16 |
+| random | 1,427 | 5.25 | 7.64 | 7.15 | **83.77** | – |
+| Time per model | | – | ≈ 5–6 s | ≈ 8–12 s | ≈ 14–22 s | not timed here |
+
+- **Against dense:** B2 −0.50 [−0.96, −0.05], no meaningful loss (but a small real drop). CP1-M1000
+  −0.82 [−1.29, −0.37], loss not excluded.
+- **CP1-M1000 vs B2, both retrained:** −0.32 [−0.66, +0.00], no meaningful loss (seeds −0.55, −0.76, +0.34).
+- **Codes + head on cached features vs retrained on images:** −1.64 (B1), −1.28 (CP1-M1000).
+- **P1 vs B1:** +0.63 [+0.17, +1.07] after the head refit and +0.85 [+0.42, +1.29] after the head-only recipe (both
+  better; about +0.2 and no difference on CUB), then −0.23 [−0.52, +0.07] after codes + head.
+- **Code-level, one-shot:** CP1 beats CB1 by 23–45 points at the same budget M, but CB1 keeps fewer active codes. With
+  fewer codes, CP1 still wins: 61.91 at 573 codes vs 48.81 for CB1 at 680.
+- **Not tested:** a code-matched CB1 control, so whether the code score still matters after retraining on Cars.
+
 ### Ablations and controls
+
+CUB, unless a row says otherwise.
 
 | Question | Answer |
 |---|---|
 | Does contrasting against other classes help (P1-contrast vs P1)? | Slightly: +0.07 to +0.27 one-shot (significant at some K), never more |
 | Does P3's one-edge-per-class minimum matter? | −0.4 at K = 5 without it (11 classes get no edge); none at K ≥ 10 |
-| Which score predicts real single-edge deletion damage (Spearman ρ)? | P1-contrast 0.24 / 0.42 (main / improved backbone); magnitude and P1 ≈ 0 |
+| Which score predicts real single-edge deletion damage (Spearman ρ)? | P1-contrast 0.24 / 0.42 (main / improved backbone); magnitude and P1 ≈ 0. Cars: none (−0.05 magnitude, −0.10 P1, 0.08 P1-contrast) |
 | Does longer retraining alone help (B2 at 145 vs 30 epochs)? | Yes: +2.13 (main), +1.11 (improved), both better |
 
 ### Capacity, K = 10, main backbone ([details](results/capacity.md))
@@ -184,7 +226,8 @@ Training cost: iterative P1 ≈ 44 GPU-minutes per model vs ≈ 27 for B2 at 145
 
 Full tables:
 - main backbone: [`results/phase2_results.md`](results/phase2_results.md);
-- improved backbone: [`results/backbone2/phase2_results.md`](results/backbone2/phase2_results.md).
+- improved backbone: [`results/backbone2/phase2_results.md`](results/backbone2/phase2_results.md);
+- Stanford Cars: [`results/cars/phase2_results.md`](results/cars/phase2_results.md).
 
 ## What we changed in the official code
 
@@ -197,6 +240,8 @@ Full tables:
 - **Stanford Cars with the same strict protocol.** `scripts/prepare_cars.py` converts the download to the CUB
   layout, and dataset `cars196` reuses the strict CUB loader (held-out validation split, test read once).
   `PQ_DATASET=cars196` switches every script; the default stays CUB.
+- **MixUp with an odd last batch.** MixUp rejects odd batch sizes, so the backbone fine-tune drops the last training
+  batch when its size is odd (Cars only; CUB is unchanged).
 - **No SLURM or wandb.** Plain single-GPU shell scripts are in [`scripts/`](scripts/); `slurm/` is kept for
   reference.
 
@@ -230,7 +275,8 @@ Set `BB=$(realpath ../checkpoints/backbone/<file>.pth)` first.
 | Weight repair: CE step count chosen on validation | `CE_SWEEP="300 1000 3000 10000" bash scripts/run_repair.sh` | minutes |
 | Retraining recipe on cached features (head only, codes + head) | `CACHED_RETRAIN=1 bash scripts/run_repair.sh` | ~10–30 min |
 | Stanford Cars: data + split (once) | `CARS_SRC=/path/to/download bash scripts/prepare_cars.sh` | – |
-| Stanford Cars: replication (1 seed) | `bash scripts/run_cars.sh` | ~7 h |
+| Stanford Cars: replication (1 seed) | `bash scripts/run_cars.sh` | ~7 h (estimate) |
+| Stanford Cars: 3 seeds | `SEEDS="40 41 42" RETRAIN_SEEDS="40 41 42" bash scripts/run_cars.sh` | – |
 
 Improved-backbone runs write to `../runs_bb2/` and `results/backbone2/`, so the main results are untouched.
 Each step's exact settings are fixed in [`docs/phase0_protocol.md`](docs/phase0_protocol.md):
@@ -246,7 +292,7 @@ Each step's exact settings are fixed in [`docs/phase0_protocol.md`](docs/phase0_
 codebook_train/   official ProtoQuant code (CUB loader patched for the strict protocol)
 docs/             phase0_protocol.md: frozen protocol, decision rules, change log
 scripts/          run drivers, pruning methods, evaluation, summaries, capacity
-splits/           fixed CUB validation split
-results/          data checks, baseline, Phase 2–4 results, capacity (backbone2/: improved backbone)
+splits/           fixed CUB and Cars validation splits
+results/          data checks, baseline, Phase 2–4 results, capacity (backbone2/: improved backbone, cars/: Stanford Cars)
 slurm/            original cluster scripts (reference only)
 ```

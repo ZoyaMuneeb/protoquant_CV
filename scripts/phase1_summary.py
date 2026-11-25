@@ -14,6 +14,7 @@ PAPER_TOP1 = 87.7      # ProtoQuant, CUB-200, ConvNeXt-T (paper)
 PAPER_BACKBONE = 88.4  # black-box ConvNeXt-T (paper)
 if __import__("os").environ.get("PQ_DATASET", "cub200") != "cub200":   # paper numbers are for CUB only
     PAPER_TOP1 = PAPER_BACKBONE = "–"
+VAL_IMAGES = {"cub200": 600, "cars196": 815}[__import__("os").environ.get("PQ_DATASET", "cub200")]
 NUM = r"([0-9]+(?:\.[0-9]+)?(?:e-?[0-9]+)?)"
 
 
@@ -113,7 +114,7 @@ def main() -> None:
         if v is not None:
             md.append(f"| backbone only ({pr}) | – | {v:.2f} | {PAPER_BACKBONE} |")
     md += ["", "The paper selects checkpoints and prunes codes on the test set. The strict baseline trains on "
-           "10 % fewer images and selects on a 600-image validation split, so a gap to the paper is a finding, "
+           f"10 % fewer images and selects on a {VAL_IMAGES}-image validation split, so a gap to the paper is a finding, "
            "not a failed reproduction.", "", "## Per run", "",
            "| Protocol | Seed | S1 best val (ep) | S1 dead ratio | B0 codes | B0 val before→after | "
            "S2 best val (ep) | Test top-1 | Test top-5 | Nonzero edges | Active codes |",
