@@ -1,6 +1,8 @@
 {
   "seeds": [
-    40
+    40,
+    41,
+    42
   ],
   "one_shot": {
     "B1_K5": {
@@ -12,6 +14,26 @@
           "test_top1": 67.9144385026738,
           "nonzero_edges": 980,
           "active_codes": 830,
+          "edges_per_class_min": 5,
+          "edges_per_class_max": 5
+        },
+        {
+          "method": "B1",
+          "K": 5,
+          "val_top1": 68.34355828220859,
+          "test_top1": 68.1880363138913,
+          "nonzero_edges": 980,
+          "active_codes": 799,
+          "edges_per_class_min": 5,
+          "edges_per_class_max": 5
+        },
+        {
+          "method": "B1",
+          "K": 5,
+          "val_top1": 69.32515337423312,
+          "test_top1": 68.66061435144883,
+          "nonzero_edges": 980,
+          "active_codes": 828,
           "edges_per_class_min": 5,
           "edges_per_class_max": 5
         }
@@ -29,19 +51,43 @@
           "active_codes": 831,
           "edges_per_class_min": 5,
           "edges_per_class_max": 5
+        },
+        {
+          "method": "random",
+          "K": 5,
+          "val_top1": 2.6993865030674846,
+          "test_top1": 3.1961198855863695,
+          "nonzero_edges": 980,
+          "active_codes": 831,
+          "edges_per_class_min": 5,
+          "edges_per_class_max": 5
+        },
+        {
+          "method": "random",
+          "K": 5,
+          "val_top1": 3.6809815950920246,
+          "test_top1": 3.121502300708867,
+          "nonzero_edges": 980,
+          "active_codes": 823,
+          "edges_per_class_min": 5,
+          "edges_per_class_max": 5
         }
       ],
       "vs_B1": {
-        "diff_mean": -63.698544957094896,
+        "diff_mean": -64.74319114537992,
         "ci95": [
-          -64.79293620196493,
-          -62.5917174480786
+          -65.62212411391619,
+          -63.88094349790655
         ],
         "seed_diffs": [
-          -63.698544957094896
+          -63.698544957094896,
+          -64.99191642830495,
+          -65.53911205073996
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       }
@@ -57,19 +103,43 @@
           "active_codes": 872,
           "edges_per_class_min": 5,
           "edges_per_class_max": 5
+        },
+        {
+          "method": "P1",
+          "K": 5,
+          "val_top1": 70.79754601226995,
+          "test_top1": 71.75724412386519,
+          "nonzero_edges": 980,
+          "active_codes": 881,
+          "edges_per_class_min": 5,
+          "edges_per_class_max": 5
+        },
+        {
+          "method": "P1",
+          "K": 5,
+          "val_top1": 70.42944785276075,
+          "test_top1": 71.09812212411391,
+          "nonzero_edges": 980,
+          "active_codes": 866,
+          "edges_per_class_min": 5,
+          "edges_per_class_max": 5
         }
       ],
       "vs_B1": {
-        "diff_mean": 3.718442979728889,
+        "diff_mean": 3.241719520789289,
         "ci95": [
-          2.910085810222609,
-          4.55167267752767
+          2.677942212825934,
+          3.8013514073705603
         ],
         "seed_diffs": [
-          3.7184429797288865
+          3.7184429797288865,
+          3.5692078099738844,
+          2.437507772665093
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -85,19 +155,43 @@
           "active_codes": 876,
           "edges_per_class_min": 5,
           "edges_per_class_max": 5
+        },
+        {
+          "method": "P1contrast",
+          "K": 5,
+          "val_top1": 71.28834355828221,
+          "test_top1": 71.89404302947395,
+          "nonzero_edges": 980,
+          "active_codes": 878,
+          "edges_per_class_min": 5,
+          "edges_per_class_max": 5
+        },
+        {
+          "method": "P1contrast",
+          "K": 5,
+          "val_top1": 70.1840490797546,
+          "test_top1": 70.89914189777392,
+          "nonzero_edges": 980,
+          "active_codes": 866,
+          "edges_per_class_min": 5,
+          "edges_per_class_max": 5
         }
       ],
       "vs_B1": {
-        "diff_mean": 3.755751772167641,
+        "diff_mean": 3.2334286780251214,
         "ci95": [
-          2.9473946026613604,
-          4.588981469966423
+          2.6820876342080173,
+          3.78891514322431
         ],
         "seed_diffs": [
-          3.755751772167637
+          3.755751772167637,
+          3.7060067155826326,
+          2.2385275463250864
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -117,19 +211,51 @@
           "classes_at_minimum": 6,
           "classes_with_no_edge": 0,
           "edges_per_class_median": 5.0
+        },
+        {
+          "method": "P3",
+          "K": 5,
+          "val_top1": 64.1717791411043,
+          "test_top1": 66.18579778634498,
+          "nonzero_edges": 980,
+          "active_codes": 894,
+          "edges_per_class_min": 1,
+          "edges_per_class_max": 10,
+          "classes_forced_to_minimum": 4,
+          "classes_at_minimum": 11,
+          "classes_with_no_edge": 0,
+          "edges_per_class_median": 5.0
+        },
+        {
+          "method": "P3",
+          "K": 5,
+          "val_top1": 64.9079754601227,
+          "test_top1": 66.484268125855,
+          "nonzero_edges": 980,
+          "active_codes": 883,
+          "edges_per_class_min": 1,
+          "edges_per_class_max": 12,
+          "classes_forced_to_minimum": 3,
+          "classes_at_minimum": 11,
+          "classes_with_no_edge": 0,
+          "edges_per_class_median": 5.0
         }
       ],
       "vs_B1": {
-        "diff_mean": -0.9949011317000372,
+        "diff_mean": -1.7244952949467307,
         "ci95": [
-          -1.8530033577913194,
-          -0.13679890560875513
+          -2.3131451312025866,
+          -1.1317000373087922
         ],
         "seed_diffs": [
-          -0.9949011317000434
+          -0.9949011317000434,
+          -2.0022385275463295,
+          -2.176346225593828
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       }
@@ -143,6 +269,26 @@
           "test_top1": 72.54072876507897,
           "nonzero_edges": 1960,
           "active_codes": 1347,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10
+        },
+        {
+          "method": "B1",
+          "K": 10,
+          "val_top1": 71.28834355828221,
+          "test_top1": 72.3790573311777,
+          "nonzero_edges": 1960,
+          "active_codes": 1315,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10
+        },
+        {
+          "method": "B1",
+          "K": 10,
+          "val_top1": 72.63803680981596,
+          "test_top1": 73.2620320855615,
+          "nonzero_edges": 1960,
+          "active_codes": 1355,
           "edges_per_class_min": 10,
           "edges_per_class_max": 10
         }
@@ -160,19 +306,43 @@
           "active_codes": 1409,
           "edges_per_class_min": 10,
           "edges_per_class_max": 10
+        },
+        {
+          "method": "random",
+          "K": 10,
+          "val_top1": 3.92638036809816,
+          "test_top1": 4.439746300211417,
+          "nonzero_edges": 1960,
+          "active_codes": 1451,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10
+        },
+        {
+          "method": "random",
+          "K": 10,
+          "val_top1": 6.748466257668712,
+          "test_top1": 6.964307921900262,
+          "nonzero_edges": 1960,
+          "active_codes": 1422,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10
         }
       ],
       "vs_B1": {
-        "diff_mean": -68.20047257803755,
+        "diff_mean": -67.47916925755503,
         "ci95": [
-          -69.25755503046884,
-          -67.14339012560627
+          -68.34556232641047,
+          -66.61277618869958
         ],
         "seed_diffs": [
-          -68.20047257803755
+          -68.20047257803755,
+          -67.93931103096628,
+          -66.29772416366124
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       }
@@ -188,19 +358,43 @@
           "active_codes": 1481,
           "edges_per_class_min": 10,
           "edges_per_class_max": 10
+        },
+        {
+          "method": "P1",
+          "K": 10,
+          "val_top1": 74.96932515337423,
+          "test_top1": 75.11503544335282,
+          "nonzero_edges": 1960,
+          "active_codes": 1479,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10
+        },
+        {
+          "method": "P1",
+          "K": 10,
+          "val_top1": 74.11042944785277,
+          "test_top1": 75.30157940554658,
+          "nonzero_edges": 1960,
+          "active_codes": 1497,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10
         }
       ],
       "vs_B1": {
-        "diff_mean": 3.0468847158313643,
+        "diff_mean": 2.6074700493305145,
         "ci95": [
-          2.3131451312025866,
-          3.7930605646063924
+          2.1224557476267463,
+          3.0924843510342828
         ],
         "seed_diffs": [
-          3.046884715831366
+          3.046884715831366,
+          2.735978112175108,
+          2.039547319985069
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -216,19 +410,43 @@
           "active_codes": 1497,
           "edges_per_class_min": 10,
           "edges_per_class_max": 10
+        },
+        {
+          "method": "P1contrast",
+          "K": 10,
+          "val_top1": 74.7239263803681,
+          "test_top1": 75.00310906603657,
+          "nonzero_edges": 1960,
+          "active_codes": 1488,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10
+        },
+        {
+          "method": "P1contrast",
+          "K": 10,
+          "val_top1": 73.49693251533742,
+          "test_top1": 75.17721676408406,
+          "nonzero_edges": 1960,
+          "active_codes": 1508,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10
         }
       ],
       "vs_B1": {
-        "diff_mean": 2.8976495460763587,
+        "diff_mean": 2.4789619864859267,
         "ci95": [
-          2.188471583136426,
-          3.643825394851387
+          1.9939476847821582,
+          2.9681217095717782
         ],
         "seed_diffs": [
-          2.897649546076364
+          2.897649546076364,
+          2.6240517348588566,
+          1.9151846785225635
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -248,21 +466,53 @@
           "classes_at_minimum": 1,
           "classes_with_no_edge": 0,
           "edges_per_class_median": 10.0
+        },
+        {
+          "method": "P3",
+          "K": 10,
+          "val_top1": 71.77914110429448,
+          "test_top1": 72.72727272727273,
+          "nonzero_edges": 1960,
+          "active_codes": 1466,
+          "edges_per_class_min": 1,
+          "edges_per_class_max": 18,
+          "classes_forced_to_minimum": 0,
+          "classes_at_minimum": 1,
+          "classes_with_no_edge": 0,
+          "edges_per_class_median": 10.0
+        },
+        {
+          "method": "P3",
+          "K": 10,
+          "val_top1": 70.30674846625767,
+          "test_top1": 72.04327819922895,
+          "nonzero_edges": 1960,
+          "active_codes": 1491,
+          "edges_per_class_min": 2,
+          "edges_per_class_max": 17,
+          "classes_forced_to_minimum": 0,
+          "classes_at_minimum": 0,
+          "classes_with_no_edge": 0,
+          "edges_per_class_median": 10.0
         }
       ],
       "vs_B1": {
-        "diff_mean": 0.9451560751150355,
+        "diff_mean": 0.02487252829250111,
         "ci95": [
-          0.13679890560875513,
-          1.753513244621316
+          -0.5389047796708535,
+          0.584504414873772
         ],
         "seed_diffs": [
-          0.945156075115039
+          0.945156075115039,
+          0.3482153960950196,
+          -1.2187538863325464
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
-        "verdict": "**better**"
+        "verdict": "no meaningful loss"
       }
     },
     "B1_K20": {
@@ -274,6 +524,26 @@
           "test_top1": 77.5774157443104,
           "nonzero_edges": 3920,
           "active_codes": 1905,
+          "edges_per_class_min": 20,
+          "edges_per_class_max": 20
+        },
+        {
+          "method": "B1",
+          "K": 20,
+          "val_top1": 75.8282208588957,
+          "test_top1": 77.5276706877254,
+          "nonzero_edges": 3920,
+          "active_codes": 1930,
+          "edges_per_class_min": 20,
+          "edges_per_class_max": 20
+        },
+        {
+          "method": "B1",
+          "K": 20,
+          "val_top1": 77.17791411042944,
+          "test_top1": 77.91319487625917,
+          "nonzero_edges": 3920,
+          "active_codes": 1941,
           "edges_per_class_min": 20,
           "edges_per_class_max": 20
         }
@@ -291,19 +561,43 @@
           "active_codes": 2127,
           "edges_per_class_min": 20,
           "edges_per_class_max": 20
+        },
+        {
+          "method": "random",
+          "K": 20,
+          "val_top1": 7.484662576687116,
+          "test_top1": 8.232806864817809,
+          "nonzero_edges": 3920,
+          "active_codes": 2137,
+          "edges_per_class_min": 20,
+          "edges_per_class_max": 20
+        },
+        {
+          "method": "random",
+          "K": 20,
+          "val_top1": 7.2392638036809815,
+          "test_top1": 7.710483770675289,
+          "nonzero_edges": 3920,
+          "active_codes": 2157,
+          "edges_per_class_min": 20,
+          "edges_per_class_max": 20
         }
       ],
       "vs_B1": {
-        "diff_mean": -66.03656261658998,
+        "diff_mean": -68.51137918169383,
         "ci95": [
-          -67.16857356050242,
-          -64.94217137171994
+          -69.37777225054927,
+          -67.6657132197488
         ],
         "seed_diffs": [
-          -66.03656261658998
+          -66.03656261658998,
+          -69.29486382290759,
+          -70.20271110558389
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       }
@@ -319,19 +613,43 @@
           "active_codes": 2167,
           "edges_per_class_min": 20,
           "edges_per_class_max": 20
+        },
+        {
+          "method": "P1",
+          "K": 20,
+          "val_top1": 78.15950920245399,
+          "test_top1": 78.8583509513742,
+          "nonzero_edges": 3920,
+          "active_codes": 2107,
+          "edges_per_class_min": 20,
+          "edges_per_class_max": 20
+        },
+        {
+          "method": "P1",
+          "K": 20,
+          "val_top1": 78.28220858895706,
+          "test_top1": 79.64183559258798,
+          "nonzero_edges": 3920,
+          "active_codes": 2186,
+          "edges_per_class_min": 20,
+          "edges_per_class_max": 20
         }
       ],
       "vs_B1": {
-        "diff_mean": 2.574306678273847,
+        "diff_mean": 1.8778758860838205,
         "ci95": [
-          1.915184678522572,
-          3.2334286780251214
+          1.4260249554367204,
+          2.321435973966754
         ],
         "seed_diffs": [
-          2.574306678273852
+          2.574306678273852,
+          1.330680263648809,
+          1.728640716328811
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -347,19 +665,43 @@
           "active_codes": 2174,
           "edges_per_class_min": 20,
           "edges_per_class_max": 20
+        },
+        {
+          "method": "P1contrast",
+          "K": 20,
+          "val_top1": 78.8957055214724,
+          "test_top1": 78.72155204576545,
+          "nonzero_edges": 3920,
+          "active_codes": 2122,
+          "edges_per_class_min": 20,
+          "edges_per_class_max": 20
+        },
+        {
+          "method": "P1contrast",
+          "K": 20,
+          "val_top1": 78.03680981595093,
+          "test_top1": 79.57965427185674,
+          "nonzero_edges": 3920,
+          "active_codes": 2209,
+          "edges_per_class_min": 20,
+          "edges_per_class_max": 20
         }
       ],
       "vs_B1": {
-        "diff_mean": 2.798159432906355,
+        "diff_mean": 1.8861667288479878,
         "ci95": [
-          2.1266011690088296,
-          3.4572814326576293
+          1.4301703768188039,
+          2.3380176594950877
         ],
         "seed_diffs": [
-          2.7981594329063553
+          2.7981594329063553,
+          1.1938813580400498,
+          1.6664593955975637
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -379,19 +721,51 @@
           "classes_at_minimum": 0,
           "classes_with_no_edge": 0,
           "edges_per_class_median": 20.0
+        },
+        {
+          "method": "P3",
+          "K": 20,
+          "val_top1": 78.8957055214724,
+          "test_top1": 78.04999378186793,
+          "nonzero_edges": 3920,
+          "active_codes": 2089,
+          "edges_per_class_min": 9,
+          "edges_per_class_max": 32,
+          "classes_forced_to_minimum": 0,
+          "classes_at_minimum": 0,
+          "classes_with_no_edge": 0,
+          "edges_per_class_median": 20.0
+        },
+        {
+          "method": "P3",
+          "K": 20,
+          "val_top1": 77.79141104294479,
+          "test_top1": 78.13704763089167,
+          "nonzero_edges": 3920,
+          "active_codes": 2163,
+          "edges_per_class_min": 9,
+          "edges_per_class_max": 33,
+          "classes_forced_to_minimum": 0,
+          "classes_at_minimum": 0,
+          "classes_with_no_edge": 0,
+          "edges_per_class_median": 20.0
         }
       ],
       "vs_B1": {
-        "diff_mean": 1.3431165277950503,
+        "diff_mean": 0.6964307921900262,
         "ci95": [
-          0.6218132073125233,
-          2.0644198482775775
+          0.18654396219375718,
+          1.193881358040045
         ],
         "seed_diffs": [
-          1.3431165277950519
+          1.3431165277950519,
+          0.5223230941425294,
+          0.2238527546325031
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -412,6 +786,34 @@
         "spearman_rho": 0.0617941794179418,
         "p_value": 0.5413605704656708
       }
+    },
+    "41": {
+      "B1": {
+        "spearman_rho": 0.00492049204920492,
+        "p_value": 0.9612487651112721
+      },
+      "P1": {
+        "spearman_rho": -0.07895589558955894,
+        "p_value": 0.4348893380845708
+      },
+      "P1contrast": {
+        "spearman_rho": 0.07553555355535553,
+        "p_value": 0.4551077212973648
+      }
+    },
+    "42": {
+      "B1": {
+        "spearman_rho": -0.012853285328532851,
+        "p_value": 0.8990020511208962
+      },
+      "P1": {
+        "spearman_rho": -0.10844284428442842,
+        "p_value": 0.28283821038603707
+      },
+      "P1contrast": {
+        "spearman_rho": 0.1125112511251125,
+        "p_value": 0.2650604081672199
+      }
     }
   },
   "iterative": {
@@ -422,19 +824,35 @@
           "best_val_top1": 88.46625766871166,
           "test_top1": 88.88198137283325,
           "codes": 1347
+        },
+        {
+          "total_epochs": 145,
+          "best_val_top1": 88.22085889570552,
+          "test_top1": 88.65812420845032,
+          "codes": 1315
+        },
+        {
+          "total_epochs": 145,
+          "best_val_top1": 88.58895705521472,
+          "test_top1": 87.92438507080078,
+          "codes": 1355
         }
       ],
       "vs_dense": {
-        "diff_mean": -0.17410769804750653,
+        "diff_mean": -0.5015959872321022,
         "ci95": [
-          -0.7337395846287775,
-          0.38552418853376447
+          -0.9617377606433695,
+          -0.045599635202918515
         ],
         "seed_diffs": [
-          -0.1741076980475098
+          -0.1741076980475098,
+          -0.2735978112175075,
+          -1.0570824524312905
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "no meaningful loss"
       }
@@ -446,33 +864,53 @@
           "best_val_top1": 87.85276073619632,
           "test_top1": 88.33478689193726,
           "codes": 879
+        },
+        {
+          "total_epochs": 145,
+          "best_val_top1": 87.36196319018404,
+          "test_top1": 87.89951205253601,
+          "codes": 869
+        },
+        {
+          "total_epochs": 145,
+          "best_val_top1": 88.22085889570552,
+          "test_top1": 88.26016783714294,
+          "codes": 874
         }
       ],
       "vs_BUD_B1_K10_E145": {
-        "diff_mean": -0.5471956224350205,
+        "diff_mean": -0.32334286780251215,
         "ci95": [
-          -1.0570824524312896,
-          -0.02487252829250093
+          -0.6592256352858269,
+          0.0041454213820834515
         ],
         "seed_diffs": [
-          -0.547195622435015
+          -0.547195622435015,
+          -0.7586121129212753,
+          0.33577913194876574
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
-        "verdict": "loss not excluded"
+        "verdict": "no meaningful loss"
       },
       "vs_dense": {
-        "diff_mean": -0.721303320482527,
+        "diff_mean": -0.8249388550346144,
         "ci95": [
-          -1.280935207063798,
-          -0.16167143390125607
+          -1.2850806284458818,
+          -0.37308792438751415
         ],
         "seed_diffs": [
+          -0.7213033204825248,
+          -1.0322099241387828,
           -0.7213033204825248
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       }
@@ -493,19 +931,49 @@
           "code_budget": 1200,
           "classes_below_k": 0,
           "classes_with_no_edge": 0
+        },
+        {
+          "method": "CB1-M1200",
+          "K": 10,
+          "val_top1": 49.57055214723927,
+          "test_top1": 47.70550926501679,
+          "nonzero_edges": 1960,
+          "active_codes": 663,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 1200,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
+        },
+        {
+          "method": "CB1-M1200",
+          "K": 10,
+          "val_top1": 50.5521472392638,
+          "test_top1": 47.9791070762343,
+          "nonzero_edges": 1960,
+          "active_codes": 711,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 1200,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
         }
       ],
       "vs_B1": {
-        "diff_mean": -21.788334784230816,
+        "diff_mean": -23.914935953239645,
         "ci95": [
-          -23.031961198855864,
-          -20.51983584131327
+          -24.8559466069726,
+          -22.973925299506696
         ],
         "seed_diffs": [
-          -21.788334784230813
+          -21.788334784230813,
+          -24.673548066160922,
+          -25.2829250093272
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       }
@@ -524,19 +992,49 @@
           "code_budget": 1000,
           "classes_below_k": 0,
           "classes_with_no_edge": 0
+        },
+        {
+          "method": "CB1-M1000",
+          "K": 10,
+          "val_top1": 42.69938650306748,
+          "test_top1": 40.467603531899016,
+          "nonzero_edges": 1960,
+          "active_codes": 536,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 1000,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
+        },
+        {
+          "method": "CB1-M1000",
+          "K": 10,
+          "val_top1": 44.04907975460123,
+          "test_top1": 43.20358164407412,
+          "nonzero_edges": 1960,
+          "active_codes": 589,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 1000,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
         }
       ],
       "vs_B1": {
-        "diff_mean": -29.299838328566096,
+        "diff_mean": -30.42324752311073,
         "ci95": [
-          -30.6056460639224,
-          -27.9940305932098
+          -31.3975251834349,
+          -29.432491812792772
         ],
         "seed_diffs": [
-          -29.299838328566096
+          -29.299838328566096,
+          -31.911453799278693,
+          -30.058450441487384
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       }
@@ -555,19 +1053,49 @@
           "code_budget": 800,
           "classes_below_k": 0,
           "classes_with_no_edge": 0
+        },
+        {
+          "method": "CB1-M800",
+          "K": 10,
+          "val_top1": 33.00613496932515,
+          "test_top1": 31.899017535132444,
+          "nonzero_edges": 1960,
+          "active_codes": 417,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 800,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
+        },
+        {
+          "method": "CB1-M800",
+          "K": 10,
+          "val_top1": 35.21472392638037,
+          "test_top1": 35.107573684865066,
+          "nonzero_edges": 1960,
+          "active_codes": 482,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 800,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
         }
       ],
       "vs_B1": {
-        "diff_mean": -40.38054968287527,
+        "diff_mean": -39.67168262653899,
         "ci95": [
-          -41.67392115408531,
-          -39.074741947518966
+          -40.679020022385274,
+          -38.66849065207479
         ],
         "seed_diffs": [
-          -40.38054968287526
+          -40.38054968287526,
+          -40.48003979604526,
+          -38.154458400696434
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       }
@@ -586,19 +1114,49 @@
           "code_budget": 600,
           "classes_below_k": 0,
           "classes_with_no_edge": 0
+        },
+        {
+          "method": "CB1-M600",
+          "K": 10,
+          "val_top1": 20.12269938650307,
+          "test_top1": 19.624424822783233,
+          "nonzero_edges": 1960,
+          "active_codes": 292,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 600,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
+        },
+        {
+          "method": "CB1-M600",
+          "K": 10,
+          "val_top1": 23.803680981595093,
+          "test_top1": 24.598930481283425,
+          "nonzero_edges": 1960,
+          "active_codes": 338,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 600,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
         }
       ],
       "vs_B1": {
-        "diff_mean": -50.70264892426315,
+        "diff_mean": -50.706794345645235,
         "ci95": [
-          -51.93383907474195,
-          -49.434149981345605
+          -51.70584089872736,
+          -49.71603863532729
         ],
         "seed_diffs": [
-          -50.70264892426315
+          -50.70264892426315,
+          -52.75463250839447,
+          -48.66310160427808
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       }
@@ -617,19 +1175,49 @@
           "code_budget": 400,
           "classes_below_k": 0,
           "classes_with_no_edge": 0
+        },
+        {
+          "method": "CB1-M400",
+          "K": 10,
+          "val_top1": 5.644171779141105,
+          "test_top1": 5.770426563860216,
+          "nonzero_edges": 1960,
+          "active_codes": 254,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 400,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
+        },
+        {
+          "method": "CB1-M400",
+          "K": 10,
+          "val_top1": 11.28834355828221,
+          "test_top1": 10.993657505285412,
+          "nonzero_edges": 1960,
+          "active_codes": 227,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 400,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
         }
       ],
       "vs_B1": {
-        "diff_mean": -63.350329560999874,
+        "diff_mean": -64.07577830286449,
         "ci95": [
-          -64.49446586245492,
-          -62.243502051983576
+          -64.99616548522158,
+          -63.15549475604196
         ],
         "seed_diffs": [
-          -63.350329560999874
+          -63.350329560999874,
+          -66.60863076731749,
+          -62.26837458027609
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       }
@@ -648,33 +1236,67 @@
           "code_budget": 1200,
           "classes_below_k": 0,
           "classes_with_no_edge": 0
+        },
+        {
+          "method": "CP1-M1200",
+          "K": 10,
+          "val_top1": 71.65644171779141,
+          "test_top1": 72.3790573311777,
+          "nonzero_edges": 1960,
+          "active_codes": 998,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 1200,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
+        },
+        {
+          "method": "CP1-M1200",
+          "K": 10,
+          "val_top1": 70.1840490797546,
+          "test_top1": 71.5582638975252,
+          "nonzero_edges": 1960,
+          "active_codes": 1006,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 1200,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
         }
       ],
       "vs_B1": {
-        "diff_mean": -0.9824648675537869,
+        "diff_mean": -0.8954110185300332,
         "ci95": [
-          -1.8654396219375697,
-          -0.09949011317000372
+          -1.5213696472246403,
+          -0.2777432325995936
         ],
         "seed_diffs": [
-          -0.9824648675537784
+          -0.9824648675537784,
+          0.0,
+          -1.7037681880363142
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       },
       "vs_CB1": {
-        "diff_mean": 20.80586991667703,
+        "diff_mean": 23.01952493470961,
         "ci95": [
-          19.500062181320732,
-          22.086805123740827
+          22.049392695767526,
+          24.0019898022634
         ],
         "seed_diffs": [
-          20.805869916677032
+          20.805869916677032,
+          24.673548066160922,
+          23.579156821290887
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -693,33 +1315,67 @@
           "code_budget": 1000,
           "classes_below_k": 0,
           "classes_with_no_edge": 0
+        },
+        {
+          "method": "CP1-M1000",
+          "K": 10,
+          "val_top1": 70.1840490797546,
+          "test_top1": 70.32707374704638,
+          "nonzero_edges": 1960,
+          "active_codes": 869,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 1000,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
+        },
+        {
+          "method": "CP1-M1000",
+          "K": 10,
+          "val_top1": 68.09815950920245,
+          "test_top1": 69.92911329436637,
+          "nonzero_edges": 1960,
+          "active_codes": 874,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 1000,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
         }
       ],
       "vs_B1": {
-        "diff_mean": -3.2583012063176224,
+        "diff_mean": -2.8810678605480247,
         "ci95": [
-          -4.215893545578908,
-          -2.3131451312025866
+          -3.556771545827633,
+          -2.201115118351782
         ],
         "seed_diffs": [
-          -3.2583012063176153
+          -3.2583012063176153,
+          -2.0519835841313228,
+          -3.3329187911951275
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       },
       "vs_CB1": {
-        "diff_mean": 26.041537122248474,
+        "diff_mean": 27.542179662562706,
         "ci95": [
-          24.698420594453427,
-          27.359781121751027
+          26.51826058118808,
+          28.541329851179373
         ],
         "seed_diffs": [
-          26.04153712224848
+          26.04153712224848,
+          29.859470215147372,
+          26.725531650292254
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -738,33 +1394,67 @@
           "code_budget": 800,
           "classes_below_k": 0,
           "classes_with_no_edge": 0
+        },
+        {
+          "method": "CP1-M800",
+          "K": 10,
+          "val_top1": 66.50306748466258,
+          "test_top1": 67.08120880487502,
+          "nonzero_edges": 1960,
+          "active_codes": 720,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 800,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
+        },
+        {
+          "method": "CP1-M800",
+          "K": 10,
+          "val_top1": 65.52147239263803,
+          "test_top1": 66.62106703146374,
+          "nonzero_edges": 1960,
+          "active_codes": 730,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 800,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
         }
       ],
       "vs_B1": {
-        "diff_mean": -5.633627658251461,
+        "diff_mean": -5.8574804128839695,
         "ci95": [
-          -6.616092525805247,
-          -4.663288148240273
+          -6.591219997512747,
+          -5.115449985491026
         ],
         "seed_diffs": [
-          -5.633627658251461
+          -5.633627658251461,
+          -5.297848526302696,
+          -6.640965054097759
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       },
       "vs_CB1": {
-        "diff_mean": 34.74692202462381,
+        "diff_mean": 33.81420221365502,
         "ci95": [
-          33.378932968536255,
-          36.0527297599801
+          32.79847033951001,
+          34.83397587364755
         ],
         "seed_diffs": [
-          34.7469220246238
+          34.7469220246238,
+          35.18219126974257,
+          31.513493346598676
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -783,33 +1473,67 @@
           "code_budget": 600,
           "classes_below_k": 0,
           "classes_with_no_edge": 0
+        },
+        {
+          "method": "CP1-M600",
+          "K": 10,
+          "val_top1": 62.57668711656442,
+          "test_top1": 62.927496580027366,
+          "nonzero_edges": 1960,
+          "active_codes": 567,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 600,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
+        },
+        {
+          "method": "CP1-M600",
+          "K": 10,
+          "val_top1": 59.263803680981596,
+          "test_top1": 60.701405297848524,
+          "nonzero_edges": 1960,
+          "active_codes": 571,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 600,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
         }
       ],
       "vs_B1": {
-        "diff_mean": -10.434025618704142,
+        "diff_mean": -10.815404385855823,
         "ci95": [
-          -11.515980599427932,
-          -9.36419599552295
+          -11.627906976744187,
+          -9.973883845292875
         ],
         "seed_diffs": [
-          -10.434025618704135
+          -10.434025618704135,
+          -9.451560751150346,
+          -12.56062678771298
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       },
       "vs_CB1": {
-        "diff_mean": 40.26862330555901,
+        "diff_mean": 39.891389959789414,
         "ci95": [
-          38.93794304191021,
-          41.54955851262281
+          38.87576172117896,
+          40.8738548273432
         ],
         "seed_diffs": [
-          40.26862330555902
+          40.26862330555902,
+          43.303071757244126,
+          36.1024748165651
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -828,33 +1552,67 @@
           "code_budget": 400,
           "classes_below_k": 0,
           "classes_with_no_edge": 0
+        },
+        {
+          "method": "CP1-M400",
+          "K": 10,
+          "val_top1": 55.828220858895705,
+          "test_top1": 53.985822658873275,
+          "nonzero_edges": 1960,
+          "active_codes": 395,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 400,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
+        },
+        {
+          "method": "CP1-M400",
+          "K": 10,
+          "val_top1": 50.061349693251536,
+          "test_top1": 53.849023753264525,
+          "nonzero_edges": 1960,
+          "active_codes": 395,
+          "edges_per_class_min": 10,
+          "edges_per_class_max": 10,
+          "code_budget": 400,
+          "classes_below_k": 0,
+          "classes_with_no_edge": 0
         }
       ],
       "vs_B1": {
-        "diff_mean": -18.7041412759607,
+        "diff_mean": -18.836794760187377,
         "ci95": [
-          -19.885586369854497,
-          -17.535132446213158
+          -19.769514571156154,
+          -17.90407494921859
         ],
         "seed_diffs": [
-          -18.704141275960694
+          -18.704141275960694,
+          -18.393234672304438,
+          -19.413008332296975
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       },
       "vs_CB1": {
-        "diff_mean": 44.64618828503917,
+        "diff_mean": 45.23898354267712,
         "ci95": [
-          43.42712349210297,
-          45.86494217137172
+          44.302118310326236,
+          46.19667951747295
         ],
         "seed_diffs": [
-          44.64618828503918
+          44.64618828503918,
+          48.215396095013055,
+          42.85536624797911
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -913,19 +1671,125 @@
               "nonzero_edges": 1751
             }
           ]
+        },
+        {
+          "method": "B1+CEsel",
+          "K": 10,
+          "base_key": "B1_K10",
+          "mask_file": "masks.pt",
+          "variant": "CEsel",
+          "physical": false,
+          "codebook_rows": 3000,
+          "val_top1": 78.8957055214724,
+          "test_top1": 79.57965427185674,
+          "val_ce": 0.835635974061767,
+          "one_shot_val_top1": 71.28834355828221,
+          "repair_seconds": 10.583380937576294,
+          "nonzero_edges": 1732,
+          "active_codes": 1213,
+          "edges_per_class_min": 5,
+          "edges_per_class_max": 10,
+          "train_ce_before": 2.936021566390991,
+          "ce_steps_selected": 10000,
+          "train_ce_after": 0.26656022667884827,
+          "ce_curve": [
+            {
+              "steps": 300,
+              "train_ce": 1.9052720069885254,
+              "val_top1": 72.51533742331289,
+              "val_ce": 2.3164994716644287,
+              "nonzero_edges": 1960
+            },
+            {
+              "steps": 1000,
+              "train_ce": 1.0308789014816284,
+              "val_top1": 75.70552147239263,
+              "val_ce": 1.5046881437301636,
+              "nonzero_edges": 1960
+            },
+            {
+              "steps": 3000,
+              "train_ce": 0.5337960720062256,
+              "val_top1": 78.28220858895706,
+              "val_ce": 1.0162042379379272,
+              "nonzero_edges": 1950
+            },
+            {
+              "steps": 10000,
+              "train_ce": 0.26656022667884827,
+              "val_top1": 78.8957055214724,
+              "val_ce": 0.8356359004974365,
+              "nonzero_edges": 1732
+            }
+          ]
+        },
+        {
+          "method": "B1+CEsel",
+          "K": 10,
+          "base_key": "B1_K10",
+          "mask_file": "masks.pt",
+          "variant": "CEsel",
+          "physical": false,
+          "codebook_rows": 3000,
+          "val_top1": 80.61349693251533,
+          "test_top1": 80.46262902624052,
+          "val_ce": 0.7549898587281302,
+          "one_shot_val_top1": 72.63803680981596,
+          "repair_seconds": 10.606629848480225,
+          "nonzero_edges": 1734,
+          "active_codes": 1253,
+          "edges_per_class_min": 4,
+          "edges_per_class_max": 10,
+          "train_ce_before": 2.8385260105133057,
+          "ce_steps_selected": 10000,
+          "train_ce_after": 0.25644177198410034,
+          "ce_curve": [
+            {
+              "steps": 300,
+              "train_ce": 1.8065402507781982,
+              "val_top1": 73.9877300613497,
+              "val_ce": 2.274113178253174,
+              "nonzero_edges": 1960
+            },
+            {
+              "steps": 1000,
+              "train_ce": 0.9637682437896729,
+              "val_top1": 76.07361963190185,
+              "val_ce": 1.4692238569259644,
+              "nonzero_edges": 1959
+            },
+            {
+              "steps": 3000,
+              "train_ce": 0.5039535760879517,
+              "val_top1": 78.52760736196319,
+              "val_ce": 0.975055992603302,
+              "nonzero_edges": 1951
+            },
+            {
+              "steps": 10000,
+              "train_ce": 0.25644177198410034,
+              "val_top1": 80.61349693251533,
+              "val_ce": 0.7549898028373718,
+              "nonzero_edges": 1734
+            }
+          ]
         }
       ],
       "vs_one_shot": {
-        "diff_mean": 7.499067280189031,
+        "diff_mean": 7.3000870538490235,
         "ci95": [
-          6.703146374829001,
-          8.29498818554906
+          6.728018903121502,
+          7.868009783194463
         ],
         "seed_diffs": [
-          7.499067280189031
+          7.499067280189031,
+          7.200596940679027,
+          7.2005969406790165
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -982,47 +1846,161 @@
               "nonzero_edges": 1574
             }
           ]
+        },
+        {
+          "method": "B1+phys+CEsel",
+          "K": 10,
+          "base_key": "B1_K10",
+          "mask_file": "masks.pt",
+          "variant": "phys+CEsel",
+          "physical": true,
+          "codebook_rows": 1315,
+          "val_top1": 80.12269938650307,
+          "test_top1": 79.57965427185674,
+          "val_ce": 0.8374307313235009,
+          "one_shot_val_top1": 71.28834355828221,
+          "repair_seconds": 5.990463495254517,
+          "nonzero_edges": 1553,
+          "active_codes": 1125,
+          "edges_per_class_min": 5,
+          "edges_per_class_max": 10,
+          "train_ce_before": 1.6990373134613037,
+          "ce_steps_selected": 10000,
+          "train_ce_after": 0.21682977676391602,
+          "ce_curve": [
+            {
+              "steps": 300,
+              "train_ce": 0.9683017134666443,
+              "val_top1": 75.21472392638037,
+              "val_ce": 1.4284170866012573,
+              "nonzero_edges": 1960
+            },
+            {
+              "steps": 1000,
+              "train_ce": 0.5724076628684998,
+              "val_top1": 79.2638036809816,
+              "val_ce": 1.0366326570510864,
+              "nonzero_edges": 1936
+            },
+            {
+              "steps": 3000,
+              "train_ce": 0.3457583487033844,
+              "val_top1": 79.2638036809816,
+              "val_ce": 0.8291982412338257,
+              "nonzero_edges": 1872
+            },
+            {
+              "steps": 10000,
+              "train_ce": 0.21682977676391602,
+              "val_top1": 80.12269938650307,
+              "val_ce": 0.8374306559562683,
+              "nonzero_edges": 1553
+            }
+          ]
+        },
+        {
+          "method": "B1+phys+CEsel",
+          "K": 10,
+          "base_key": "B1_K10",
+          "mask_file": "masks.pt",
+          "variant": "phys+CEsel",
+          "physical": true,
+          "codebook_rows": 1355,
+          "val_top1": 80.61349693251533,
+          "test_top1": 80.43775649794802,
+          "val_ce": 0.7925660368199008,
+          "one_shot_val_top1": 72.63803680981596,
+          "repair_seconds": 5.973381042480469,
+          "nonzero_edges": 1865,
+          "active_codes": 1313,
+          "edges_per_class_min": 5,
+          "edges_per_class_max": 10,
+          "train_ce_before": 1.643444538116455,
+          "ce_steps_selected": 3000,
+          "train_ce_after": 0.3337373435497284,
+          "ce_curve": [
+            {
+              "steps": 300,
+              "train_ce": 0.9248874187469482,
+              "val_top1": 76.07361963190185,
+              "val_ce": 1.4074251651763916,
+              "nonzero_edges": 1960
+            },
+            {
+              "steps": 1000,
+              "train_ce": 0.5456573367118835,
+              "val_top1": 78.28220858895706,
+              "val_ce": 1.0103198289871216,
+              "nonzero_edges": 1933
+            },
+            {
+              "steps": 3000,
+              "train_ce": 0.3337373435497284,
+              "val_top1": 80.61349693251533,
+              "val_ce": 0.7925660014152527,
+              "nonzero_edges": 1865
+            },
+            {
+              "steps": 10000,
+              "train_ce": 0.20439670979976654,
+              "val_top1": 80.61349693251533,
+              "val_ce": 0.8007780313491821,
+              "nonzero_edges": 1527
+            }
+          ]
         }
       ],
       "vs_one_shot": {
-        "diff_mean": 7.138415619947767,
+        "diff_mean": 7.171578991004434,
         "ci95": [
-          6.305185922148987,
-          7.97164531774655
+          6.599510840276915,
+          7.743647141731956
         ],
         "seed_diffs": [
-          7.138415619947769
+          7.138415619947769,
+          7.200596940679027,
+          7.175724412386519
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       },
       "vs_BUD_B1_K10_E145": {
-        "diff_mean": -9.202835468225345,
+        "diff_mean": -8.589313103676988,
         "ci95": [
-          -9.961447581146624,
-          -8.469095883596568
+          -9.128217883347842,
+          -8.058699166770303
         ],
         "seed_diffs": [
-          -9.202835468225345
+          -9.202835468225345,
+          -9.078472826762841,
+          -7.486631016042777
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       },
       "vs_dense": {
-        "diff_mean": -9.37694316627285,
+        "diff_mean": -9.090909090909092,
         "ci95": [
-          -10.16042780748663,
-          -8.605894789205323
+          -9.683704348547032,
+          -8.502155619118687
         ],
         "seed_diffs": [
-          -9.376943166272856
+          -9.376943166272856,
+          -9.352070637980347,
+          -8.543713468474067
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       }
@@ -1198,47 +2176,399 @@
           ],
           "train_seconds": 11.780941486358643,
           "code_change_mean_cosine": 1.0
+        },
+        {
+          "method": "B1+phys+rtH",
+          "K": 10,
+          "base_key": "B1_K10",
+          "mask_file": "masks.pt",
+          "variant": "phys+rtH",
+          "physical": true,
+          "codebook_rows": 1315,
+          "val_top1": 79.6319018404908,
+          "test_top1": 78.5598806118642,
+          "val_ce": 1.0986330236334592,
+          "one_shot_val_top1": 71.28834355828221,
+          "repair_seconds": 12.039429187774658,
+          "nonzero_edges": 1934,
+          "active_codes": 1306,
+          "edges_per_class_min": 8,
+          "edges_per_class_max": 10,
+          "best_epoch": 79,
+          "epochs": 145,
+          "train_codes": false,
+          "val_curve": [
+            72.63803680981596,
+            72.63803680981596,
+            72.76073619631902,
+            72.76073619631902,
+            73.12883435582822,
+            73.37423312883435,
+            73.61963190184049,
+            74.11042944785277,
+            74.47852760736197,
+            75.0920245398773,
+            75.0920245398773,
+            75.95092024539876,
+            75.95092024539876,
+            76.07361963190185,
+            76.44171779141105,
+            76.68711656441718,
+            76.56441717791411,
+            76.80981595092024,
+            77.17791411042944,
+            77.30061349693251,
+            77.54601226993864,
+            77.79141104294479,
+            77.91411042944786,
+            77.91411042944786,
+            77.66871165644172,
+            77.79141104294479,
+            77.91411042944786,
+            78.15950920245399,
+            78.15950920245399,
+            78.03680981595093,
+            78.28220858895706,
+            78.28220858895706,
+            78.40490797546012,
+            78.52760736196319,
+            78.52760736196319,
+            78.52760736196319,
+            78.52760736196319,
+            78.65030674846626,
+            78.65030674846626,
+            78.77300613496932,
+            79.01840490797547,
+            79.01840490797547,
+            78.8957055214724,
+            78.77300613496932,
+            79.14110429447852,
+            79.14110429447852,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.2638036809816,
+            79.14110429447852,
+            79.2638036809816,
+            79.2638036809816,
+            79.38650306748465,
+            79.2638036809816,
+            79.14110429447852,
+            79.14110429447852,
+            79.14110429447852,
+            79.2638036809816,
+            79.38650306748465,
+            79.2638036809816,
+            79.2638036809816,
+            79.38650306748465,
+            79.2638036809816,
+            79.2638036809816,
+            79.38650306748465,
+            79.50920245398773,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.50920245398773,
+            79.50920245398773,
+            79.6319018404908,
+            79.50920245398773,
+            79.50920245398773,
+            79.50920245398773,
+            79.6319018404908,
+            79.38650306748465,
+            79.6319018404908,
+            79.50920245398773,
+            79.50920245398773,
+            79.50920245398773,
+            79.50920245398773,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.2638036809816,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816
+          ],
+          "train_seconds": 11.46115231513977,
+          "code_change_mean_cosine": 1.0
+        },
+        {
+          "method": "B1+phys+rtH",
+          "K": 10,
+          "base_key": "B1_K10",
+          "mask_file": "masks.pt",
+          "variant": "phys+rtH",
+          "physical": true,
+          "codebook_rows": 1355,
+          "val_top1": 79.2638036809816,
+          "test_top1": 79.75376196990423,
+          "val_ce": 1.0768462873144562,
+          "one_shot_val_top1": 72.63803680981596,
+          "repair_seconds": 12.225020170211792,
+          "nonzero_edges": 1927,
+          "active_codes": 1340,
+          "edges_per_class_min": 8,
+          "edges_per_class_max": 10,
+          "best_epoch": 87,
+          "epochs": 145,
+          "train_codes": false,
+          "val_curve": [
+            73.37423312883435,
+            73.37423312883435,
+            73.25153374233129,
+            73.74233128834355,
+            74.23312883435584,
+            74.3558282208589,
+            74.84662576687117,
+            75.0920245398773,
+            75.4601226993865,
+            75.8282208588957,
+            76.31901840490798,
+            76.31901840490798,
+            76.44171779141105,
+            76.44171779141105,
+            76.31901840490798,
+            76.68711656441718,
+            77.05521472392638,
+            77.05521472392638,
+            77.05521472392638,
+            77.30061349693251,
+            77.17791411042944,
+            77.42331288343559,
+            77.42331288343559,
+            77.54601226993864,
+            77.30061349693251,
+            76.93251533742331,
+            77.05521472392638,
+            77.30061349693251,
+            77.54601226993864,
+            77.54601226993864,
+            77.79141104294479,
+            77.79141104294479,
+            78.03680981595093,
+            78.03680981595093,
+            78.03680981595093,
+            78.15950920245399,
+            78.28220858895706,
+            78.28220858895706,
+            78.40490797546012,
+            78.52760736196319,
+            78.52760736196319,
+            78.40490797546012,
+            78.40490797546012,
+            78.40490797546012,
+            78.28220858895706,
+            78.40490797546012,
+            78.15950920245399,
+            78.28220858895706,
+            78.28220858895706,
+            78.65030674846626,
+            78.65030674846626,
+            78.8957055214724,
+            78.8957055214724,
+            78.65030674846626,
+            78.8957055214724,
+            79.14110429447852,
+            79.14110429447852,
+            79.14110429447852,
+            79.14110429447852,
+            79.01840490797547,
+            78.8957055214724,
+            78.8957055214724,
+            78.8957055214724,
+            79.01840490797547,
+            79.01840490797547,
+            78.8957055214724,
+            78.8957055214724,
+            78.8957055214724,
+            78.77300613496932,
+            78.77300613496932,
+            78.77300613496932,
+            78.77300613496932,
+            78.8957055214724,
+            78.77300613496932,
+            78.77300613496932,
+            78.77300613496932,
+            78.77300613496932,
+            78.77300613496932,
+            78.77300613496932,
+            78.8957055214724,
+            78.8957055214724,
+            79.01840490797547,
+            78.8957055214724,
+            79.14110429447852,
+            79.01840490797547,
+            79.01840490797547,
+            78.8957055214724,
+            79.2638036809816,
+            79.2638036809816,
+            79.14110429447852,
+            79.2638036809816,
+            79.14110429447852,
+            79.14110429447852,
+            79.14110429447852,
+            79.14110429447852,
+            79.14110429447852,
+            79.14110429447852,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547
+          ],
+          "train_seconds": 11.760747194290161,
+          "code_change_mean_cosine": 1.0
         }
       ],
       "vs_one_shot": {
-        "diff_mean": 6.728018903121502,
+        "diff_mean": 6.466857356050243,
         "ci95": [
-          5.9818430543464745,
-          7.4866310160427805
+          5.961115947436058,
+          6.976744186046512
         ],
         "seed_diffs": [
-          6.728018903121502
+          6.728018903121502,
+          6.180823280686488,
+          6.491729884342734
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       },
       "vs_BUD_B1_K10_E145": {
-        "diff_mean": -9.613232185051611,
+        "diff_mean": -9.294034738631183,
         "ci95": [
-          -10.371844297972888,
-          -8.85462007213033
+          -9.853666625212455,
+          -8.726112009285744
         ],
         "seed_diffs": [
-          -9.613232185051611
+          -9.613232185051611,
+          -10.09824648675538,
+          -8.170625544086562
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       },
       "vs_dense": {
-        "diff_mean": -9.787339883099117,
+        "diff_mean": -9.795630725863285,
         "ci95": [
-          -10.558388260166646,
-          -9.04116403432409
+          -10.413298511793725,
+          -9.19454462546118
         ],
         "seed_diffs": [
-          -9.787339883099122
+          -9.787339883099122,
+          -10.371844297972888,
+          -9.227707996517854
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       }
@@ -1414,61 +2744,417 @@
           ],
           "train_seconds": 20.04128646850586,
           "code_change_mean_cosine": 0.7101856470108032
+        },
+        {
+          "method": "B1+phys+rtCH",
+          "K": 10,
+          "base_key": "B1_K10",
+          "mask_file": "masks.pt",
+          "variant": "phys+rtCH",
+          "physical": true,
+          "codebook_rows": 1315,
+          "val_top1": 85.76687116564418,
+          "test_top1": 86.56883472204949,
+          "val_ce": 1.3922325276890135,
+          "one_shot_val_top1": 71.28834355828221,
+          "repair_seconds": 19.503207683563232,
+          "nonzero_edges": 1959,
+          "active_codes": 1315,
+          "edges_per_class_min": 9,
+          "edges_per_class_max": 10,
+          "best_epoch": 54,
+          "epochs": 145,
+          "train_codes": true,
+          "val_curve": [
+            72.63803680981596,
+            72.63803680981596,
+            75.58282208588956,
+            78.77300613496932,
+            81.1042944785276,
+            81.34969325153374,
+            82.57668711656441,
+            83.55828220858895,
+            83.8036809815951,
+            84.04907975460122,
+            84.5398773006135,
+            84.5398773006135,
+            84.29447852760737,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.9079754601227,
+            84.78527607361963,
+            84.5398773006135,
+            84.9079754601227,
+            84.78527607361963,
+            84.66257668711657,
+            84.66257668711657,
+            84.78527607361963,
+            84.41717791411043,
+            84.78527607361963,
+            85.15337423312883,
+            84.9079754601227,
+            84.9079754601227,
+            85.03067484662577,
+            85.39877300613496,
+            85.15337423312883,
+            85.39877300613496,
+            85.15337423312883,
+            85.6441717791411,
+            85.2760736196319,
+            85.39877300613496,
+            85.2760736196319,
+            85.2760736196319,
+            85.52147239263803,
+            85.6441717791411,
+            85.2760736196319,
+            85.39877300613496,
+            85.6441717791411,
+            85.2760736196319,
+            85.6441717791411,
+            85.52147239263803,
+            85.2760736196319,
+            85.39877300613496,
+            85.2760736196319,
+            85.52147239263803,
+            85.39877300613496,
+            85.52147239263803,
+            85.39877300613496,
+            85.76687116564418,
+            85.52147239263803,
+            85.52147239263803,
+            85.6441717791411,
+            85.52147239263803,
+            85.76687116564418,
+            85.76687116564418,
+            85.39877300613496,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.6441717791411,
+            85.76687116564418,
+            85.52147239263803,
+            85.39877300613496,
+            85.6441717791411,
+            85.2760736196319,
+            85.52147239263803,
+            85.2760736196319,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.2760736196319,
+            85.15337423312883,
+            85.52147239263803,
+            85.15337423312883,
+            85.2760736196319,
+            85.39877300613496,
+            85.2760736196319,
+            85.2760736196319,
+            85.2760736196319,
+            85.2760736196319,
+            85.2760736196319,
+            85.2760736196319,
+            85.2760736196319,
+            85.15337423312883,
+            85.15337423312883,
+            85.2760736196319,
+            85.39877300613496,
+            85.2760736196319,
+            85.2760736196319,
+            85.2760736196319,
+            85.03067484662577,
+            85.2760736196319,
+            85.2760736196319,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.03067484662577,
+            85.39877300613496,
+            85.15337423312883,
+            84.9079754601227,
+            85.15337423312883,
+            85.2760736196319,
+            85.39877300613496,
+            85.2760736196319,
+            85.39877300613496,
+            85.2760736196319,
+            85.15337423312883,
+            85.2760736196319,
+            85.15337423312883,
+            85.2760736196319,
+            85.2760736196319,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.2760736196319,
+            85.15337423312883,
+            85.2760736196319,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883
+          ],
+          "train_seconds": 19.455352544784546,
+          "code_change_mean_cosine": 0.7036004066467285
+        },
+        {
+          "method": "B1+phys+rtCH",
+          "K": 10,
+          "base_key": "B1_K10",
+          "mask_file": "masks.pt",
+          "variant": "phys+rtCH",
+          "physical": true,
+          "codebook_rows": 1355,
+          "val_top1": 85.6441717791411,
+          "test_top1": 86.941922646437,
+          "val_ce": 1.4598312653222996,
+          "one_shot_val_top1": 72.63803680981596,
+          "repair_seconds": 19.977731943130493,
+          "nonzero_edges": 1959,
+          "active_codes": 1355,
+          "edges_per_class_min": 9,
+          "edges_per_class_max": 10,
+          "best_epoch": 88,
+          "epochs": 145,
+          "train_codes": true,
+          "val_curve": [
+            73.37423312883435,
+            73.37423312883435,
+            76.07361963190185,
+            78.65030674846626,
+            80.24539877300614,
+            81.71779141104294,
+            81.84049079754601,
+            82.82208588957054,
+            83.31288343558282,
+            83.19018404907975,
+            83.31288343558282,
+            83.43558282208589,
+            83.06748466257669,
+            83.19018404907975,
+            83.06748466257669,
+            83.06748466257669,
+            83.55828220858895,
+            83.8036809815951,
+            83.92638036809817,
+            84.1717791411043,
+            84.1717791411043,
+            84.5398773006135,
+            84.29447852760737,
+            84.29447852760737,
+            84.1717791411043,
+            84.29447852760737,
+            84.66257668711657,
+            84.5398773006135,
+            84.5398773006135,
+            84.5398773006135,
+            84.5398773006135,
+            84.66257668711657,
+            84.41717791411043,
+            84.66257668711657,
+            84.5398773006135,
+            84.66257668711657,
+            84.5398773006135,
+            84.78527607361963,
+            84.9079754601227,
+            84.9079754601227,
+            85.03067484662577,
+            84.9079754601227,
+            85.03067484662577,
+            84.78527607361963,
+            84.78527607361963,
+            85.03067484662577,
+            84.9079754601227,
+            85.03067484662577,
+            85.2760736196319,
+            85.2760736196319,
+            85.39877300613496,
+            85.2760736196319,
+            85.2760736196319,
+            85.2760736196319,
+            85.39877300613496,
+            85.39877300613496,
+            85.2760736196319,
+            85.2760736196319,
+            85.52147239263803,
+            85.39877300613496,
+            85.2760736196319,
+            85.52147239263803,
+            85.39877300613496,
+            85.2760736196319,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.39877300613496,
+            85.52147239263803,
+            85.39877300613496,
+            85.52147239263803,
+            85.39877300613496,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.6441717791411,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.6441717791411,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.6441717791411,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.6441717791411,
+            85.6441717791411,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803
+          ],
+          "train_seconds": 19.927477598190308,
+          "code_change_mean_cosine": 0.6944865584373474
         }
       ],
       "vs_one_shot": {
-        "diff_mean": 14.500683994528044,
+        "diff_mean": 14.123450648758448,
         "ci95": [
-          13.63014550429051,
-          15.408531277204327
+          13.44774696347884,
+          14.815736019566392
         ],
         "seed_diffs": [
-          14.500683994528051
+          14.500683994528051,
+          14.189777390871782,
+          13.679890560875506
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       },
       "vs_BUD_B1_K10_E145": {
-        "diff_mean": -1.840567093645069,
+        "diff_mean": -1.6374414459229782,
         "ci95": [
-          -2.3632010943912447,
-          -1.305807735356299
+          -2.027111055838826,
+          -1.2477718360071302
         ],
         "seed_diffs": [
-          -1.8405670936450624
+          -1.8405670936450624,
+          -2.0892923765700844,
+          -0.9824648675537895
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       },
       "vs_dense": {
-        "diff_mean": -2.014674791692576,
+        "diff_mean": -2.13903743315508,
         "ci95": [
-          -2.624051734858848,
-          -1.4177341126725533
+          -2.6364879990050993,
+          -1.6456286531525943
         ],
         "seed_diffs": [
-          -2.0146747916925722
+          -2.0146747916925722,
+          -2.362890187787592,
+          -2.03954731998508
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       },
       "vs_B1+phys+rtH_K10": {
-        "diff_mean": 7.772665091406542,
+        "diff_mean": 7.656593292708205,
         "ci95": [
-          7.063798035070265,
-          8.49396841188907
+          7.146706462711935,
+          8.183061808232807
         ],
         "seed_diffs": [
-          7.77266509140655
+          7.77266509140655,
+          8.008954110185297,
+          7.188160676532773
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -1525,19 +3211,125 @@
               "nonzero_edges": 1676
             }
           ]
+        },
+        {
+          "method": "P1+CEsel",
+          "K": 10,
+          "base_key": "P1_K10",
+          "mask_file": "masks.pt",
+          "variant": "CEsel",
+          "physical": false,
+          "codebook_rows": 3000,
+          "val_top1": 81.1042944785276,
+          "test_top1": 80.51237408282552,
+          "val_ce": 0.8765114360066163,
+          "one_shot_val_top1": 74.96932515337423,
+          "repair_seconds": 10.367077350616455,
+          "nonzero_edges": 1703,
+          "active_codes": 1343,
+          "edges_per_class_min": 5,
+          "edges_per_class_max": 10,
+          "train_ce_before": 2.289198875427246,
+          "ce_steps_selected": 10000,
+          "train_ce_after": 0.2617950439453125,
+          "ce_curve": [
+            {
+              "steps": 300,
+              "train_ce": 1.320420265197754,
+              "val_top1": 76.07361963190185,
+              "val_ce": 1.7808740139007568,
+              "nonzero_edges": 1960
+            },
+            {
+              "steps": 1000,
+              "train_ce": 0.7688554525375366,
+              "val_top1": 76.56441717791411,
+              "val_ce": 1.2406846284866333,
+              "nonzero_edges": 1954
+            },
+            {
+              "steps": 3000,
+              "train_ce": 0.4574369788169861,
+              "val_top1": 79.14110429447852,
+              "val_ce": 0.9345173835754395,
+              "nonzero_edges": 1927
+            },
+            {
+              "steps": 10000,
+              "train_ce": 0.2617950439453125,
+              "val_top1": 81.1042944785276,
+              "val_ce": 0.8765114545822144,
+              "nonzero_edges": 1703
+            }
+          ]
+        },
+        {
+          "method": "P1+CEsel",
+          "K": 10,
+          "base_key": "P1_K10",
+          "mask_file": "masks.pt",
+          "variant": "CEsel",
+          "physical": false,
+          "codebook_rows": 3000,
+          "val_top1": 79.87730061349694,
+          "test_top1": 80.84815321477427,
+          "val_ce": 0.8477379727882373,
+          "one_shot_val_top1": 74.11042944785277,
+          "repair_seconds": 10.462855100631714,
+          "nonzero_edges": 1683,
+          "active_codes": 1357,
+          "edges_per_class_min": 5,
+          "edges_per_class_max": 10,
+          "train_ce_before": 2.2463512420654297,
+          "ce_steps_selected": 10000,
+          "train_ce_after": 0.2488315850496292,
+          "ce_curve": [
+            {
+              "steps": 300,
+              "train_ce": 1.2913898229599,
+              "val_top1": 75.21472392638037,
+              "val_ce": 1.7987675666809082,
+              "nonzero_edges": 1959
+            },
+            {
+              "steps": 1000,
+              "train_ce": 0.7522021532058716,
+              "val_top1": 76.93251533742331,
+              "val_ce": 1.2578394412994385,
+              "nonzero_edges": 1955
+            },
+            {
+              "steps": 3000,
+              "train_ce": 0.4453184902667999,
+              "val_top1": 79.01840490797547,
+              "val_ce": 0.9287317395210266,
+              "nonzero_edges": 1933
+            },
+            {
+              "steps": 10000,
+              "train_ce": 0.2488315850496292,
+              "val_top1": 79.87730061349694,
+              "val_ce": 0.8477379083633423,
+              "nonzero_edges": 1683
+            }
+          ]
         }
       ],
       "vs_one_shot": {
-        "diff_mean": 4.52680014923517,
+        "diff_mean": 5.156904199311859,
         "ci95": [
-          3.7681880363138918,
-          5.2854122621564485
+          4.6054595199602035,
+          5.728972350039381
         ],
         "seed_diffs": [
-          4.526800149235177
+          4.526800149235177,
+          5.397338639472704,
+          5.546573809227706
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -1594,47 +3386,161 @@
               "nonzero_edges": 1492
             }
           ]
+        },
+        {
+          "method": "P1+phys+CEsel",
+          "K": 10,
+          "base_key": "P1_K10",
+          "mask_file": "masks.pt",
+          "variant": "phys+CEsel",
+          "physical": true,
+          "codebook_rows": 1479,
+          "val_top1": 81.34969325153374,
+          "test_top1": 80.47506529038677,
+          "val_ce": 0.9114214598573341,
+          "one_shot_val_top1": 74.96932515337423,
+          "repair_seconds": 6.1140758991241455,
+          "nonzero_edges": 1522,
+          "active_codes": 1215,
+          "edges_per_class_min": 4,
+          "edges_per_class_max": 10,
+          "train_ce_before": 1.4785672426223755,
+          "ce_steps_selected": 10000,
+          "train_ce_after": 0.22106581926345825,
+          "ce_curve": [
+            {
+              "steps": 300,
+              "train_ce": 0.8200771808624268,
+              "val_top1": 76.44171779141105,
+              "val_ce": 1.27103853225708,
+              "nonzero_edges": 1960
+            },
+            {
+              "steps": 1000,
+              "train_ce": 0.5166956186294556,
+              "val_top1": 78.40490797546012,
+              "val_ce": 0.9697247743606567,
+              "nonzero_edges": 1933
+            },
+            {
+              "steps": 3000,
+              "train_ce": 0.3392210006713867,
+              "val_top1": 80.61349693251533,
+              "val_ce": 0.8169912099838257,
+              "nonzero_edges": 1851
+            },
+            {
+              "steps": 10000,
+              "train_ce": 0.22106581926345825,
+              "val_top1": 81.34969325153374,
+              "val_ce": 0.9114214181900024,
+              "nonzero_edges": 1522
+            }
+          ]
+        },
+        {
+          "method": "P1+phys+CEsel",
+          "K": 10,
+          "base_key": "P1_K10",
+          "mask_file": "masks.pt",
+          "variant": "phys+CEsel",
+          "physical": true,
+          "codebook_rows": 1497,
+          "val_top1": 80.98159509202453,
+          "test_top1": 80.58699166770302,
+          "val_ce": 0.888767380831269,
+          "one_shot_val_top1": 74.11042944785277,
+          "repair_seconds": 6.146972417831421,
+          "nonzero_edges": 1502,
+          "active_codes": 1228,
+          "edges_per_class_min": 4,
+          "edges_per_class_max": 10,
+          "train_ce_before": 1.4365789890289307,
+          "ce_steps_selected": 10000,
+          "train_ce_after": 0.20606906712055206,
+          "ce_curve": [
+            {
+              "steps": 300,
+              "train_ce": 0.7973373532295227,
+              "val_top1": 76.56441717791411,
+              "val_ce": 1.282042145729065,
+              "nonzero_edges": 1958
+            },
+            {
+              "steps": 1000,
+              "train_ce": 0.5006181001663208,
+              "val_top1": 78.65030674846626,
+              "val_ce": 0.9640771746635437,
+              "nonzero_edges": 1931
+            },
+            {
+              "steps": 3000,
+              "train_ce": 0.3249562978744507,
+              "val_top1": 80.0,
+              "val_ce": 0.8040362000465393,
+              "nonzero_edges": 1866
+            },
+            {
+              "steps": 10000,
+              "train_ce": 0.20606906712055206,
+              "val_top1": 80.98159509202453,
+              "val_ce": 0.8887673020362854,
+              "nonzero_edges": 1502
+            }
+          ]
         }
       ],
       "vs_one_shot": {
-        "diff_mean": 4.924760601915184,
+        "diff_mean": 5.1900675703685275,
         "ci95": [
-          4.215893545578908,
-          5.62119139410521
+          4.634581105169341,
+          5.753844878331883
         ],
         "seed_diffs": [
-          4.924760601915191
+          4.924760601915191,
+          5.360029847033953,
+          5.285412262156452
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       },
       "vs_dense": {
-        "diff_mean": -8.54371346847407,
+        "diff_mean": -8.464950462214485,
         "ci95": [
-          -9.3147618455416,
-          -7.809973883845293
+          -9.08272188367948,
+          -7.863760726277828
         ],
         "seed_diffs": [
-          -8.543713468474067
+          -8.543713468474067,
+          -8.456659619450313,
+          -8.394478298719065
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       },
       "vs_B1+phys+CEsel_K10": {
-        "diff_mean": 0.8332296977987812,
+        "diff_mean": 0.6259586286946069,
         "ci95": [
-          0.12436264146250466,
-          1.5545330182813084
+          0.16996227666542316,
+          1.0736641379596237
         ],
         "seed_diffs": [
-          0.8332296977987874
+          0.8332296977987874,
+          0.8954110185300346,
+          0.14923516975500206
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -1810,47 +3716,399 @@
           ],
           "train_seconds": 11.893510103225708,
           "code_change_mean_cosine": 1.0
+        },
+        {
+          "method": "P1+phys+rtH",
+          "K": 10,
+          "base_key": "P1_K10",
+          "mask_file": "masks.pt",
+          "variant": "phys+rtH",
+          "physical": true,
+          "codebook_rows": 1479,
+          "val_top1": 79.2638036809816,
+          "test_top1": 80.00248725282924,
+          "val_ce": 1.0850950623057112,
+          "one_shot_val_top1": 74.96932515337423,
+          "repair_seconds": 11.911977291107178,
+          "nonzero_edges": 1886,
+          "active_codes": 1451,
+          "edges_per_class_min": 7,
+          "edges_per_class_max": 10,
+          "best_epoch": 113,
+          "epochs": 145,
+          "train_codes": false,
+          "val_curve": [
+            75.8282208588957,
+            75.8282208588957,
+            76.07361963190185,
+            76.31901840490798,
+            76.44171779141105,
+            76.31901840490798,
+            76.68711656441718,
+            76.31901840490798,
+            76.68711656441718,
+            76.68711656441718,
+            76.68711656441718,
+            77.17791411042944,
+            77.05521472392638,
+            77.30061349693251,
+            76.93251533742331,
+            76.93251533742331,
+            76.80981595092024,
+            76.68711656441718,
+            76.93251533742331,
+            76.93251533742331,
+            77.30061349693251,
+            77.17791411042944,
+            77.54601226993864,
+            77.42331288343559,
+            77.54601226993864,
+            77.79141104294479,
+            77.66871165644172,
+            77.79141104294479,
+            77.66871165644172,
+            77.79141104294479,
+            77.91411042944786,
+            77.91411042944786,
+            77.79141104294479,
+            77.79141104294479,
+            77.91411042944786,
+            78.03680981595093,
+            78.15950920245399,
+            78.28220858895706,
+            78.52760736196319,
+            78.77300613496932,
+            78.77300613496932,
+            78.77300613496932,
+            78.8957055214724,
+            78.8957055214724,
+            78.52760736196319,
+            78.52760736196319,
+            78.40490797546012,
+            78.40490797546012,
+            78.40490797546012,
+            78.52760736196319,
+            78.40490797546012,
+            78.52760736196319,
+            78.52760736196319,
+            78.52760736196319,
+            78.52760736196319,
+            78.40490797546012,
+            78.52760736196319,
+            78.52760736196319,
+            78.65030674846626,
+            78.65030674846626,
+            78.65030674846626,
+            78.65030674846626,
+            78.77300613496932,
+            78.77300613496932,
+            78.77300613496932,
+            78.65030674846626,
+            78.77300613496932,
+            78.8957055214724,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.14110429447852,
+            79.14110429447852,
+            79.14110429447852,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.14110429447852,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.14110429447852,
+            79.14110429447852,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.01840490797547,
+            79.14110429447852,
+            79.14110429447852,
+            79.14110429447852,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816
+          ],
+          "train_seconds": 11.863815546035767,
+          "code_change_mean_cosine": 1.0
+        },
+        {
+          "method": "P1+phys+rtH",
+          "K": 10,
+          "base_key": "P1_K10",
+          "mask_file": "masks.pt",
+          "variant": "phys+rtH",
+          "physical": true,
+          "codebook_rows": 1497,
+          "val_top1": 79.87730061349694,
+          "test_top1": 80.02735978112176,
+          "val_ce": 1.1135227312082532,
+          "one_shot_val_top1": 74.11042944785277,
+          "repair_seconds": 11.886595487594604,
+          "nonzero_edges": 1921,
+          "active_codes": 1487,
+          "edges_per_class_min": 7,
+          "edges_per_class_max": 10,
+          "best_epoch": 64,
+          "epochs": 145,
+          "train_codes": false,
+          "val_curve": [
+            75.33742331288343,
+            75.33742331288343,
+            75.33742331288343,
+            75.33742331288343,
+            75.33742331288343,
+            75.8282208588957,
+            75.8282208588957,
+            75.95092024539876,
+            76.31901840490798,
+            76.44171779141105,
+            76.56441717791411,
+            76.68711656441718,
+            76.93251533742331,
+            76.93251533742331,
+            76.93251533742331,
+            77.30061349693251,
+            77.66871165644172,
+            77.79141104294479,
+            78.03680981595093,
+            78.28220858895706,
+            78.65030674846626,
+            78.8957055214724,
+            78.8957055214724,
+            78.8957055214724,
+            78.8957055214724,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.50920245398773,
+            79.2638036809816,
+            79.38650306748465,
+            79.2638036809816,
+            79.38650306748465,
+            79.38650306748465,
+            79.50920245398773,
+            79.50920245398773,
+            79.75460122699386,
+            79.6319018404908,
+            79.2638036809816,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.6319018404908,
+            79.2638036809816,
+            79.38650306748465,
+            79.38650306748465,
+            79.2638036809816,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.14110429447852,
+            79.14110429447852,
+            79.14110429447852,
+            79.14110429447852,
+            79.14110429447852,
+            79.14110429447852,
+            79.2638036809816,
+            79.50920245398773,
+            79.75460122699386,
+            79.6319018404908,
+            79.87730061349694,
+            79.75460122699386,
+            79.75460122699386,
+            79.6319018404908,
+            79.50920245398773,
+            79.50920245398773,
+            79.50920245398773,
+            79.50920245398773,
+            79.50920245398773,
+            79.50920245398773,
+            79.50920245398773,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.38650306748465,
+            79.2638036809816,
+            79.2638036809816,
+            79.2638036809816,
+            79.38650306748465,
+            79.50920245398773,
+            79.50920245398773,
+            79.38650306748465,
+            79.6319018404908,
+            79.50920245398773,
+            79.50920245398773,
+            79.75460122699386,
+            79.75460122699386,
+            79.75460122699386,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.75460122699386,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.87730061349694,
+            79.87730061349694,
+            79.87730061349694,
+            79.87730061349694,
+            79.87730061349694,
+            79.87730061349694,
+            79.87730061349694,
+            79.87730061349694,
+            79.87730061349694,
+            79.75460122699386,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908,
+            79.6319018404908
+          ],
+          "train_seconds": 11.839993476867676,
+          "code_change_mean_cosine": 1.0
         }
       ],
       "vs_one_shot": {
-        "diff_mean": 4.52680014923517,
+        "diff_mean": 4.713344111428927,
         "ci95": [
-          3.842805621191394,
-          5.185922148986444
+          4.211748124196825,
+          5.219189155577664
         ],
         "seed_diffs": [
-          4.526800149235177
+          4.526800149235177,
+          4.8874518094764285,
+          4.725780375575184
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       },
       "vs_dense": {
         "diff_mean": -8.941673921154084,
         "ci95": [
-          -9.700286034075365,
-          -8.195498072379058
+          -9.580068813994945,
+          -8.319860713841564
         ],
         "seed_diffs": [
-          -8.94167392115408
+          -8.94167392115408,
+          -8.929237657007839,
+          -8.954110185300335
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       },
       "vs_B1+phys+rtH_K10": {
-        "diff_mean": 0.8456659619450317,
+        "diff_mean": 0.8539568047091989,
         "ci95": [
-          0.17410769804750653,
-          1.5047879616963065
+          0.42283298097251604,
+          1.2850806284458818
         ],
         "seed_diffs": [
-          0.8456659619450413
+          0.8456659619450413,
+          1.4426066409650495,
+          0.2735978112175186
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -2026,61 +4284,417 @@
           ],
           "train_seconds": 21.430192947387695,
           "code_change_mean_cosine": 0.693660318851471
+        },
+        {
+          "method": "P1+phys+rtCH",
+          "K": 10,
+          "base_key": "P1_K10",
+          "mask_file": "masks.pt",
+          "variant": "phys+rtCH",
+          "physical": true,
+          "codebook_rows": 1479,
+          "val_top1": 85.6441717791411,
+          "test_top1": 86.48178087302574,
+          "val_ce": 1.3955058622051544,
+          "one_shot_val_top1": 74.96932515337423,
+          "repair_seconds": 21.45175552368164,
+          "nonzero_edges": 1957,
+          "active_codes": 1479,
+          "edges_per_class_min": 9,
+          "edges_per_class_max": 10,
+          "best_epoch": 49,
+          "epochs": 145,
+          "train_codes": true,
+          "val_curve": [
+            75.8282208588957,
+            75.8282208588957,
+            77.05521472392638,
+            78.28220858895706,
+            79.6319018404908,
+            81.34969325153374,
+            82.08588957055215,
+            82.69938650306749,
+            83.55828220858895,
+            83.31288343558282,
+            83.68098159509204,
+            83.68098159509204,
+            83.92638036809817,
+            84.1717791411043,
+            84.41717791411043,
+            84.29447852760737,
+            84.29447852760737,
+            84.41717791411043,
+            84.29447852760737,
+            84.1717791411043,
+            84.9079754601227,
+            84.66257668711657,
+            84.78527607361963,
+            84.9079754601227,
+            84.9079754601227,
+            84.9079754601227,
+            84.66257668711657,
+            85.2760736196319,
+            85.15337423312883,
+            85.2760736196319,
+            85.03067484662577,
+            85.2760736196319,
+            85.03067484662577,
+            85.15337423312883,
+            85.15337423312883,
+            85.15337423312883,
+            85.2760736196319,
+            85.15337423312883,
+            85.2760736196319,
+            85.03067484662577,
+            85.2760736196319,
+            85.2760736196319,
+            85.52147239263803,
+            85.52147239263803,
+            85.2760736196319,
+            85.39877300613496,
+            85.2760736196319,
+            85.52147239263803,
+            85.52147239263803,
+            85.6441717791411,
+            85.2760736196319,
+            85.39877300613496,
+            85.2760736196319,
+            85.52147239263803,
+            85.15337423312883,
+            85.6441717791411,
+            85.39877300613496,
+            85.39877300613496,
+            85.15337423312883,
+            85.52147239263803,
+            85.39877300613496,
+            85.39877300613496,
+            85.2760736196319,
+            85.6441717791411,
+            85.15337423312883,
+            85.39877300613496,
+            85.2760736196319,
+            85.52147239263803,
+            85.15337423312883,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.2760736196319,
+            85.52147239263803,
+            85.2760736196319,
+            85.2760736196319,
+            85.39877300613496,
+            85.2760736196319,
+            85.2760736196319,
+            85.2760736196319,
+            85.39877300613496,
+            85.15337423312883,
+            85.2760736196319,
+            85.52147239263803,
+            85.52147239263803,
+            85.52147239263803,
+            85.39877300613496,
+            85.52147239263803,
+            85.52147239263803,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.52147239263803,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.52147239263803,
+            85.52147239263803,
+            85.2760736196319,
+            85.39877300613496,
+            85.52147239263803,
+            85.2760736196319,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.52147239263803,
+            85.2760736196319,
+            85.2760736196319,
+            85.39877300613496,
+            85.52147239263803,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.2760736196319,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496
+          ],
+          "train_seconds": 21.400768041610718,
+          "code_change_mean_cosine": 0.713994026184082
+        },
+        {
+          "method": "P1+phys+rtCH",
+          "K": 10,
+          "base_key": "P1_K10",
+          "mask_file": "masks.pt",
+          "variant": "phys+rtCH",
+          "physical": true,
+          "codebook_rows": 1497,
+          "val_top1": 86.0122699386503,
+          "test_top1": 86.543962193757,
+          "val_ce": 1.4760718189663475,
+          "one_shot_val_top1": 74.11042944785277,
+          "repair_seconds": 21.682314157485962,
+          "nonzero_edges": 1951,
+          "active_codes": 1497,
+          "edges_per_class_min": 7,
+          "edges_per_class_max": 10,
+          "best_epoch": 97,
+          "epochs": 145,
+          "train_codes": true,
+          "val_curve": [
+            75.33742331288343,
+            75.33742331288343,
+            75.95092024539876,
+            77.54601226993864,
+            78.8957055214724,
+            80.85889570552148,
+            83.19018404907975,
+            82.94478527607362,
+            83.92638036809817,
+            83.8036809815951,
+            84.66257668711657,
+            84.5398773006135,
+            84.41717791411043,
+            84.41717791411043,
+            84.5398773006135,
+            84.29447852760737,
+            84.66257668711657,
+            84.04907975460122,
+            84.66257668711657,
+            84.66257668711657,
+            84.78527607361963,
+            84.78527607361963,
+            85.03067484662577,
+            84.78527607361963,
+            84.66257668711657,
+            84.78527607361963,
+            85.15337423312883,
+            85.15337423312883,
+            84.78527607361963,
+            85.03067484662577,
+            85.03067484662577,
+            85.52147239263803,
+            85.03067484662577,
+            85.52147239263803,
+            85.52147239263803,
+            85.39877300613496,
+            85.52147239263803,
+            85.15337423312883,
+            85.15337423312883,
+            85.39877300613496,
+            85.88957055214725,
+            85.52147239263803,
+            85.52147239263803,
+            85.76687116564418,
+            85.39877300613496,
+            85.52147239263803,
+            85.52147239263803,
+            85.6441717791411,
+            85.6441717791411,
+            85.52147239263803,
+            85.76687116564418,
+            85.52147239263803,
+            85.76687116564418,
+            85.76687116564418,
+            85.52147239263803,
+            85.76687116564418,
+            85.6441717791411,
+            85.6441717791411,
+            85.6441717791411,
+            85.52147239263803,
+            85.6441717791411,
+            85.39877300613496,
+            85.52147239263803,
+            85.39877300613496,
+            85.39877300613496,
+            85.52147239263803,
+            85.52147239263803,
+            85.39877300613496,
+            85.39877300613496,
+            85.52147239263803,
+            85.6441717791411,
+            85.52147239263803,
+            85.52147239263803,
+            85.6441717791411,
+            85.6441717791411,
+            85.52147239263803,
+            85.52147239263803,
+            85.6441717791411,
+            85.39877300613496,
+            85.6441717791411,
+            85.76687116564418,
+            85.52147239263803,
+            85.76687116564418,
+            85.52147239263803,
+            85.52147239263803,
+            85.76687116564418,
+            85.52147239263803,
+            85.6441717791411,
+            85.76687116564418,
+            85.88957055214725,
+            85.76687116564418,
+            85.76687116564418,
+            85.76687116564418,
+            85.76687116564418,
+            85.88957055214725,
+            85.76687116564418,
+            85.88957055214725,
+            86.0122699386503,
+            85.76687116564418,
+            85.88957055214725,
+            85.88957055214725,
+            86.0122699386503,
+            86.0122699386503,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            86.0122699386503,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            86.0122699386503,
+            86.0122699386503,
+            86.0122699386503,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725,
+            85.88957055214725
+          ],
+          "train_seconds": 21.634424209594727,
+          "code_change_mean_cosine": 0.696699857711792
         }
       ],
       "vs_one_shot": {
-        "diff_mean": 11.254819052356673,
+        "diff_mean": 11.287982423413341,
         "ci95": [
-          10.446461882850391,
-          12.075612486009204
+          10.612278738133732,
+          11.971976951457117
         ],
         "seed_diffs": [
-          11.25481905235668
+          11.25481905235668,
+          11.36674542967292,
+          11.242382788210426
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       },
       "vs_dense": {
-        "diff_mean": -2.2136550180325827,
+        "diff_mean": -2.3670356091696725,
         "ci95": [
-          -2.823031961198856,
-          -1.6042780748663104
+          -2.876922439165942,
+          -1.8488579364092361
         ],
         "seed_diffs": [
-          -2.2136550180325787
+          -2.2136550180325787,
+          -2.4499440368113468,
+          -2.437507772665093
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       },
       "vs_P1+phys+rtH_K10": {
-        "diff_mean": 6.728018903121502,
+        "diff_mean": 6.574638311984414,
         "ci95": [
-          6.0440243750777265,
-          7.436885959457778
+          6.048169796459811,
+          7.121833934419435
         ],
         "seed_diffs": [
-          6.728018903121502
+          6.728018903121502,
+          6.479293620196492,
+          6.516602412635242
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       },
       "vs_B1+phys+rtCH_K10": {
-        "diff_mean": -0.19898022634000745,
+        "diff_mean": -0.22799817601459182,
         "ci95": [
-          -0.6715582638975252,
-          0.28603407536376074
+          -0.518177672760436,
+          0.06632674211333588
         ],
         "seed_diffs": [
-          -0.19898022634000645
+          -0.19898022634000645,
+          -0.0870538490237549,
+          -0.3979604526800129
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "no meaningful loss"
       }
@@ -2137,19 +4751,125 @@
               "nonzero_edges": 675
             }
           ]
+        },
+        {
+          "method": "random+CEsel",
+          "K": 10,
+          "base_key": "random_K10",
+          "mask_file": "masks.pt",
+          "variant": "CEsel",
+          "physical": false,
+          "codebook_rows": 3000,
+          "val_top1": 7.361963190184049,
+          "test_top1": 7.113543091655266,
+          "val_ce": 4.977139494387839,
+          "one_shot_val_top1": 3.92638036809816,
+          "repair_seconds": 10.372796297073364,
+          "nonzero_edges": 725,
+          "active_codes": 631,
+          "edges_per_class_min": 1,
+          "edges_per_class_max": 8,
+          "train_ce_before": 5.241399765014648,
+          "ce_steps_selected": 10000,
+          "train_ce_after": 4.908602714538574,
+          "ce_curve": [
+            {
+              "steps": 300,
+              "train_ce": 5.2011260986328125,
+              "val_top1": 3.92638036809816,
+              "val_ce": 5.203097343444824,
+              "nonzero_edges": 673
+            },
+            {
+              "steps": 1000,
+              "train_ce": 5.129522800445557,
+              "val_top1": 4.171779141104294,
+              "val_ce": 5.137876033782959,
+              "nonzero_edges": 691
+            },
+            {
+              "steps": 3000,
+              "train_ce": 5.007191181182861,
+              "val_top1": 5.276073619631902,
+              "val_ce": 5.038490295410156,
+              "nonzero_edges": 715
+            },
+            {
+              "steps": 10000,
+              "train_ce": 4.908602714538574,
+              "val_top1": 7.361963190184049,
+              "val_ce": 4.977139472961426,
+              "nonzero_edges": 725
+            }
+          ]
+        },
+        {
+          "method": "random+CEsel",
+          "K": 10,
+          "base_key": "random_K10",
+          "mask_file": "masks.pt",
+          "variant": "CEsel",
+          "physical": false,
+          "codebook_rows": 3000,
+          "val_top1": 8.098159509202455,
+          "test_top1": 8.717821166521576,
+          "val_ce": 4.885210691091996,
+          "one_shot_val_top1": 6.748466257668712,
+          "repair_seconds": 10.435251951217651,
+          "nonzero_edges": 664,
+          "active_codes": 580,
+          "edges_per_class_min": 0,
+          "edges_per_class_max": 8,
+          "train_ce_before": 5.22784948348999,
+          "ce_steps_selected": 10000,
+          "train_ce_after": 4.856348514556885,
+          "ce_curve": [
+            {
+              "steps": 300,
+              "train_ce": 5.176529884338379,
+              "val_top1": 6.38036809815951,
+              "val_ce": 5.1769633293151855,
+              "nonzero_edges": 616
+            },
+            {
+              "steps": 1000,
+              "train_ce": 5.080601215362549,
+              "val_top1": 6.5030674846625764,
+              "val_ce": 5.0822906494140625,
+              "nonzero_edges": 628
+            },
+            {
+              "steps": 3000,
+              "train_ce": 4.936685562133789,
+              "val_top1": 7.2392638036809815,
+              "val_ce": 4.9481120109558105,
+              "nonzero_edges": 645
+            },
+            {
+              "steps": 10000,
+              "train_ce": 4.856348514556885,
+              "val_top1": 8.098159509202455,
+              "val_ce": 4.885210990905762,
+              "nonzero_edges": 664
+            }
+          ]
         }
       ],
       "vs_one_shot": {
-        "diff_mean": 1.8778758860838205,
+        "diff_mean": 2.101728640716329,
         "ci95": [
-          1.492351697550056,
-          2.275836338763835
+          1.8571487791734027,
+          2.350453923641338
         ],
         "seed_diffs": [
-          1.8778758860838205
+          1.8778758860838205,
+          2.67379679144385,
+          1.7535132446213144
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -2206,33 +4926,143 @@
               "nonzero_edges": 687
             }
           ]
+        },
+        {
+          "method": "random+phys+CEsel",
+          "K": 10,
+          "base_key": "random_K10",
+          "mask_file": "masks.pt",
+          "variant": "phys+CEsel",
+          "physical": true,
+          "codebook_rows": 1451,
+          "val_top1": 7.6073619631901845,
+          "test_top1": 7.337395846287775,
+          "val_ce": 4.953075882363058,
+          "one_shot_val_top1": 3.92638036809816,
+          "repair_seconds": 6.090834379196167,
+          "nonzero_edges": 744,
+          "active_codes": 643,
+          "edges_per_class_min": 1,
+          "edges_per_class_max": 8,
+          "train_ce_before": 5.202428817749023,
+          "ce_steps_selected": 10000,
+          "train_ce_after": 4.869191646575928,
+          "ce_curve": [
+            {
+              "steps": 300,
+              "train_ce": 5.125833988189697,
+              "val_top1": 4.294478527607362,
+              "val_ce": 5.13660192489624,
+              "nonzero_edges": 694
+            },
+            {
+              "steps": 1000,
+              "train_ce": 5.017388820648193,
+              "val_top1": 5.030674846625767,
+              "val_ce": 5.046818256378174,
+              "nonzero_edges": 716
+            },
+            {
+              "steps": 3000,
+              "train_ce": 4.908880233764648,
+              "val_top1": 6.993865030674846,
+              "val_ce": 4.972506523132324,
+              "nonzero_edges": 738
+            },
+            {
+              "steps": 10000,
+              "train_ce": 4.869191646575928,
+              "val_top1": 7.6073619631901845,
+              "val_ce": 4.953075885772705,
+              "nonzero_edges": 744
+            }
+          ]
+        },
+        {
+          "method": "random+phys+CEsel",
+          "K": 10,
+          "base_key": "random_K10",
+          "mask_file": "masks.pt",
+          "variant": "phys+CEsel",
+          "physical": true,
+          "codebook_rows": 1422,
+          "val_top1": 9.079754601226995,
+          "test_top1": 9.003855241885338,
+          "val_ce": 4.852225179701594,
+          "one_shot_val_top1": 6.748466257668712,
+          "repair_seconds": 5.964956760406494,
+          "nonzero_edges": 688,
+          "active_codes": 599,
+          "edges_per_class_min": 1,
+          "edges_per_class_max": 8,
+          "train_ce_before": 5.178747177124023,
+          "ce_steps_selected": 10000,
+          "train_ce_after": 4.82245397567749,
+          "ce_curve": [
+            {
+              "steps": 300,
+              "train_ce": 5.082775592803955,
+              "val_top1": 6.748466257668712,
+              "val_ce": 5.0843915939331055,
+              "nonzero_edges": 654
+            },
+            {
+              "steps": 1000,
+              "train_ce": 4.953063011169434,
+              "val_top1": 6.625766871165645,
+              "val_ce": 4.958736419677734,
+              "nonzero_edges": 668
+            },
+            {
+              "steps": 3000,
+              "train_ce": 4.852312088012695,
+              "val_top1": 8.588957055214724,
+              "val_ce": 4.872689723968506,
+              "nonzero_edges": 680
+            },
+            {
+              "steps": 10000,
+              "train_ce": 4.82245397567749,
+              "val_top1": 9.079754601226995,
+              "val_ce": 4.852225303649902,
+              "nonzero_edges": 688
+            }
+          ]
         }
       ],
       "vs_one_shot": {
-        "diff_mean": 2.2260912821788335,
+        "diff_mean": 2.3877627160800894,
         "ci95": [
-          1.8156945653525682,
-          2.648924263151349
+          2.1348920117729966,
+          2.640633420387182
         ],
         "seed_diffs": [
-          2.2260912821788335
+          2.2260912821788335,
+          2.8976495460763587,
+          2.039547319985076
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       },
       "vs_dense": {
-        "diff_mean": -82.48974008207935,
+        "diff_mean": -81.35389462338846,
         "ci95": [
-          -83.33540604402437,
-          -81.6192015918418
+          -82.07934336525308,
+          -80.62844588152387
         ],
         "seed_diffs": [
-          -82.48974008207935
+          -82.48974008207935,
+          -81.59432906354931,
+          -79.97761472453675
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       }
@@ -2408,33 +5238,381 @@
           ],
           "train_seconds": 11.64126968383789,
           "code_change_mean_cosine": 1.0
+        },
+        {
+          "method": "random+phys+rtH",
+          "K": 10,
+          "base_key": "random_K10",
+          "mask_file": "masks.pt",
+          "variant": "phys+rtH",
+          "physical": true,
+          "codebook_rows": 1451,
+          "val_top1": 6.748466257668712,
+          "test_top1": 6.8523815445840075,
+          "val_ce": 5.004683752665567,
+          "one_shot_val_top1": 3.92638036809816,
+          "repair_seconds": 11.539995908737183,
+          "nonzero_edges": 702,
+          "active_codes": 616,
+          "edges_per_class_min": 0,
+          "edges_per_class_max": 8,
+          "best_epoch": 81,
+          "epochs": 145,
+          "train_codes": false,
+          "val_curve": [
+            4.171779141104294,
+            4.171779141104294,
+            4.294478527607362,
+            4.41717791411043,
+            4.662576687116564,
+            4.662576687116564,
+            4.785276073619632,
+            4.785276073619632,
+            4.785276073619632,
+            4.785276073619632,
+            4.785276073619632,
+            4.785276073619632,
+            4.9079754601226995,
+            4.9079754601226995,
+            4.9079754601226995,
+            4.9079754601226995,
+            5.030674846625767,
+            5.030674846625767,
+            5.030674846625767,
+            5.153374233128835,
+            5.276073619631902,
+            5.276073619631902,
+            5.398773006134969,
+            5.398773006134969,
+            5.644171779141105,
+            5.644171779141105,
+            5.521472392638037,
+            5.644171779141105,
+            5.644171779141105,
+            5.644171779141105,
+            5.644171779141105,
+            5.521472392638037,
+            5.644171779141105,
+            5.644171779141105,
+            5.644171779141105,
+            5.644171779141105,
+            5.766871165644172,
+            5.766871165644172,
+            5.766871165644172,
+            5.889570552147239,
+            5.889570552147239,
+            6.012269938650307,
+            6.012269938650307,
+            6.134969325153374,
+            6.257668711656442,
+            6.257668711656442,
+            6.38036809815951,
+            6.38036809815951,
+            6.38036809815951,
+            6.38036809815951,
+            6.38036809815951,
+            6.38036809815951,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.38036809815951,
+            6.38036809815951,
+            6.38036809815951,
+            6.38036809815951,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.625766871165645,
+            6.625766871165645,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.625766871165645,
+            6.5030674846625764,
+            6.625766871165645,
+            6.625766871165645,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.748466257668712,
+            6.748466257668712,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.625766871165645,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764,
+            6.5030674846625764
+          ],
+          "train_seconds": 11.493170976638794,
+          "code_change_mean_cosine": 1.0
+        },
+        {
+          "method": "random+phys+rtH",
+          "K": 10,
+          "base_key": "random_K10",
+          "mask_file": "masks.pt",
+          "variant": "phys+rtH",
+          "physical": true,
+          "codebook_rows": 1422,
+          "val_top1": 8.220858895705522,
+          "test_top1": 8.506404676035318,
+          "val_ce": 4.908327445391756,
+          "one_shot_val_top1": 6.748466257668712,
+          "repair_seconds": 11.599713325500488,
+          "nonzero_edges": 656,
+          "active_codes": 579,
+          "edges_per_class_min": 0,
+          "edges_per_class_max": 8,
+          "best_epoch": 92,
+          "epochs": 145,
+          "train_codes": false,
+          "val_curve": [
+            6.748466257668712,
+            6.748466257668712,
+            6.748466257668712,
+            6.5030674846625764,
+            6.871165644171779,
+            6.871165644171779,
+            6.871165644171779,
+            7.116564417177915,
+            7.2392638036809815,
+            7.2392638036809815,
+            7.2392638036809815,
+            7.2392638036809815,
+            7.361963190184049,
+            7.361963190184049,
+            7.2392638036809815,
+            7.2392638036809815,
+            7.2392638036809815,
+            7.2392638036809815,
+            7.2392638036809815,
+            7.116564417177915,
+            7.116564417177915,
+            6.993865030674846,
+            6.993865030674846,
+            6.993865030674846,
+            7.116564417177915,
+            7.116564417177915,
+            7.116564417177915,
+            7.116564417177915,
+            7.116564417177915,
+            7.2392638036809815,
+            7.2392638036809815,
+            7.2392638036809815,
+            7.2392638036809815,
+            7.2392638036809815,
+            7.2392638036809815,
+            7.2392638036809815,
+            7.2392638036809815,
+            7.2392638036809815,
+            7.2392638036809815,
+            7.361963190184049,
+            7.361963190184049,
+            7.361963190184049,
+            7.361963190184049,
+            7.361963190184049,
+            7.361963190184049,
+            7.361963190184049,
+            7.361963190184049,
+            7.361963190184049,
+            7.2392638036809815,
+            7.2392638036809815,
+            7.361963190184049,
+            7.361963190184049,
+            7.361963190184049,
+            7.361963190184049,
+            7.361963190184049,
+            7.484662576687116,
+            7.484662576687116,
+            7.361963190184049,
+            7.484662576687116,
+            7.484662576687116,
+            7.484662576687116,
+            7.484662576687116,
+            7.484662576687116,
+            7.484662576687116,
+            7.484662576687116,
+            7.484662576687116,
+            7.730061349693251,
+            7.85276073619632,
+            7.85276073619632,
+            7.85276073619632,
+            7.85276073619632,
+            7.85276073619632,
+            7.85276073619632,
+            7.85276073619632,
+            7.85276073619632,
+            7.975460122699387,
+            7.975460122699387,
+            7.975460122699387,
+            7.975460122699387,
+            7.975460122699387,
+            7.975460122699387,
+            8.098159509202455,
+            8.098159509202455,
+            8.098159509202455,
+            8.098159509202455,
+            8.098159509202455,
+            8.098159509202455,
+            8.098159509202455,
+            8.098159509202455,
+            8.098159509202455,
+            8.098159509202455,
+            7.975460122699387,
+            8.220858895705522,
+            8.220858895705522,
+            8.098159509202455,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522,
+            8.220858895705522
+          ],
+          "train_seconds": 11.551657676696777,
+          "code_change_mean_cosine": 1.0
         }
       ],
       "vs_one_shot": {
-        "diff_mean": 1.753513244621316,
+        "diff_mean": 1.9027484143763214,
         "ci95": [
-          1.3804253202338017,
-          2.13903743315508
+          1.6747502383617294,
+          2.1266011690088296
         ],
         "seed_diffs": [
-          1.753513244621316
+          1.753513244621316,
+          2.4126352443725905,
+          1.542096754135057
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       },
       "vs_dense": {
-        "diff_mean": -82.96231811963686,
+        "diff_mean": -81.83890892509223,
         "ci95": [
-          -83.80798408158189,
-          -82.11665215769183
+          -82.56031588110933,
+          -81.12589644737386
         ],
         "seed_diffs": [
-          -82.96231811963686
+          -82.96231811963686,
+          -82.07934336525308,
+          -80.47506529038677
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       }
@@ -2610,47 +5788,399 @@
           ],
           "train_seconds": 20.872135162353516,
           "code_change_mean_cosine": 0.13449667394161224
+        },
+        {
+          "method": "random+phys+rtCH",
+          "K": 10,
+          "base_key": "random_K10",
+          "mask_file": "masks.pt",
+          "variant": "phys+rtCH",
+          "physical": true,
+          "codebook_rows": 1451,
+          "val_top1": 82.45398773006136,
+          "test_top1": 83.85772913816689,
+          "val_ce": 1.4934947794046267,
+          "one_shot_val_top1": 3.92638036809816,
+          "repair_seconds": 21.13053321838379,
+          "nonzero_edges": 1112,
+          "active_codes": 993,
+          "edges_per_class_min": 1,
+          "edges_per_class_max": 9,
+          "best_epoch": 92,
+          "epochs": 145,
+          "train_codes": true,
+          "val_curve": [
+            4.171779141104294,
+            4.171779141104294,
+            6.748466257668712,
+            12.883435582822086,
+            25.153374233128833,
+            42.08588957055215,
+            53.987730061349694,
+            61.104294478527606,
+            65.2760736196319,
+            69.20245398773007,
+            71.04294478527608,
+            72.76073619631902,
+            75.21472392638037,
+            75.8282208588957,
+            76.1963190184049,
+            76.80981595092024,
+            77.91411042944786,
+            78.77300613496932,
+            79.2638036809816,
+            79.87730061349694,
+            79.50920245398773,
+            80.0,
+            80.12269938650307,
+            80.24539877300614,
+            80.61349693251533,
+            80.85889570552148,
+            80.98159509202453,
+            80.85889570552148,
+            80.7361963190184,
+            81.1042944785276,
+            81.47239263803681,
+            81.59509202453987,
+            81.59509202453987,
+            81.71779141104294,
+            81.47239263803681,
+            81.59509202453987,
+            81.71779141104294,
+            81.84049079754601,
+            81.47239263803681,
+            81.59509202453987,
+            81.59509202453987,
+            81.59509202453987,
+            81.59509202453987,
+            81.59509202453987,
+            81.84049079754601,
+            81.59509202453987,
+            81.71779141104294,
+            81.34969325153374,
+            81.22699386503068,
+            81.1042944785276,
+            81.22699386503068,
+            81.1042944785276,
+            81.34969325153374,
+            81.22699386503068,
+            81.22699386503068,
+            81.22699386503068,
+            81.71779141104294,
+            81.34969325153374,
+            81.22699386503068,
+            81.47239263803681,
+            81.59509202453987,
+            81.59509202453987,
+            81.59509202453987,
+            81.47239263803681,
+            81.71779141104294,
+            81.71779141104294,
+            81.71779141104294,
+            81.47239263803681,
+            81.47239263803681,
+            81.84049079754601,
+            81.96319018404908,
+            81.59509202453987,
+            81.84049079754601,
+            81.59509202453987,
+            81.96319018404908,
+            81.96319018404908,
+            81.96319018404908,
+            82.08588957055215,
+            81.84049079754601,
+            82.08588957055215,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.08588957055215,
+            82.08588957055215,
+            82.20858895705521,
+            82.08588957055215,
+            81.96319018404908,
+            82.08588957055215,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.45398773006136,
+            82.20858895705521,
+            81.96319018404908,
+            82.33128834355828,
+            82.20858895705521,
+            82.33128834355828,
+            82.20858895705521,
+            82.33128834355828,
+            82.33128834355828,
+            82.33128834355828,
+            82.33128834355828,
+            82.20858895705521,
+            82.08588957055215,
+            82.33128834355828,
+            82.08588957055215,
+            82.20858895705521,
+            82.33128834355828,
+            82.33128834355828,
+            82.20858895705521,
+            82.20858895705521,
+            82.08588957055215,
+            82.08588957055215,
+            81.96319018404908,
+            82.08588957055215,
+            82.08588957055215,
+            82.08588957055215,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521,
+            82.20858895705521
+          ],
+          "train_seconds": 21.073083639144897,
+          "code_change_mean_cosine": 0.1405123621225357
+        },
+        {
+          "method": "random+phys+rtCH",
+          "K": 10,
+          "base_key": "random_K10",
+          "mask_file": "masks.pt",
+          "variant": "phys+rtCH",
+          "physical": true,
+          "codebook_rows": 1422,
+          "val_top1": 81.71779141104294,
+          "test_top1": 84.04427310036066,
+          "val_ce": 1.5156134210995105,
+          "one_shot_val_top1": 6.748466257668712,
+          "repair_seconds": 21.021522283554077,
+          "nonzero_edges": 1047,
+          "active_codes": 947,
+          "edges_per_class_min": 1,
+          "edges_per_class_max": 10,
+          "best_epoch": 106,
+          "epochs": 145,
+          "train_codes": true,
+          "val_curve": [
+            6.748466257668712,
+            6.748466257668712,
+            8.71165644171779,
+            14.355828220858896,
+            24.294478527607364,
+            40.3680981595092,
+            54.233128834355824,
+            60.613496932515346,
+            65.76687116564418,
+            69.32515337423312,
+            72.02453987730061,
+            74.7239263803681,
+            75.33742331288343,
+            75.21472392638037,
+            76.1963190184049,
+            76.93251533742331,
+            77.54601226993864,
+            78.52760736196319,
+            78.28220858895706,
+            79.01840490797547,
+            78.77300613496932,
+            78.77300613496932,
+            79.01840490797547,
+            79.38650306748465,
+            79.2638036809816,
+            79.38650306748465,
+            78.8957055214724,
+            78.8957055214724,
+            79.01840490797547,
+            79.14110429447852,
+            79.01840490797547,
+            78.8957055214724,
+            78.8957055214724,
+            79.38650306748465,
+            78.77300613496932,
+            79.50920245398773,
+            79.75460122699386,
+            79.38650306748465,
+            79.14110429447852,
+            79.01840490797547,
+            79.50920245398773,
+            79.87730061349694,
+            80.12269938650307,
+            79.6319018404908,
+            80.12269938650307,
+            79.87730061349694,
+            80.3680981595092,
+            80.12269938650307,
+            80.7361963190184,
+            80.3680981595092,
+            80.12269938650307,
+            80.24539877300614,
+            80.24539877300614,
+            80.61349693251533,
+            80.85889570552148,
+            80.49079754601227,
+            80.3680981595092,
+            80.85889570552148,
+            80.85889570552148,
+            80.7361963190184,
+            80.7361963190184,
+            80.7361963190184,
+            80.85889570552148,
+            80.85889570552148,
+            80.98159509202453,
+            80.85889570552148,
+            80.98159509202453,
+            81.22699386503068,
+            81.22699386503068,
+            80.98159509202453,
+            81.22699386503068,
+            81.1042944785276,
+            81.1042944785276,
+            81.22699386503068,
+            81.22699386503068,
+            81.59509202453987,
+            81.34969325153374,
+            81.59509202453987,
+            81.34969325153374,
+            81.22699386503068,
+            81.34969325153374,
+            81.47239263803681,
+            81.34969325153374,
+            81.47239263803681,
+            81.22699386503068,
+            81.22699386503068,
+            81.47239263803681,
+            81.34969325153374,
+            81.47239263803681,
+            81.59509202453987,
+            81.34969325153374,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.59509202453987,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.59509202453987,
+            81.47239263803681,
+            81.59509202453987,
+            81.71779141104294,
+            81.59509202453987,
+            81.59509202453987,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.47239263803681,
+            81.34969325153374,
+            81.34969325153374,
+            81.34969325153374,
+            81.34969325153374,
+            81.34969325153374,
+            81.34969325153374,
+            81.34969325153374,
+            81.34969325153374,
+            81.34969325153374,
+            81.34969325153374,
+            81.47239263803681,
+            81.34969325153374,
+            81.34969325153374,
+            81.34969325153374,
+            81.34969325153374,
+            81.34969325153374,
+            81.34969325153374,
+            81.34969325153374,
+            81.34969325153374,
+            81.34969325153374,
+            81.34969325153374,
+            81.34969325153374
+          ],
+          "train_seconds": 20.973524570465088,
+          "code_change_mean_cosine": 0.12895584106445312
         }
       ],
       "vs_one_shot": {
-        "diff_mean": 79.06976744186046,
+        "diff_mean": 78.52257181942545,
         "ci95": [
-          78.16192015918418,
-          79.96517846039049
+          77.78468681341457,
+          79.25631140405423
         ],
         "seed_diffs": [
-          79.06976744186046
+          79.06976744186046,
+          79.41798283795546,
+          77.0799651784604
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       },
       "vs_dense": {
-        "diff_mean": -5.646063922397712,
+        "diff_mean": -5.219085520043112,
         "ci95": [
-          -6.367367242880238,
-          -4.949633130207685
+          -5.7745719852423,
+          -4.671889897608093
         ],
         "seed_diffs": [
-          -5.646063922397715
+          -5.646063922397715,
+          -5.073995771670193,
+          -4.9371968660614325
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       },
       "vs_random+phys+rtH_K10": {
-        "diff_mean": 77.31625419723915,
+        "diff_mean": 76.61982340504913,
         "ci95": [
-          76.34622559383162,
-          78.26141027235418
+          75.86121129212785,
+          77.3535629896779
         ],
         "seed_diffs": [
-          77.31625419723915
+          77.31625419723915,
+          77.00534759358288,
+          75.53786842432534
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -2707,19 +6237,125 @@
               "nonzero_edges": 1668
             }
           ]
+        },
+        {
+          "method": "CP1-M1000+CEsel",
+          "K": 10,
+          "base_key": "CP1-M1000_K10",
+          "mask_file": "codeprune_masks.pt",
+          "variant": "CEsel",
+          "physical": false,
+          "codebook_rows": 3000,
+          "val_top1": 77.79141104294479,
+          "test_top1": 77.11727397089915,
+          "val_ce": 0.9542367548987198,
+          "one_shot_val_top1": 70.1840490797546,
+          "repair_seconds": 10.445905923843384,
+          "nonzero_edges": 1703,
+          "active_codes": 841,
+          "edges_per_class_min": 5,
+          "edges_per_class_max": 10,
+          "train_ce_before": 3.028756856918335,
+          "ce_steps_selected": 10000,
+          "train_ce_after": 0.39621400833129883,
+          "ce_curve": [
+            {
+              "steps": 300,
+              "train_ce": 1.9685291051864624,
+              "val_top1": 71.77914110429448,
+              "val_ce": 2.2998697757720947,
+              "nonzero_edges": 1955
+            },
+            {
+              "steps": 1000,
+              "train_ce": 1.1437156200408936,
+              "val_top1": 73.9877300613497,
+              "val_ce": 1.533593773841858,
+              "nonzero_edges": 1950
+            },
+            {
+              "steps": 3000,
+              "train_ce": 0.6699975728988647,
+              "val_top1": 76.07361963190185,
+              "val_ce": 1.086462378501892,
+              "nonzero_edges": 1923
+            },
+            {
+              "steps": 10000,
+              "train_ce": 0.39621400833129883,
+              "val_top1": 77.79141104294479,
+              "val_ce": 0.9542368054389954,
+              "nonzero_edges": 1703
+            }
+          ]
+        },
+        {
+          "method": "CP1-M1000+CEsel",
+          "K": 10,
+          "base_key": "CP1-M1000_K10",
+          "mask_file": "codeprune_masks.pt",
+          "variant": "CEsel",
+          "physical": false,
+          "codebook_rows": 3000,
+          "val_top1": 76.1963190184049,
+          "test_top1": 77.00534759358288,
+          "val_ce": 1.0731797033013615,
+          "one_shot_val_top1": 68.09815950920245,
+          "repair_seconds": 10.459163665771484,
+          "nonzero_edges": 1678,
+          "active_codes": 841,
+          "edges_per_class_min": 4,
+          "edges_per_class_max": 10,
+          "train_ce_before": 3.0226919651031494,
+          "ce_steps_selected": 10000,
+          "train_ce_after": 0.387306809425354,
+          "ce_curve": [
+            {
+              "steps": 300,
+              "train_ce": 1.9808874130249023,
+              "val_top1": 69.20245398773007,
+              "val_ce": 2.3829174041748047,
+              "nonzero_edges": 1956
+            },
+            {
+              "steps": 1000,
+              "train_ce": 1.1717140674591064,
+              "val_top1": 70.79754601226995,
+              "val_ce": 1.63478684425354,
+              "nonzero_edges": 1952
+            },
+            {
+              "steps": 3000,
+              "train_ce": 0.6823004484176636,
+              "val_top1": 73.86503067484662,
+              "val_ce": 1.1850850582122803,
+              "nonzero_edges": 1928
+            },
+            {
+              "steps": 10000,
+              "train_ce": 0.387306809425354,
+              "val_top1": 76.1963190184049,
+              "val_ce": 1.0731797218322754,
+              "nonzero_edges": 1678
+            }
+          ]
         }
       ],
       "vs_one_shot": {
-        "diff_mean": 7.847282676284044,
+        "diff_mean": 7.237905733117772,
         "ci95": [
-          7.001616714339012,
-          8.705384902375327
+          6.649152261327362,
+          7.843137254901962
         ],
         "seed_diffs": [
-          7.84728267628404
+          7.84728267628404,
+          6.790200223852761,
+          7.076234299216511
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -2776,47 +6412,161 @@
               "nonzero_edges": 1456
             }
           ]
+        },
+        {
+          "method": "CP1-M1000+phys+CEsel",
+          "K": 10,
+          "base_key": "CP1-M1000_K10",
+          "mask_file": "codeprune_masks.pt",
+          "variant": "phys+CEsel",
+          "physical": true,
+          "codebook_rows": 869,
+          "val_top1": 78.15950920245399,
+          "test_top1": 78.11217510259918,
+          "val_ce": 0.8314745571429171,
+          "one_shot_val_top1": 70.1840490797546,
+          "repair_seconds": 4.534037351608276,
+          "nonzero_edges": 1785,
+          "active_codes": 850,
+          "edges_per_class_min": 5,
+          "edges_per_class_max": 10,
+          "train_ce_before": 1.6223018169403076,
+          "ce_steps_selected": 3000,
+          "train_ce_after": 0.4119018316268921,
+          "ce_curve": [
+            {
+              "steps": 300,
+              "train_ce": 0.9248993992805481,
+              "val_top1": 74.84662576687117,
+              "val_ce": 1.2990669012069702,
+              "nonzero_edges": 1949
+            },
+            {
+              "steps": 1000,
+              "train_ce": 0.5956973433494568,
+              "val_top1": 77.05521472392638,
+              "val_ce": 0.977940022945404,
+              "nonzero_edges": 1885
+            },
+            {
+              "steps": 3000,
+              "train_ce": 0.4119018316268921,
+              "val_top1": 78.15950920245399,
+              "val_ce": 0.8314745426177979,
+              "nonzero_edges": 1785
+            },
+            {
+              "steps": 10000,
+              "train_ce": 0.29638588428497314,
+              "val_top1": 78.03680981595093,
+              "val_ce": 0.9718661904335022,
+              "nonzero_edges": 1495
+            }
+          ]
+        },
+        {
+          "method": "CP1-M1000+phys+CEsel",
+          "K": 10,
+          "base_key": "CP1-M1000_K10",
+          "mask_file": "codeprune_masks.pt",
+          "variant": "phys+CEsel",
+          "physical": true,
+          "codebook_rows": 874,
+          "val_top1": 77.30061349693251,
+          "test_top1": 78.54744434771794,
+          "val_ce": 0.9294268822171522,
+          "one_shot_val_top1": 68.09815950920245,
+          "repair_seconds": 5.891413450241089,
+          "nonzero_edges": 1767,
+          "active_codes": 862,
+          "edges_per_class_min": 4,
+          "edges_per_class_max": 10,
+          "train_ce_before": 1.601627230644226,
+          "ce_steps_selected": 3000,
+          "train_ce_after": 0.39447128772735596,
+          "ce_curve": [
+            {
+              "steps": 300,
+              "train_ce": 0.9324723482131958,
+              "val_top1": 72.39263803680981,
+              "val_ce": 1.3608065843582153,
+              "nonzero_edges": 1943
+            },
+            {
+              "steps": 1000,
+              "train_ce": 0.5921761393547058,
+              "val_top1": 74.84662576687117,
+              "val_ce": 1.0460597276687622,
+              "nonzero_edges": 1868
+            },
+            {
+              "steps": 3000,
+              "train_ce": 0.39447128772735596,
+              "val_top1": 77.30061349693251,
+              "val_ce": 0.929426908493042,
+              "nonzero_edges": 1767
+            },
+            {
+              "steps": 10000,
+              "train_ce": 0.26718345284461975,
+              "val_top1": 76.93251533742331,
+              "val_ce": 1.084713339805603,
+              "nonzero_edges": 1485
+            }
+          ]
         }
       ],
       "vs_one_shot": {
-        "diff_mean": 9.05360029847034,
+        "diff_mean": 8.485677569124903,
         "ci95": [
-          8.25767939311031,
-          9.886829996269121
+          7.917754839779464,
+          9.061891141234508
         ],
         "seed_diffs": [
-          9.053600298470332
+          9.053600298470332,
+          7.785101355552793,
+          8.618331053351568
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       },
       "vs_BUD_CP1-M1000_K10_E145": {
-        "diff_mean": -9.998756373585376,
+        "diff_mean": -9.832939518302036,
         "ci95": [
-          -10.782241014799155,
-          -9.215271732371596
+          -10.442316461468309,
+          -9.235998839282015
         ],
         "seed_diffs": [
-          -9.998756373585383
+          -9.998756373585383,
+          -9.787339883099122,
+          -9.712722298221621
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       },
       "vs_dense": {
-        "diff_mean": -10.720059694067901,
+        "diff_mean": -10.657878373336652,
         "ci95": [
-          -11.540853127720432,
-          -9.924138788707872
+          -11.312958587240393,
+          -10.011192637731627
         ],
         "seed_diffs": [
-          -10.720059694067906
+          -10.720059694067906,
+          -10.819549807237905,
+          -10.434025618704146
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       }
@@ -2992,47 +6742,399 @@
           ],
           "train_seconds": 8.01831841468811,
           "code_change_mean_cosine": 1.0
+        },
+        {
+          "method": "CP1-M1000+phys+rtH",
+          "K": 10,
+          "base_key": "CP1-M1000_K10",
+          "mask_file": "codeprune_masks.pt",
+          "variant": "phys+rtH",
+          "physical": true,
+          "codebook_rows": 869,
+          "val_top1": 77.79141104294479,
+          "test_top1": 77.4281805745554,
+          "val_ce": 1.1034062622416887,
+          "one_shot_val_top1": 70.1840490797546,
+          "repair_seconds": 8.100707054138184,
+          "nonzero_edges": 1885,
+          "active_codes": 867,
+          "edges_per_class_min": 5,
+          "edges_per_class_max": 10,
+          "best_epoch": 67,
+          "epochs": 145,
+          "train_codes": false,
+          "val_curve": [
+            71.28834355828221,
+            71.28834355828221,
+            72.02453987730061,
+            72.26993865030676,
+            72.76073619631902,
+            73.37423312883435,
+            73.74233128834355,
+            74.60122699386503,
+            74.23312883435584,
+            74.3558282208589,
+            74.47852760736197,
+            74.7239263803681,
+            74.96932515337423,
+            75.0920245398773,
+            75.33742331288343,
+            75.70552147239263,
+            75.4601226993865,
+            75.33742331288343,
+            75.58282208588956,
+            75.58282208588956,
+            75.4601226993865,
+            75.33742331288343,
+            75.70552147239263,
+            75.8282208588957,
+            75.8282208588957,
+            76.07361963190185,
+            76.31901840490798,
+            76.31901840490798,
+            76.68711656441718,
+            76.56441717791411,
+            76.56441717791411,
+            76.56441717791411,
+            76.1963190184049,
+            76.44171779141105,
+            76.31901840490798,
+            76.31901840490798,
+            76.31901840490798,
+            76.31901840490798,
+            76.07361963190185,
+            76.1963190184049,
+            76.31901840490798,
+            76.31901840490798,
+            76.31901840490798,
+            76.31901840490798,
+            76.1963190184049,
+            76.56441717791411,
+            76.80981595092024,
+            76.68711656441718,
+            76.80981595092024,
+            76.80981595092024,
+            76.93251533742331,
+            76.93251533742331,
+            76.93251533742331,
+            77.05521472392638,
+            77.05521472392638,
+            77.30061349693251,
+            77.42331288343559,
+            77.42331288343559,
+            77.54601226993864,
+            77.30061349693251,
+            77.42331288343559,
+            77.66871165644172,
+            77.42331288343559,
+            77.54601226993864,
+            77.42331288343559,
+            77.66871165644172,
+            77.66871165644172,
+            77.79141104294479,
+            77.66871165644172,
+            77.66871165644172,
+            77.66871165644172,
+            77.42331288343559,
+            77.54601226993864,
+            77.42331288343559,
+            77.42331288343559,
+            77.17791411042944,
+            77.42331288343559,
+            77.30061349693251,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.17791411042944,
+            77.17791411042944,
+            77.17791411042944,
+            77.05521472392638,
+            77.17791411042944,
+            77.05521472392638,
+            77.30061349693251,
+            77.30061349693251,
+            77.30061349693251,
+            77.30061349693251,
+            77.42331288343559,
+            77.42331288343559,
+            77.54601226993864,
+            77.54601226993864,
+            77.54601226993864,
+            77.54601226993864,
+            77.54601226993864,
+            77.54601226993864,
+            77.42331288343559,
+            77.54601226993864,
+            77.54601226993864,
+            77.30061349693251,
+            77.30061349693251,
+            77.54601226993864,
+            77.42331288343559,
+            77.54601226993864,
+            77.54601226993864,
+            77.54601226993864,
+            77.54601226993864,
+            77.54601226993864,
+            77.54601226993864,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559,
+            77.42331288343559
+          ],
+          "train_seconds": 8.044143676757812,
+          "code_change_mean_cosine": 1.0
+        },
+        {
+          "method": "CP1-M1000+phys+rtH",
+          "K": 10,
+          "base_key": "CP1-M1000_K10",
+          "mask_file": "codeprune_masks.pt",
+          "variant": "phys+rtH",
+          "physical": true,
+          "codebook_rows": 874,
+          "val_top1": 75.8282208588957,
+          "test_top1": 77.5774157443104,
+          "val_ce": 1.179792888189439,
+          "one_shot_val_top1": 68.09815950920245,
+          "repair_seconds": 8.087825059890747,
+          "nonzero_edges": 1875,
+          "active_codes": 871,
+          "edges_per_class_min": 6,
+          "edges_per_class_max": 10,
+          "best_epoch": 60,
+          "epochs": 145,
+          "train_codes": false,
+          "val_curve": [
+            69.8159509202454,
+            69.8159509202454,
+            69.93865030674846,
+            70.30674846625767,
+            70.920245398773,
+            71.65644171779141,
+            71.77914110429448,
+            72.88343558282209,
+            72.88343558282209,
+            73.00613496932516,
+            73.37423312883435,
+            73.37423312883435,
+            73.00613496932516,
+            73.00613496932516,
+            73.25153374233129,
+            72.88343558282209,
+            72.88343558282209,
+            73.00613496932516,
+            73.12883435582822,
+            73.61963190184049,
+            73.74233128834355,
+            73.61963190184049,
+            74.23312883435584,
+            74.3558282208589,
+            74.60122699386503,
+            74.47852760736197,
+            74.3558282208589,
+            74.3558282208589,
+            74.23312883435584,
+            74.3558282208589,
+            74.23312883435584,
+            74.23312883435584,
+            74.3558282208589,
+            74.23312883435584,
+            74.3558282208589,
+            74.7239263803681,
+            74.47852760736197,
+            74.84662576687117,
+            74.96932515337423,
+            75.0920245398773,
+            74.96932515337423,
+            75.0920245398773,
+            74.96932515337423,
+            74.96932515337423,
+            74.84662576687117,
+            74.96932515337423,
+            75.0920245398773,
+            75.21472392638037,
+            75.4601226993865,
+            75.58282208588956,
+            75.58282208588956,
+            75.4601226993865,
+            75.4601226993865,
+            75.58282208588956,
+            75.4601226993865,
+            75.4601226993865,
+            75.58282208588956,
+            75.58282208588956,
+            75.70552147239263,
+            75.70552147239263,
+            75.8282208588957,
+            75.70552147239263,
+            75.33742331288343,
+            75.33742331288343,
+            75.4601226993865,
+            75.70552147239263,
+            75.58282208588956,
+            75.4601226993865,
+            75.33742331288343,
+            75.58282208588956,
+            75.70552147239263,
+            75.58282208588956,
+            75.58282208588956,
+            75.58282208588956,
+            75.58282208588956,
+            75.70552147239263,
+            75.70552147239263,
+            75.4601226993865,
+            75.70552147239263,
+            75.70552147239263,
+            75.70552147239263,
+            75.70552147239263,
+            75.70552147239263,
+            75.70552147239263,
+            75.58282208588956,
+            75.33742331288343,
+            75.58282208588956,
+            75.58282208588956,
+            75.4601226993865,
+            75.58282208588956,
+            75.58282208588956,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.58282208588956,
+            75.4601226993865,
+            75.33742331288343,
+            75.33742331288343,
+            75.33742331288343,
+            75.33742331288343,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.58282208588956,
+            75.58282208588956,
+            75.58282208588956,
+            75.58282208588956,
+            75.58282208588956,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.4601226993865,
+            75.33742331288343,
+            75.33742331288343,
+            75.33742331288343,
+            75.33742331288343,
+            75.33742331288343,
+            75.33742331288343,
+            75.33742331288343,
+            75.33742331288343,
+            75.33742331288343,
+            75.33742331288343,
+            75.33742331288343,
+            75.33742331288343,
+            75.33742331288343,
+            75.33742331288343,
+            75.33742331288343
+          ],
+          "train_seconds": 8.041628360748291,
+          "code_change_mean_cosine": 1.0
         }
       ],
       "vs_one_shot": {
-        "diff_mean": 8.02139037433155,
+        "diff_mean": 7.590266550594868,
         "ci95": [
-          7.225469468971521,
-          8.829747543837831
+          7.0389255067777645,
+          8.154043858558222
         ],
         "seed_diffs": [
-          8.021390374331549
+          8.021390374331549,
+          7.101106827509018,
+          7.648302449944033
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       },
       "vs_BUD_CP1-M1000_K10_E145": {
-        "diff_mean": -11.030966297724163,
+        "diff_mean": -10.72835053683207,
         "ci95": [
-          -11.839323467230443,
-          -10.210172864071634
+          -11.35441280106123,
+          -10.094101065373296
         ],
         "seed_diffs": [
-          -11.030966297724165
+          -11.030966297724165,
+          -10.471334411142896,
+          -10.682750901629156
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       },
       "vs_dense": {
-        "diff_mean": -11.752269618206691,
+        "diff_mean": -11.553289391866684,
         "ci95": [
-          -12.585499316005471,
-          -10.93147618455416
+          -12.216556813000043,
+          -10.894167392115408
         ],
         "seed_diffs": [
-          -11.75226961820669
+          -11.75226961820669,
+          -11.50354433528168,
+          -11.404054222111682
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       }
@@ -3208,61 +7310,417 @@
           ],
           "train_seconds": 14.346732139587402,
           "code_change_mean_cosine": 0.6391664147377014
+        },
+        {
+          "method": "CP1-M1000+phys+rtCH",
+          "K": 10,
+          "base_key": "CP1-M1000_K10",
+          "mask_file": "codeprune_masks.pt",
+          "variant": "phys+rtCH",
+          "physical": true,
+          "codebook_rows": 869,
+          "val_top1": 85.52147239263803,
+          "test_top1": 87.02897649546077,
+          "val_ce": 1.3216499110390434,
+          "one_shot_val_top1": 70.1840490797546,
+          "repair_seconds": 14.392130851745605,
+          "nonzero_edges": 1936,
+          "active_codes": 869,
+          "edges_per_class_min": 8,
+          "edges_per_class_max": 10,
+          "best_epoch": 86,
+          "epochs": 145,
+          "train_codes": true,
+          "val_curve": [
+            71.28834355828221,
+            71.28834355828221,
+            73.86503067484662,
+            76.93251533742331,
+            79.6319018404908,
+            80.12269938650307,
+            81.34969325153374,
+            82.45398773006136,
+            82.82208588957054,
+            83.31288343558282,
+            83.43558282208589,
+            84.04907975460122,
+            84.29447852760737,
+            84.41717791411043,
+            84.04907975460122,
+            84.29447852760737,
+            83.92638036809817,
+            84.29447852760737,
+            84.9079754601227,
+            84.29447852760737,
+            84.29447852760737,
+            84.41717791411043,
+            84.1717791411043,
+            83.68098159509204,
+            84.1717791411043,
+            84.1717791411043,
+            83.92638036809817,
+            83.92638036809817,
+            83.92638036809817,
+            83.92638036809817,
+            84.04907975460122,
+            83.92638036809817,
+            83.92638036809817,
+            83.68098159509204,
+            83.92638036809817,
+            84.04907975460122,
+            84.1717791411043,
+            84.41717791411043,
+            84.1717791411043,
+            84.29447852760737,
+            84.41717791411043,
+            84.1717791411043,
+            84.29447852760737,
+            84.29447852760737,
+            84.66257668711657,
+            84.66257668711657,
+            84.5398773006135,
+            84.29447852760737,
+            84.5398773006135,
+            84.66257668711657,
+            84.5398773006135,
+            84.5398773006135,
+            84.66257668711657,
+            84.41717791411043,
+            84.66257668711657,
+            84.66257668711657,
+            84.78527607361963,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.78527607361963,
+            84.78527607361963,
+            84.9079754601227,
+            84.66257668711657,
+            84.9079754601227,
+            84.78527607361963,
+            84.66257668711657,
+            85.15337423312883,
+            84.9079754601227,
+            85.03067484662577,
+            84.9079754601227,
+            85.03067484662577,
+            85.03067484662577,
+            85.15337423312883,
+            85.15337423312883,
+            85.03067484662577,
+            85.2760736196319,
+            85.2760736196319,
+            85.2760736196319,
+            85.2760736196319,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.52147239263803,
+            85.39877300613496,
+            85.2760736196319,
+            85.2760736196319,
+            85.2760736196319,
+            85.2760736196319,
+            85.15337423312883,
+            85.39877300613496,
+            85.39877300613496,
+            85.2760736196319,
+            85.39877300613496,
+            85.39877300613496,
+            85.2760736196319,
+            85.15337423312883,
+            85.2760736196319,
+            85.2760736196319,
+            85.2760736196319,
+            85.39877300613496,
+            85.2760736196319,
+            85.2760736196319,
+            85.39877300613496,
+            85.2760736196319,
+            85.2760736196319,
+            85.39877300613496,
+            85.2760736196319,
+            85.2760736196319,
+            85.2760736196319,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.2760736196319,
+            85.2760736196319,
+            85.39877300613496,
+            85.2760736196319,
+            85.2760736196319,
+            85.2760736196319,
+            85.39877300613496,
+            85.2760736196319,
+            85.15337423312883,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496,
+            85.39877300613496
+          ],
+          "train_seconds": 14.335724830627441,
+          "code_change_mean_cosine": 0.6444891095161438
+        },
+        {
+          "method": "CP1-M1000+phys+rtCH",
+          "K": 10,
+          "base_key": "CP1-M1000_K10",
+          "mask_file": "codeprune_masks.pt",
+          "variant": "phys+rtCH",
+          "physical": true,
+          "codebook_rows": 874,
+          "val_top1": 84.9079754601227,
+          "test_top1": 86.50665340131825,
+          "val_ce": 1.3279412309843435,
+          "one_shot_val_top1": 68.09815950920245,
+          "repair_seconds": 14.273149728775024,
+          "nonzero_edges": 1934,
+          "active_codes": 874,
+          "edges_per_class_min": 7,
+          "edges_per_class_max": 10,
+          "best_epoch": 78,
+          "epochs": 145,
+          "train_codes": true,
+          "val_curve": [
+            69.8159509202454,
+            69.8159509202454,
+            72.14723926380368,
+            74.7239263803681,
+            77.17791411042944,
+            79.75460122699386,
+            81.47239263803681,
+            81.59509202453987,
+            82.20858895705521,
+            83.19018404907975,
+            83.06748466257669,
+            82.69938650306749,
+            83.31288343558282,
+            83.31288343558282,
+            84.04907975460122,
+            83.55828220858895,
+            83.31288343558282,
+            84.04907975460122,
+            83.8036809815951,
+            84.41717791411043,
+            83.68098159509204,
+            84.1717791411043,
+            84.5398773006135,
+            84.29447852760737,
+            84.29447852760737,
+            84.5398773006135,
+            84.41717791411043,
+            84.1717791411043,
+            84.41717791411043,
+            84.29447852760737,
+            83.8036809815951,
+            84.1717791411043,
+            84.04907975460122,
+            83.92638036809817,
+            83.92638036809817,
+            84.1717791411043,
+            84.1717791411043,
+            84.1717791411043,
+            84.1717791411043,
+            84.41717791411043,
+            84.29447852760737,
+            84.41717791411043,
+            84.5398773006135,
+            84.1717791411043,
+            84.41717791411043,
+            84.66257668711657,
+            84.1717791411043,
+            84.5398773006135,
+            84.66257668711657,
+            84.66257668711657,
+            84.29447852760737,
+            84.41717791411043,
+            84.41717791411043,
+            84.5398773006135,
+            84.41717791411043,
+            84.41717791411043,
+            84.66257668711657,
+            84.5398773006135,
+            84.41717791411043,
+            84.5398773006135,
+            84.41717791411043,
+            84.66257668711657,
+            84.5398773006135,
+            84.66257668711657,
+            84.5398773006135,
+            84.5398773006135,
+            84.41717791411043,
+            84.66257668711657,
+            84.29447852760737,
+            84.41717791411043,
+            84.66257668711657,
+            84.78527607361963,
+            84.5398773006135,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.5398773006135,
+            84.9079754601227,
+            84.5398773006135,
+            84.66257668711657,
+            84.66257668711657,
+            84.5398773006135,
+            84.5398773006135,
+            84.66257668711657,
+            84.5398773006135,
+            84.41717791411043,
+            84.5398773006135,
+            84.5398773006135,
+            84.41717791411043,
+            84.41717791411043,
+            84.41717791411043,
+            84.5398773006135,
+            84.5398773006135,
+            84.5398773006135,
+            84.5398773006135,
+            84.41717791411043,
+            84.5398773006135,
+            84.5398773006135,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.41717791411043,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.78527607361963,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657,
+            84.66257668711657
+          ],
+          "train_seconds": 14.224847078323364,
+          "code_change_mean_cosine": 0.6517807245254517
         }
       ],
       "vs_one_shot": {
-        "diff_mean": 17.83360278572317,
+        "diff_mean": 17.037681880363138,
         "ci95": [
-          16.888446710608132,
-          18.828503917423205
+          16.307984081581896,
+          17.800439414666503
         ],
         "seed_diffs": [
-          17.83360278572317
+          17.83360278572317,
+          16.701902748414376,
+          16.577540106951872
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       },
       "vs_BUD_CP1-M1000_K10_E145": {
-        "diff_mean": -1.2187538863325458,
+        "diff_mean": -1.280935207063798,
         "ci95": [
-          -1.7659495087675663,
-          -0.6715582638975252
+          -1.6788956597438132,
+          -0.8787256974671489
         ],
         "seed_diffs": [
-          -1.2187538863325464
+          -1.2187538863325464,
+          -0.8705384902375379,
+          -1.7535132446213186
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       },
       "vs_dense": {
-        "diff_mean": -1.9400572068150725,
+        "diff_mean": -2.1058740620984127,
         "ci95": [
-          -2.561870414127596,
-          -1.3182439995025494
+          -2.6033246279484312,
+          -1.595987232102143
         ],
         "seed_diffs": [
-          -1.9400572068150712
+          -1.9400572068150712,
+          -1.9027484143763207,
+          -2.4748165651038434
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "loss not excluded"
       },
       "vs_CP1-M1000+phys+rtH_K10": {
-        "diff_mean": 9.812212411391616,
+        "diff_mean": 9.447415329768273,
         "ci95": [
-          9.04116403432409,
-          10.608133316751648
+          8.8629109148945,
+          10.056792272934544
         ],
         "seed_diffs": [
-          9.812212411391618
+          9.812212411391618,
+          9.600795920905359,
+          8.929237657007839
         ],
         "seeds": [
-          40
+          40,
+          41,
+          42
         ],
         "verdict": "**better**"
       }
@@ -3270,44 +7728,56 @@
   },
   "ablations": {
     "P1contrast_K5_vs_P1_K5": {
-      "diff_mean": 0.0373087924387514,
+      "diff_mean": -0.008290842764166972,
       "ci95": [
-        -0.186543962193757,
-        0.2611615470712598
+        -0.1450897483729221,
+        0.12850806284458816
       ],
       "seed_diffs": [
-        0.037308792438750515
+        0.037308792438750515,
+        0.1367989056087482,
+        -0.19898022634000645
       ],
       "seeds": [
-        40
+        40,
+        41,
+        42
       ],
       "verdict": "no meaningful loss"
     },
     "P1contrast_K10_vs_P1_K10": {
-      "diff_mean": -0.1492351697550056,
+      "diff_mean": -0.12850806284458813,
       "ci95": [
-        -0.3979604526800149,
-        0.08705384902375327
+        -0.2528707043070928,
+        -0.008290842764166967
       ],
       "seed_diffs": [
-        -0.14923516975500206
+        -0.14923516975500206,
+        -0.11192637731625155,
+        -0.12436264146250542
       ],
       "seeds": [
-        40
+        40,
+        41,
+        42
       ],
       "verdict": "no meaningful loss"
     },
     "P1contrast_K20_vs_P1_K20": {
-      "diff_mean": 0.2238527546325084,
+      "diff_mean": 0.00829084276416697,
       "ci95": [
-        -0.04974505658500186,
-        0.48501430170376814
+        -0.14094432699083864,
+        0.15752601251917256
       ],
       "seed_diffs": [
-        0.2238527546325031
+        0.2238527546325031,
+        -0.1367989056087593,
+        -0.06218132073124716
       ],
       "seeds": [
-        40
+        40,
+        41,
+        42
       ],
       "verdict": "no meaningful loss"
     }
