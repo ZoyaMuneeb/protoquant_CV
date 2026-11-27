@@ -172,7 +172,7 @@ def fig_explanation(args, npz, paths):
     image = load_image(ds.paths[idx])
     top = contrib.argsort(descending=True)[:3].tolist()
     share = (contrib[top] / contrib.sum()).tolist()
-    fig = plt.figure(figsize=(7.16, 2.0))
+    fig = plt.figure(figsize=(7.16, 2.25))
     gs = fig.add_gridspec(1, 4, width_ratios=[1.25, 1, 1, 1], wspace=0.25)
     ax = fig.add_subplot(gs[0, 0])
     ax.imshow(image)
@@ -184,23 +184,21 @@ def fig_explanation(args, npz, paths):
     ax.set_title(f"Predicted: {classes[pred]}", fontsize=7, color=INK)
     for k, j in enumerate(top):
         code = int(b2["ids"][j])
-        inner = gs[0, k + 1].subgridspec(2, 3, hspace=0.3, wspace=0.05)
+        inner = gs[0, k + 1].subgridspec(2, 3, hspace=0.45, wspace=0.05)
         a = fig.add_subplot(inner[0, 1])
         show_patch(a, image, int(rows[j]) * GRID + int(cols[j]))
         a.set_title(f"{k + 1}: code {code}, {100 * share[k]:.0f} % of score", fontsize=6, color=INK)
-        if k == 0:
-            a.text(-0.15, 0.5, "matched\npatch", transform=a.transAxes, ha="right", va="center", fontsize=5.5,
-                   color=INK2)
+        a.set_xlabel("matched patch", fontsize=5.5, color=INK2, labelpad=1.5)
         top_img, top_pos = b2_table[code][:2]
         for t in range(3):
             b = fig.add_subplot(inner[1, t])
             show_patch(b, load_image(paths[int(top_img[t])]), int(top_pos[t]), INK2)
-            if k == 0 and t == 0:
-                b.text(-0.15, 0.5, "code's top\ntraining\npatches", transform=b.transAxes, ha="right",
-                       va="center", fontsize=5.5, color=INK2)
-    fig.suptitle(f"N_90 (codes making up 90 % of the predicted class score): B1-IR {n90}, dense {dres[4]}", fontsize=7.5,
-                 color=INK, y=1.02)
-    print(f"[FIG] explanation: test image {idx} ({ds.paths[idx]}), class {classes[pred]}, B1-IR codes {top}, "
+            if t == 1:
+                b.set_xlabel("code's top training patches", fontsize=5.5, color=INK2, labelpad=1.5)
+    fig.suptitle(rf"$N_{{90}}$ (codes making up 90 % of the predicted class score): B1-IR {n90}, dense {dres[4]}",
+                 fontsize=7.5, color=INK, y=1.03)
+    print(f"[FIG] explanation: test image {idx} ({ds.paths[idx]}), class {classes[pred]}, B1-IR codes (dense ids) "
+          f"{[int(b2['ids'][j]) for j in top]}, shares {[round(100 * s) for s in share]} %, "
           f"n90 B1-IR {n90} / dense {dres[4]}", flush=True)
     return fig
 
